@@ -207,13 +207,13 @@
 
 ### Tests for User Story 8 (MANDATORY) ✅
 
-- [ ] T057 [P] [US8] Add init-command integration tests for multi-target bootstrap and idempotency in `tests/Steergen.Cli.IntegrationTests/InitCommandTests.cs`
-- [ ] T058 [P] [US8] Add target-layout unit tests for invalid target identifiers and folder rules in `tests/Steergen.Core.UnitTests/Targets/TargetLayoutInitializerTests.cs`
+- [x] T057 [P] [US8] Add init-command integration tests for multi-target bootstrap and idempotency in `tests/Steergen.Cli.IntegrationTests/InitCommandTests.cs`
+- [x] T058 [P] [US8] Add target-layout unit tests for invalid target identifiers and folder rules in `tests/Steergen.Core.UnitTests/Targets/TargetLayoutInitializerTests.cs`
 
 ### Implementation for User Story 8
 
-- [ ] T059 [US8] Implement target folder layout initialization in `src/Steergen.Core/Targets/TargetLayoutInitializer.cs`
-- [ ] T060 [US8] Implement the init command handler in `src/Steergen.Cli/Commands/InitCommand.cs`
+- [x] T059 [US8] Implement target folder layout initialization in `src/Steergen.Core/Targets/TargetLayoutInitializer.cs`
+- [x] T060 [US8] Implement the init command handler in `src/Steergen.Cli/Commands/InitCommand.cs`
 
 **Checkpoint**: User Story 8 independently bootstraps project structure for supported targets.
 

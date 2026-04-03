@@ -3,6 +3,12 @@ using Steergen.Cli.Commands;
 
 namespace Steergen.Cli.IntegrationTests;
 
+/// <summary>
+/// In the same collection as <see cref="InitCommandTests"/> to prevent parallel execution
+/// competing over the process-level Console.SetOut redirect used by CaptureStdout.
+/// </summary>
+[Collection("CliOutput")]
+
 public sealed class InspectCommandTests
 {
     private static readonly string FixturesRoot =

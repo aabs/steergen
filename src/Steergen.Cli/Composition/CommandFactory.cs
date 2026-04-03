@@ -18,9 +18,12 @@ public static class CommandFactory
 
         var inspectCommand = Commands.InspectCommand.Create();
 
+        var initCommand = Commands.InitCommand.Create();
+
         rootCommand.Add(runCommand);
         rootCommand.Add(validateCommand);
         rootCommand.Add(inspectCommand);
+        rootCommand.Add(initCommand);
 
         return rootCommand;
     }

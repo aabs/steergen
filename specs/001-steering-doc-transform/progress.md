@@ -271,3 +271,30 @@ Started: 2026-04-03 16:49:34
 - TargetRegistrationMetadata.FromDescriptor is a convenient factory for wrapping existing TargetDescriptors
 - All 113 tests pass (37 property, 38 unit, 38 integration)
 ---
+
+---
+## Iteration 11 - 2026-04-03T07:10:11Z
+**User Story**: US-007 Integrate with CI Pipelines
+**Tasks Completed**: 
+- [x] T053: CiWorkflowRegressionTests.cs (8 integration tests: exit codes 0/1/2, manifest file, valid JSON, sha256 hashes, determinism, CI failure report)
+- [x] T054: ScalabilityEnvelopeBenchmarks.cs (5 benchmarks: parse 100 docs, validate envelope/beyond-envelope, resolve envelope/beyond-envelope)
+- [x] T055: DeterministicOutputManifest.cs (FromDirectoryAsync, Failure factory, WriteAsync, HasIdenticalContentTo) + GenerationPipeline updated (manifestOutputPath param, GenerationResult.Manifest, FormatCiReport)
+- [x] T056: .github/workflows/ci.yml (build-and-test, validate-gate, release-gate jobs) + README.md (exit-code contract, CI integration, release tag docs)
+**Tasks Remaining in Story**: None - story complete
+**Commit**: da1164b
+**Files Changed**: 
+- src/Steergen.Core/Generation/DeterministicOutputManifest.cs (new)
+- src/Steergen.Core/Generation/GenerationPipeline.cs (GenerationResult + Manifest + FormatCiReport + manifestOutputPath)
+- src/Steergen.Core/Generation/SpeckitGenerationService.cs (writeManifest param)
+- tests/Steergen.Cli.IntegrationTests/CiWorkflowRegressionTests.cs (new)
+- tests/Steergen.Benchmarks/ScalabilityEnvelopeBenchmarks.cs (new)
+- .github/workflows/ci.yml (new)
+- README.md (CI integration docs)
+- specs/001-steering-doc-transform/tasks.md (T053-T056 marked done)
+**Learnings**:
+- DeterministicOutputManifest.FromDirectoryAsync scans outputDir, excludes manifest file itself (by name), SHA-256 hex lowercase
+- GenerationPipeline.RunAsync takes optional manifestOutputPath; writes failure manifest with errors even on validation failure
+- SpeckitGenerationService now has writeManifest=false default to avoid breaking callers
+- Benchmark class needs [MemoryDiagnoser], ValidateCorpus takes IEnumerable<SteeringDocument>
+- All 122 tests pass (37 property, 38 unit, 47 integration)
+---
