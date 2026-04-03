@@ -180,6 +180,8 @@ A tooling engineer wants to refresh the local project template pack and metadata
 
 ### Functional Requirements
 
+#### Parsing, Validation, and Core Model
+
 - **FR-001**: The tool MUST parse Markdown steering documents containing optional YAML frontmatter and embedded rule blocks using the `:::rule` fenced syntax.
 - **FR-002**: The tool MUST extract and validate frontmatter fields `id` (required) and `version` (required, semantic version) from each document.
 - **FR-003**: The tool MUST parse rule block attributes: `id` (required), `severity`, `category`, `domain`, `profile`, `appliesTo`, `tags`, `deprecated`, and `supersedes`.
@@ -191,6 +193,9 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-009**: The tool MUST validate severity values against the permitted enumeration: `info`, `low`, `medium`, `high`, `critical`.
 - **FR-010**: The tool MUST emit a warning (not an error) when a `supersedes` attribute references a rule ID not present in the resolved model.
 - **FR-011**: The tool MUST preserve deprecation metadata and supersession relationships in transformed output.
+
+#### Core Commands and Runtime Behavior
+
 - **FR-012**: The tool MUST support a `compile` command that runs the full pipeline: load → validate → overlay → profile filter → generate artefacts.
 - **FR-013**: The tool MUST support a `validate` command that runs load and validation steps only, reporting all errors with document ID and source location.
 - **FR-014**: The tool MUST support an `inspect` command that outputs the fully resolved steering model as JSON to stdout.
@@ -200,9 +205,15 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-018**: The tool MUST generate artefacts for all enabled targets defined in configuration; disabled targets MUST be skipped.
 - **FR-019**: The tool MUST produce deterministic output: identical inputs MUST always produce identical outputs.
 - **FR-020**: The tool MUST exit with code 0 on success, 1 on validation errors, 2 on configuration errors, and 3 on target generation errors.
+
+#### Speckit Target Requirements
+
 - **FR-021**: The Speckit target component MUST map steering documents to Speckit Markdown modules, mapping rules to Speckit rule entries with severity, category, and text fields.
 - **FR-022**: The tool MUST generate Markdown output format for the Speckit target.
 - **FR-023**: The tool MUST generate a consolidated `speckit.all.md` artefact containing all modules in addition to per-module files.
+
+#### Kiro Target Requirements
+
 - **FR-024**: The Kiro target adapter MUST generate one Markdown file per source steering document, placed in the configured output directory.
 - **FR-025**: The Kiro adapter MUST render all included rules as natural language prose paragraphs, combining each rule's primary directive and explanatory material; no structured rule syntax, IDs, or severity values MUST appear in the output.
 - **FR-026**: The Kiro adapter MUST generate YAML frontmatter for each output file containing at minimum an `inclusion` mode field.
@@ -210,19 +221,34 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-028**: When the configured inclusion mode is `fileMatch`, the Kiro adapter MUST include a `fileMatchPattern` field in the frontmatter, sourced from target configuration or document metadata.
 - **FR-029**: When the configured inclusion mode is `auto`, the Kiro adapter MUST include `name` and `description` frontmatter fields derived from the source document's `title` and `description` fields respectively.
 - **FR-030**: The Kiro adapter MUST exclude deprecated rules from generated prose output.
+
+#### Agent-Spec Target Requirements
+
 - **FR-031**: The tool MUST support one or more agent-spec generation targets that transform the neutral steering model into agent specification files for the chosen platform.
 - **FR-032**: Agent-spec generation targets MUST support target-specific formatting and metadata requirements while preserving equivalent normative guidance semantics across platforms.
+
+#### Extensibility and Compatibility Guarantees
+
 - **FR-033**: The system MUST NOT use runtime plugin loading for target extensibility.
 - **FR-034**: Adding a new target MUST be additive: implementation of a new target component and registration metadata MAY be added, but existing target implementation code MUST remain unchanged.
 - **FR-035**: The tool MUST validate target-specific required fields for agent-spec outputs and report generation errors when required target metadata is missing.
 - **FR-036**: The tool MUST include compatibility tests that verify existing targets continue to produce unchanged output for unchanged inputs when a new target is introduced.
+
+#### Constitution Governance and Provenance
+
 - **FR-037**: If a feature updates a constitution file and the change is substantive, the toolchain and generated update workflow MUST honor the constitution's Governance and version-tracking sections by recording version change rationale, amendment date, and a sync/provenance record of impacted artifacts.
+
+#### Cross-Target Portability and Modularity
+
 - **FR-038**: All targets (current and future) MUST honor platform naming conventions, structural requirements, and required metadata fields for generated outputs.
 - **FR-039**: All targets (current and future) MUST support the degree of modularity permitted by the target platform, including splitting guidance into separately invocable modules when supported.
 - **FR-040**: Generated main constitution outputs MUST contain only universally applicable core rules.
 - **FR-041**: Domain-specific or context-specific rules MUST be emitted as platform-appropriate modular artifacts (for example agents, skills, or equivalent on-demand modules) rather than being inlined into the main constitution when the target platform supports such modularization.
 - **FR-042**: When a target platform permits constitution references/includes (for example a main constitution referring to additional guidance files), generated outputs MUST preserve valid references and resolve paths according to platform conventions.
 - **FR-043**: Every Steering Rule MUST include domain metadata. The `core` domain value MUST indicate the rule belongs to the core constitution rule set; non-`core` domain values indicate domain-specific guidance eligible for modular target outputs where supported.
+
+#### CLI Architecture and Init Command
+
 - **FR-044**: The system MUST provide a modular command-based CLI built on the `System.CommandLine` package.
 - **FR-045**: The CLI MUST provide an `init` command for repository bootstrap.
 - **FR-046**: `init` MUST accept a positional argument specifying the project root path.
@@ -231,6 +257,9 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-049**: `init` MUST be idempotent and MUST NOT overwrite existing steering or target files/folders.
 - **FR-050**: The CLI MUST support invocation equivalent to `specgen init . --target speckit --target kiro-ide`.
 - **FR-051**: If any provided target identifier is invalid, `init` MUST return a non-zero exit code and emit a clear validation message identifying the invalid target.
+
+#### CLI Update and Template Lifecycle
+
 - **FR-052**: The CLI MUST provide an `update` command that updates project templates and related metadata in place for the current project.
 - **FR-053**: The `update` command MUST support an optional version argument (for example `--version <x.y.z>`) to apply a specific template/metadata release.
 - **FR-054**: If no version is provided to `update`, the command MUST resolve and apply the latest available compatible template/metadata release.
