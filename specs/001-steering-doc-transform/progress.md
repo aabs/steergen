@@ -127,3 +127,72 @@ Started: 2026-04-03 16:49:34
 - Domain rules need explicit domain="<name>" in rule attributes; "core" is the default when domain omitted
 - All 37 tests pass (17 property, 15 unit, 5 integration)
 ---
+
+---
+## Iteration 4 - 2026-04-03T06:30:20Z
+**User Story**: Phase 4 - User Story 2: Run Steering Generation to Kiro IDE Steering Files
+**Tasks Completed**: 
+- [x] T028: Kiro run integration tests (RunKiroCommandTests.cs)
+- [x] T029: Kiro renderer unit tests for always/fileMatch/auto frontmatter (KiroTargetComponentTests.cs)
+- [x] T030: Property tests proving prose output never leaks rule IDs/severities/:::rule syntax (KiroRenderingProperties.cs)
+- [x] T031: KiroTargetOptions + KiroInclusionMapper (Kiro/KiroTargetOptions.cs, Kiro/KiroInclusionMapper.cs)
+- [x] T032: KiroTargetComponent (Kiro/KiroTargetComponent.cs)
+- [x] T033: Kiro document template (Scriban/kiro/document.scriban)
+- [x] T034: TargetRegistry.RegisterBuiltins + SteeringConfiguration FormatOptions docs
+**Tasks Remaining in Story**: None - story complete
+**Commit**: e56c1ee
+**Files Changed**: 
+- src/Steergen.Core/Generation/KiroGenerationService.cs
+- src/Steergen.Core/Targets/Kiro/KiroDocumentModel.cs
+- src/Steergen.Core/Targets/Kiro/KiroInclusionMapper.cs
+- src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs
+- src/Steergen.Core/Targets/Kiro/KiroTargetOptions.cs
+- src/Steergen.Core/Targets/TargetRegistry.cs (added KnownTargets + RegisterBuiltins)
+- src/Steergen.Core/Model/SteeringConfiguration.cs (added FormatOptions docs for Kiro)
+- src/Steergen.Templates/Scriban/kiro/document.scriban
+- tests/Steergen.Cli.IntegrationTests/RunKiroCommandTests.cs
+- tests/Steergen.Core.PropertyTests/Generation/KiroRenderingProperties.cs
+- tests/Steergen.Core.UnitTests/Targets/KiroTargetComponentTests.cs
+- specs/001-steering-doc-transform/tasks.md
+**Learnings**:
+- KiroTargetComponent generates one file per source document (not partitioned like Speckit)
+- Deprecated rules are filtered at document level using doc.Rules (not model.Rules)
+- Kiro inclusion modes: always (default), fileMatch, auto - set via TargetConfiguration.FormatOptions
+- AppliesTo globs on rules auto-infer fileMatch inclusion mode
+- TargetRegistry.RegisterBuiltins(ITemplateProvider) registers both Speckit and Kiro targets
+- KiroGenerationService mirrors SpeckitGenerationService pattern
+- The deprecated="true" attribute format (not a separate :::deprecated block) is the parser-supported syntax
+- All 60 tests pass (23 property, 26 unit, 11 integration)
+---
+
+## Iteration 7 - US3 Agent Target Files
+**User Story**: US3 - Generate target-specific agent instruction files
+**Tasks Completed**:
+- [x] T037: AgentTargetDocument, AgentTargetMetadata shared abstractions
+- [x] T038: CopilotAgentTargetComponent + copilot.agent.scriban template
+- [x] T039: KiroAgentTargetComponent + kiro.agent.scriban template
+- [x] T040: TargetGenerationException, TargetRegistry updated, ExitCodeMapper updated
+- [x] T035: AgentTargetSemanticParityTests (4 unit tests)
+- [x] T036: RunAgentTargetsCommandTests (7 integration tests)
+**Files created/modified**:
+- src/Steergen.Core/Targets/Agents/AgentTargetDocument.cs
+- src/Steergen.Core/Targets/Agents/AgentTargetMetadata.cs
+- src/Steergen.Core/Targets/Agents/AgentDocumentModels.cs
+- src/Steergen.Core/Targets/Agents/CopilotAgentTargetComponent.cs
+- src/Steergen.Core/Targets/Agents/KiroAgentTargetComponent.cs
+- src/Steergen.Core/Generation/TargetGenerationException.cs
+- src/Steergen.Core/Generation/CopilotAgentGenerationService.cs
+- src/Steergen.Core/Generation/KiroAgentGenerationService.cs
+- src/Steergen.Core/Targets/TargetRegistry.cs (added CopilotAgent + KiroAgent)
+- src/Steergen.Cli/Composition/ExitCodeMapper.cs (added TargetGenerationException mapping)
+- src/Steergen.Templates/Scriban/agents/copilot.agent.scriban
+- src/Steergen.Templates/Scriban/agents/kiro.agent.scriban
+- tests/Steergen.Core.UnitTests/Targets/AgentTargetSemanticParityTests.cs
+- tests/Steergen.Cli.IntegrationTests/RunAgentTargetsCommandTests.cs
+**Learnings**:
+- Copilot agent target produces a single copilot-instructions.md with all active rule prose
+- Kiro agent target produces per-document .md files with YAML frontmatter
+- TargetGenerationException maps to exit code 3 (GenerationError) in ExitCodeMapper
+- RequiredMetadata keys checked before rendering; missing key throws TargetGenerationException
+- All 71 tests pass (23 property, 30 unit, 18 integration)
+---

@@ -1,4 +1,5 @@
 using Steergen.Core.Configuration;
+using Steergen.Core.Generation;
 
 namespace Steergen.Cli.Composition;
 
@@ -15,6 +16,7 @@ public static class ExitCodeMapper
         return ex switch
         {
             ConfigWriteConflictException => ConflictError,
+            TargetGenerationException => GenerationError,
             InvalidOperationException => ConfigurationError,
             _ => GenerationError,
         };

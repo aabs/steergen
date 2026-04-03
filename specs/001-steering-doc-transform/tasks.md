@@ -105,15 +105,15 @@
 
 ### Tests for User Story 3 (MANDATORY) ✅
 
-- [ ] T035 [P] [US3] Add semantic-parity tests across Copilot and Kiro agent outputs in `tests/Steergen.Core.UnitTests/Targets/AgentTargetSemanticParityTests.cs`
-- [ ] T036 [P] [US3] Add integration tests for agent-target metadata validation and exit code 3 failures in `tests/Steergen.Cli.IntegrationTests/RunAgentTargetsCommandTests.cs`
+- [x] T035 [P] [US3] Add semantic-parity tests across Copilot and Kiro agent outputs in `tests/Steergen.Core.UnitTests/Targets/AgentTargetSemanticParityTests.cs`
+- [x] T036 [P] [US3] Add integration tests for agent-target metadata validation and exit code 3 failures in `tests/Steergen.Cli.IntegrationTests/RunAgentTargetsCommandTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T037 [P] [US3] Implement shared agent-target document abstractions in `src/Steergen.Core/Targets/Agents/AgentTargetDocument.cs` and `src/Steergen.Core/Targets/Agents/AgentTargetMetadata.cs`
-- [ ] T038 [P] [US3] Implement the Copilot agent renderer and template in `src/Steergen.Core/Targets/Agents/CopilotAgentTargetComponent.cs` and `src/Steergen.Templates/Scriban/agents/copilot.agent.scriban`
-- [ ] T039 [P] [US3] Implement the Kiro agent renderer and template in `src/Steergen.Core/Targets/Agents/KiroAgentTargetComponent.cs` and `src/Steergen.Templates/Scriban/agents/kiro.agent.scriban`
-- [ ] T040 [US3] Register agent targets and generation-error handling in `src/Steergen.Core/Targets/TargetRegistry.cs` and `src/Steergen.Core/Generation/TargetGenerationException.cs`
+- [x] T037 [P] [US3] Implement shared agent-target document abstractions in `src/Steergen.Core/Targets/Agents/AgentTargetDocument.cs` and `src/Steergen.Core/Targets/Agents/AgentTargetMetadata.cs`
+- [x] T038 [P] [US3] Implement the Copilot agent renderer and template in `src/Steergen.Core/Targets/Agents/CopilotAgentTargetComponent.cs` and `src/Steergen.Templates/Scriban/agents/copilot.agent.scriban`
+- [x] T039 [P] [US3] Implement the Kiro agent renderer and template in `src/Steergen.Core/Targets/Agents/KiroAgentTargetComponent.cs` and `src/Steergen.Templates/Scriban/agents/kiro.agent.scriban`
+- [x] T040 [US3] Register agent targets and generation-error handling in `src/Steergen.Core/Targets/TargetRegistry.cs` and `src/Steergen.Core/Generation/TargetGenerationException.cs`
 
 **Checkpoint**: User Story 3 independently generates platform-specific agent files from the shared steering model.
 

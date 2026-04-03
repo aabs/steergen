@@ -1,0 +1,12 @@
+---
+{{ if name -}}
+name: {{ name }}
+{{ end -}}
+description: {{ description }}
+---
+{{- for rule in rules }}
+{{ rule.primary_text }}
+{{ if rule.explanatory_text -}}
+{{ rule.explanatory_text }}
+{{ end -}}
+{{- end }}

@@ -7,6 +7,8 @@ public static class TargetRegistry
     {
         public const string Speckit = "speckit";
         public const string Kiro = "kiro";
+        public const string CopilotAgent = "copilot-agent";
+        public const string KiroAgent = "kiro-agent";
     }
 
     private static readonly Dictionary<string, ITargetComponent> Components =
@@ -26,12 +28,14 @@ public static class TargetRegistry
     }
 
     /// <summary>
-    /// Registers all built-in targets (Speckit, Kiro). Safe to call once at startup.
+    /// Registers all built-in targets (Speckit, Kiro, CopilotAgent, KiroAgent). Safe to call once at startup.
     /// </summary>
     public static void RegisterBuiltins(ITemplateProvider templateProvider)
     {
         Register(new Speckit.SpeckitTargetComponent(templateProvider));
         Register(new Kiro.KiroTargetComponent(templateProvider));
+        Register(new Agents.CopilotAgentTargetComponent(templateProvider));
+        Register(new Agents.KiroAgentTargetComponent(templateProvider));
     }
 
     public static IReadOnlyList<ITargetComponent> GetAll()
