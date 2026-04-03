@@ -45,3 +45,5 @@
 - Added CLI execution and target-registration requirements, including `run` default-all-target behavior and `target add` folder initialization/idempotency semantics.
 - Added Non-Functional Requirements for a single YAML configuration source-of-truth, CLI/manual config edit support, VCS-friendly config size, and separate lock-file handling when needed.
 - Added Non-Functional Requirements for shell compatibility (bash, sh, zsh, PowerShell 7+, fish, DOS shells) and OS compatibility (Linux, macOS, Windows).
+- Added Non-Functional Requirement for portable executable distribution: one universal self-contained executable that runs across all supported OS platforms with no external runtime dependencies.
+- Added Non-Functional Requirements for minimal executable size (trimming, dead code elimination) and AOT/NGEN optimization (conditioned to maintain compatibility with single portable artifact requirement).
