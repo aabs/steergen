@@ -422,3 +422,34 @@ Started: 2026-04-03 16:49:34
 - Collection spread expression `[..existing, entry]` is ambiguous without explicit type target; use `new List<T>(existing) { entry }` instead
 - Adding optional parameters before CancellationToken requires callers to use named argument `cancellationToken:` to avoid positional binding errors
 ---
+
+---
+## Iteration 5 - 2026-04-03T08:22:59Z
+**User Story**: Final Phase - T075-T080 (all remaining tasks)
+**Tasks Completed**: 
+- [x] T075: PublishPortable profile in Steergen.Cli.csproj + CI publish step
+- [x] T076: Executable size-budget check in CI release-gate + Benchmarks/README.md
+- [x] T077: <Optimize>true</Optimize> in Directory.Build.props (Release) + AOT/ReadyToRun decision matrix in release-checklist.md
+- [x] T078: ConstitutionReferenceResolutionTests.cs (9 unit tests: path safety, filename invariants, cross-target isolation, content partitioning, deterministic filenames)
+- [x] T079: MeasurementProtocolOptInTests.cs (9 integration tests: NFR-016 opt-in enforcement)
+- [x] T080: MeasurementProtocolReporter.cs + RunCommand --verbose/--debug flags with [measure] stderr output
+**Tasks Remaining in Story**: None - all tasks complete
+**Commit**: a8c7fe4
+**Files Changed**: 
+- src/Steergen.Cli/Steergen.Cli.csproj (PublishPortable profile)
+- src/Steergen.Cli/Commands/RunCommand.cs (--verbose, --debug, reporter)
+- src/Steergen.Cli/Diagnostics/MeasurementProtocolReporter.cs (new)
+- Directory.Build.props (<Optimize> for Release)
+- .github/workflows/ci.yml (publish + size-budget steps)
+- docs/release/release-checklist.md (AOT/ReadyToRun decision path)
+- tests/Steergen.Benchmarks/README.md (size budget section)
+- tests/Steergen.Core.UnitTests/Targets/ConstitutionReferenceResolutionTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/Measurement/MeasurementProtocolOptInTests.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T075-T080 marked [x])
+**Learnings**:
+- MeasurementProtocolReporter uses a constructor-time Stopwatch for total; MeasureAsync<T> wraps individual operations
+- RunCommand.RunAsync verbose/debug params default to false — all existing callers unaffected
+- ResolvedSteeringModel uses init-only properties (not positional record); use object initializer syntax
+- PublishPortable=true MSBuild property activates self-contained/ReadyToRun/single-file — cleaner than separate publish profiles
+- All 266 tests pass (37 property, 107 unit, 122 integration; +28 from this iteration)
+---
