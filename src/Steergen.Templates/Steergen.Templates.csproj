@@ -4,6 +4,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Scriban\**\*.scriban" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Steergen.Core\Steergen.Core.csproj" />
   </ItemGroup>
 

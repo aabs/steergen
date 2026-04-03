@@ -58,17 +58,17 @@
 
 ### Tests for User Story 1 (MANDATORY) ✅
 
-- [ ] T020 [P] [US1] Add run-to-Speckit integration tests using realistic governance fixtures in `tests/Steergen.Cli.IntegrationTests/RunSpeckitCommandTests.cs`
-- [ ] T021 [P] [US1] Add property tests for core-vs-domain partitioning and constitution-only output rules in `tests/Steergen.Core.PropertyTests/Generation/SpeckitPartitionProperties.cs`
-- [ ] T022 [P] [US1] Add Speckit golden tests covering overlay, profile, deprecation, and supersedes behavior in `tests/Steergen.Core.UnitTests/Targets/SpeckitTargetComponentTests.cs`
+- [x] T020 [P] [US1] Add run-to-Speckit integration tests using realistic governance fixtures in `tests/Steergen.Cli.IntegrationTests/RunSpeckitCommandTests.cs`
+- [x] T021 [P] [US1] Add property tests for core-vs-domain partitioning and constitution-only output rules in `tests/Steergen.Core.PropertyTests/Generation/SpeckitPartitionProperties.cs`
+- [x] T022 [P] [US1] Add Speckit golden tests covering overlay, profile, deprecation, and supersedes behavior in `tests/Steergen.Core.UnitTests/Targets/SpeckitTargetComponentTests.cs`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [P] [US1] Implement generation pipeline orchestration in `src/Steergen.Core/Generation/GenerationPipeline.cs`
-- [ ] T024 [P] [US1] Implement Speckit target mapping and rendering in `src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs` and `src/Steergen.Core/Targets/Speckit/SpeckitDocumentModel.cs`
-- [ ] T025 [P] [US1] Add Speckit Scriban templates for constitution and modular guidance in `src/Steergen.Templates/Scriban/speckit/constitution.scriban` and `src/Steergen.Templates/Scriban/speckit/module.scriban`
-- [ ] T026 [US1] Implement Speckit generation orchestration and output persistence service consumed by `run` in `src/Steergen.Core/Generation/SpeckitGenerationService.cs`
-- [ ] T027 [US1] Implement core-only constitution emission and domain-module splitting in `src/Steergen.Core/Generation/CoreGuidancePartitioner.cs`
+- [x] T023 [P] [US1] Implement generation pipeline orchestration in `src/Steergen.Core/Generation/GenerationPipeline.cs`
+- [x] T024 [P] [US1] Implement Speckit target mapping and rendering in `src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs` and `src/Steergen.Core/Targets/Speckit/SpeckitDocumentModel.cs`
+- [x] T025 [P] [US1] Add Speckit Scriban templates for constitution and modular guidance in `src/Steergen.Templates/Scriban/speckit/constitution.scriban` and `src/Steergen.Templates/Scriban/speckit/module.scriban`
+- [x] T026 [US1] Implement Speckit generation orchestration and output persistence service consumed by `run` in `src/Steergen.Core/Generation/SpeckitGenerationService.cs`
+- [x] T027 [US1] Implement core-only constitution emission and domain-module splitting in `src/Steergen.Core/Generation/CoreGuidancePartitioner.cs`
 
 **Checkpoint**: User Story 1 independently produces Speckit outputs and forms the MVP.
 

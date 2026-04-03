@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Steergen.Core\Steergen.Core.csproj" />
+    <ProjectReference Include="..\Steergen.Templates\Steergen.Templates.csproj" />
   </ItemGroup>
 
 </Project>

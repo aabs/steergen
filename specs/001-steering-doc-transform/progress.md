@@ -43,3 +43,46 @@ Started: 2026-04-03 16:49:34
 - TreatWarningsAsErrors is enabled globally - keep code warning-free
 ---
 
+
+---
+## Iteration 2 - 2026-04-03T06:02:18Z
+**User Story**: Phase 2 Foundational (Blocking Prerequisites)
+**Tasks Completed**: 
+- [x] T007: Parser property tests (Parsing/SteeringParserProperties.cs)
+- [x] T008: Overlay/profile determinism property tests (Merge/OverlayAndProfileProperties.cs)
+- [x] T009: Malicious-input validation tests (Security/MaliciousInputValidationTests.cs)
+- [x] T010: Optimistic config-write conflict tests (Configuration/OptimisticConfigWriterTests.cs)
+- [x] T011: Core document and rule model types (Model/SteeringDocument.cs, SteeringRule.cs)
+- [x] T012: Resolved-model, target-config, source-location types (Model/ResolvedSteeringModel.cs, SteeringConfiguration.cs, SourceLocation.cs)
+- [x] T013: Markdown/frontmatter parser with :::rule block support (Parsing/SteeringMarkdownParser.cs)
+- [x] T014: Validation pipeline and Diagnostic model (Validation/SteeringValidator.cs, Diagnostic.cs)
+- [x] T015: Overlay resolution, profile filtering, deterministic ordering (Merge/SteeringResolver.cs)
+- [x] T016: YAML config loader/writer with optimistic locking (Configuration/SteergenConfigLoader.cs, SteergenConfigWriter.cs, ConfigWriteConflictException.cs)
+- [x] T017: Target contract and deterministic registry (Targets/ITargetComponent.cs, TargetDescriptor.cs, TargetRegistry.cs)
+- [x] T018: CLI composition with System.CommandLine (Cli/Composition/CommandFactory.cs, ExitCodeMapper.cs; updated Program.cs)
+- [x] T019: Benchmark scaffolding for core pipeline hot paths (Benchmarks/CorePipelineBenchmarks.cs)
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 86428c5
+**Files Changed**: 
+- src/Steergen.Core/Model/{SteeringDocument,SteeringRule,ResolvedSteeringModel,SteeringConfiguration,SourceLocation}.cs
+- src/Steergen.Core/Parsing/SteeringMarkdownParser.cs
+- src/Steergen.Core/Validation/{Diagnostic,SteeringValidator}.cs
+- src/Steergen.Core/Merge/SteeringResolver.cs
+- src/Steergen.Core/Configuration/{SteergenConfigLoader,SteergenConfigWriter,ConfigWriteConflictException}.cs
+- src/Steergen.Core/Targets/{ITargetComponent,TargetDescriptor,TargetRegistry}.cs
+- src/Steergen.Cli/Composition/{CommandFactory,ExitCodeMapper}.cs
+- src/Steergen.Cli/Program.cs
+- tests/Steergen.Core.PropertyTests/Parsing/SteeringParserProperties.cs
+- tests/Steergen.Core.PropertyTests/Merge/OverlayAndProfileProperties.cs
+- tests/Steergen.Core.UnitTests/Security/MaliciousInputValidationTests.cs
+- tests/Steergen.Core.UnitTests/Configuration/OptimisticConfigWriterTests.cs
+- tests/Steergen.Benchmarks/CorePipelineBenchmarks.cs
+**Learnings**:
+- YamlDotNet CamelCase naming convention used for YAML deserialization
+- :::rule block syntax parsed with regex; attributes extracted as key=value pairs
+- SteeringMarkdownParser.Parse is a static method returning SteeringDocument
+- Optimistic locking uses SHA-256 of file content as ETag; ConfigWriteConflictException thrown on mismatch
+- TargetRegistry is a static class using ConcurrentDictionary; GetAll returns ordered by TargetId
+- ExitCodes: 0=success, 1=validation, 2=config, 3=generation, 5=conflict
+- CsCheck property tests run deterministically with seed-based shrinking
+---
