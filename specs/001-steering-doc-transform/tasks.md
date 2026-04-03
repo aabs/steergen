@@ -192,7 +192,7 @@
 
 ### Implementation for User Story 7
 
-- [ ] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Cli/Commands/RunCommand.cs`
+- [ ] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Core/Generation/GenerationPipeline.cs`
 - [ ] T056 [US7] Add CI workflow and release-gate documentation preserving stable and preview tag guidance in `.github/workflows/ci.yml` and `README.md`
 
 **Checkpoint**: User Story 7 independently supports CI gating and deterministic release verification.
@@ -252,7 +252,7 @@
 
 ### Implementation for User Story 10
 
-- [ ] T067 [US10] Implement the run command with explicit target scoping in `src/Steergen.Cli/Commands/RunCommand.cs`
+- [ ] T067 [US10] Extend the existing run command with explicit target scoping and registered-target selection behavior in `src/Steergen.Cli/Commands/RunCommand.cs`
 - [ ] T068 [US10] Implement target add/remove command handling and idempotent config mutation in `src/Steergen.Cli/Commands/TargetCommand.cs` and `src/Steergen.Core/Configuration/TargetRegistrationService.cs`
 
 **Checkpoint**: User Story 10 independently supports day-to-day generation and target registration workflows.
@@ -273,6 +273,8 @@
 - [ ] T076 [P] Add trimming and executable-size budget verification checks in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
 - [ ] T077 [P] Add optimization-mode verification (AOT/ReadyToRun decision path) in `docs/release/release-checklist.md` and `Directory.Build.props`
 - [ ] T078 [P] Add cross-target include/reference path resolution tests for constitution modular references in `tests/Steergen.Core.UnitTests/Targets/ConstitutionReferenceResolutionTests.cs`
+- [ ] T079 [P] Add integration tests that validate measurement protocol routines for SC-001/SC-005 only execute when `--verbose` or `--debug` is enabled, and remain disabled in default mode, in `tests/Steergen.Cli.IntegrationTests/Measurement/MeasurementProtocolOptInTests.cs`
+- [ ] T080 Implement timing-measurement protocol instrumentation for SC-001/SC-005 as opt-in diagnostics routed to stderr and gated behind verbose/debug flags in `src/Steergen.Cli/Diagnostics/MeasurementProtocolReporter.cs` and `src/Steergen.Cli/Commands/RunCommand.cs`
 
 ---
 
@@ -296,7 +298,7 @@
 - **US7 (P7)**: Starts after Foundational; becomes most valuable once run and validate paths exist
 - **US8 (P8)**: Starts after Foundational; depends on target registration metadata and layout rules
 - **US9 (P9)**: Starts after Foundational; depends on configuration write support and release/version rules
-- **US10 (P10)**: Starts after Foundational; depends on configuration mutation and registered target behavior
+- **US10 (P10)**: Starts after Foundational; depends on configuration mutation, registered target behavior, and the baseline run generation flow delivered in earlier stories
 
 ### Within Each User Story
 

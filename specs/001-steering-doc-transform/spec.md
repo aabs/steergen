@@ -327,6 +327,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **NFR-013 (Scalability Envelope)**: The tool MUST define and document a validated support envelope of up to 1,000 steering documents and 10,000 rules per execution. For inputs beyond this envelope, the tool MUST degrade gracefully by issuing a clear warning and either continuing best-effort processing or failing safely with actionable diagnostics.
 - **NFR-014 (Preview Release Versioning for Testing)**: During testing, preview releases MAY be issued using SemVer pre-release tags in the form `vMAJOR.MINOR.PATCH-previewN` (for example `v1.2.3-preview4`). Stable production releases MUST continue to use `vMAJOR.MINOR.PATCH`.
 - **NFR-015 (Plausible Test Rule Corpora)**: Where practical, automated tests, golden files, and example fixtures MUST use plausible constitution and steering rules representative of real-world governance content rather than toy placeholders. Synthetic edge-case inputs MAY still be used when required to isolate parser, validation, security, or failure-mode behavior.
+- **NFR-016 (Opt-In Measurement Protocol)**: Measurement routines used to validate time-based success criteria (including SC-001 and SC-005) MUST be opt-in and MUST NOT execute during normal command operation. These routines MAY execute only when verbose diagnostics are explicitly enabled (for example `--verbose` or `--debug`) and MUST emit their measurement output to stderr.
 
 ### Key Entities
 

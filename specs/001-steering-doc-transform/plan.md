@@ -16,7 +16,7 @@ Build a deterministic, security-hardened .NET 10/C# 14 CLI (`steergen`) that par
 **Target Platform**: Cross-platform CLI on Linux, macOS, Windows  
 **Project Type**: CLI application + domain library  
 **Performance Goals**: Meet SC-006 baseline (100 docs / 1,000 rules under 5s), preserve scalability envelope behavior up to 1,000 docs / 10,000 rules  
-**Constraints**: Deterministic outputs, no runtime plugin loading, core-only `constitution.md` main artifact, secure fail-closed behavior, single portable executable distribution goal  
+**Constraints**: Deterministic outputs, no runtime plugin loading, core-only `constitution.md` main artifact, secure fail-closed behavior, single portable executable distribution goal, and opt-in-only measurement protocol execution gated behind `--verbose`/`--debug`  
 **Scale/Scope**: Multiple target platforms, many users, large steering corpora, in-repo additive target growth without refactoring existing targets
 
 ## Constitution Check
