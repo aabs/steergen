@@ -1,3 +1,7 @@
-// TODO: implement CLI commands using System.CommandLine
-Console.WriteLine("steergen v0.1.0 – not yet implemented");
+using System.CommandLine;
+using Steergen.Cli.Composition;
+
+var rootCommand = CommandFactory.CreateRootCommand();
+var parseResult = rootCommand.Parse(args);
+return await parseResult.InvokeAsync(new InvocationConfiguration()).ConfigureAwait(false);
 

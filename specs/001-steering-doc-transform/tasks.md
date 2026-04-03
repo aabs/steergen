@@ -32,19 +32,19 @@
 
 **⚠️ CRITICAL**: No user story work starts until this phase is complete.
 
-- [ ] T007 [P] Add parser property tests for Markdown/frontmatter/rule-block invariants in `tests/Steergen.Core.PropertyTests/Parsing/SteeringParserProperties.cs`
-- [ ] T008 [P] Add overlay and profile-filter determinism property tests in `tests/Steergen.Core.PropertyTests/Merge/OverlayAndProfileProperties.cs`
-- [ ] T009 [P] Add malicious-input and prompt-injection-style validation tests in `tests/Steergen.Core.UnitTests/Security/MaliciousInputValidationTests.cs`
-- [ ] T010 [P] Add optimistic config-write conflict tests in `tests/Steergen.Core.UnitTests/Configuration/OptimisticConfigWriterTests.cs`
-- [ ] T011 [P] Implement core document and rule model types in `src/Steergen.Core/Model/SteeringDocument.cs` and `src/Steergen.Core/Model/SteeringRule.cs`
-- [ ] T012 [P] Implement resolved-model, target-config, and source-location types in `src/Steergen.Core/Model/ResolvedSteeringModel.cs`, `src/Steergen.Core/Model/SteeringConfiguration.cs`, and `src/Steergen.Core/Model/SourceLocation.cs`
-- [ ] T013 Implement the Markdown/frontmatter parser in `src/Steergen.Core/Parsing/SteeringMarkdownParser.cs`
-- [ ] T014 Implement the validation pipeline and diagnostic model in `src/Steergen.Core/Validation/SteeringValidator.cs` and `src/Steergen.Core/Validation/Diagnostic.cs`
-- [ ] T015 Implement overlay resolution, profile filtering, and deterministic ordering in `src/Steergen.Core/Merge/SteeringResolver.cs`
-- [ ] T016 Implement YAML configuration load/write with optimistic locking in `src/Steergen.Core/Configuration/SteergenConfigLoader.cs` and `src/Steergen.Core/Configuration/SteergenConfigWriter.cs`
-- [ ] T017 Implement the built-in target contract and deterministic registry in `src/Steergen.Core/Targets/ITargetComponent.cs`, `src/Steergen.Core/Targets/TargetRegistry.cs`, and `src/Steergen.Core/Targets/TargetDescriptor.cs`
-- [ ] T018 Implement shared command composition, quiet/verbose diagnostics, and exit-code mapping in `src/Steergen.Cli/Program.cs`, `src/Steergen.Cli/Composition/CommandFactory.cs`, and `src/Steergen.Cli/Composition/ExitCodeMapper.cs`
-- [ ] T019 [P] Add benchmark scaffolding for parser, resolver, and generation hot paths in `tests/Steergen.Benchmarks/CorePipelineBenchmarks.cs`
+- [x] T007 [P] Add parser property tests for Markdown/frontmatter/rule-block invariants in `tests/Steergen.Core.PropertyTests/Parsing/SteeringParserProperties.cs`
+- [x] T008 [P] Add overlay and profile-filter determinism property tests in `tests/Steergen.Core.PropertyTests/Merge/OverlayAndProfileProperties.cs`
+- [x] T009 [P] Add malicious-input and prompt-injection-style validation tests in `tests/Steergen.Core.UnitTests/Security/MaliciousInputValidationTests.cs`
+- [x] T010 [P] Add optimistic config-write conflict tests in `tests/Steergen.Core.UnitTests/Configuration/OptimisticConfigWriterTests.cs`
+- [x] T011 [P] Implement core document and rule model types in `src/Steergen.Core/Model/SteeringDocument.cs` and `src/Steergen.Core/Model/SteeringRule.cs`
+- [x] T012 [P] Implement resolved-model, target-config, and source-location types in `src/Steergen.Core/Model/ResolvedSteeringModel.cs`, `src/Steergen.Core/Model/SteeringConfiguration.cs`, and `src/Steergen.Core/Model/SourceLocation.cs`
+- [x] T013 Implement the Markdown/frontmatter parser in `src/Steergen.Core/Parsing/SteeringMarkdownParser.cs`
+- [x] T014 Implement the validation pipeline and diagnostic model in `src/Steergen.Core/Validation/SteeringValidator.cs` and `src/Steergen.Core/Validation/Diagnostic.cs`
+- [x] T015 Implement overlay resolution, profile filtering, and deterministic ordering in `src/Steergen.Core/Merge/SteeringResolver.cs`
+- [x] T016 Implement YAML configuration load/write with optimistic locking in `src/Steergen.Core/Configuration/SteergenConfigLoader.cs` and `src/Steergen.Core/Configuration/SteergenConfigWriter.cs`
+- [x] T017 Implement the built-in target contract and deterministic registry in `src/Steergen.Core/Targets/ITargetComponent.cs`, `src/Steergen.Core/Targets/TargetRegistry.cs`, and `src/Steergen.Core/Targets/TargetDescriptor.cs`
+- [x] T018 Implement shared command composition, quiet/verbose diagnostics, and exit-code mapping in `src/Steergen.Cli/Program.cs`, `src/Steergen.Cli/Composition/CommandFactory.cs`, and `src/Steergen.Cli/Composition/ExitCodeMapper.cs`
+- [x] T019 [P] Add benchmark scaffolding for parser, resolver, and generation hot paths in `tests/Steergen.Benchmarks/CorePipelineBenchmarks.cs`
 
 **Checkpoint**: Core pipeline and CLI infrastructure are ready for independent story delivery.
 
