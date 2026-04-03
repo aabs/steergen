@@ -50,6 +50,9 @@ default strategy for domain invariants, parsers, transforms, merge rules,
 ordering guarantees, and serialization behavior. Example-based unit tests MAY be
 used only where properties are not practical, and must be explicitly justified.
 Coverage MUST include invariants across broad generated input spaces.
+Where practical, golden, integration, and end-to-end test corpora MUST use
+plausible constitution and steering rules representative of real-world
+governance documents rather than toy placeholder-only fixtures.
 
 Rationale: PBT validates behavior classes and invariants more effectively than
 narrow examples, reducing latent defects in transformation tooling.

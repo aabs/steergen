@@ -326,6 +326,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **NFR-012 (Reliability Scope for v1)**: v1 does not define additional service-level reliability targets (for example uptime, MTTR, or error-budget SLOs) beyond the explicit command correctness, deterministic output, non-destructive behavior, and safe-failure requirements already specified in this document.
 - **NFR-013 (Scalability Envelope)**: The tool MUST define and document a validated support envelope of up to 1,000 steering documents and 10,000 rules per execution. For inputs beyond this envelope, the tool MUST degrade gracefully by issuing a clear warning and either continuing best-effort processing or failing safely with actionable diagnostics.
 - **NFR-014 (Preview Release Versioning for Testing)**: During testing, preview releases MAY be issued using SemVer pre-release tags in the form `vMAJOR.MINOR.PATCH-previewN` (for example `v1.2.3-preview4`). Stable production releases MUST continue to use `vMAJOR.MINOR.PATCH`.
+- **NFR-015 (Plausible Test Rule Corpora)**: Where practical, automated tests, golden files, and example fixtures MUST use plausible constitution and steering rules representative of real-world governance content rather than toy placeholders. Synthetic edge-case inputs MAY still be used when required to isolate parser, validation, security, or failure-mode behavior.
 
 ### Key Entities
 
@@ -373,6 +374,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **SC-019**: `steergen run` without explicit targets generates outputs for 100% of registered targets in default-scope test scenarios.
 - **SC-020**: `steergen target add` correctly registers targets and initializes missing target folders with idempotent behavior in 100% of registration lifecycle tests.
 - **SC-021**: For input sets up to 1,000 steering documents and 10,000 rules, `steergen` completes processing without correctness regressions in 100% of scalability-envelope test scenarios; for inputs beyond this envelope, the tool emits a clear warning or safe-failure diagnostic in 100% of tested cases.
+- **SC-022**: In 100% of audited golden, integration, and end-to-end test suites where realistic content is practical, test rule corpora use plausible constitution or steering guidance representative of real-world authoring patterns rather than placeholder-only content.
 
 ## Assumptions
 

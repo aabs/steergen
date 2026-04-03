@@ -134,6 +134,7 @@
 
 - Define core invariants to validate with property-based testing.
 - Specify which example-based tests are still needed and why properties are insufficient there.
+- Where practical, define golden, integration, and end-to-end fixtures using plausible real-world constitution or steering rules rather than toy placeholders.
 - Define required security test scenarios, including malicious input and prompt-injection-style payload validation.
 
 ## Assumptions

@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: Tests are MANDATORY. Follow Red-Green-Refactor and author tests before implementation. Prefer property-based testing (CsCheck + xUnit) for invariants.
+**Tests**: Tests are MANDATORY. Follow Red-Green-Refactor and author tests before implementation. Prefer property-based testing (CsCheck + xUnit) for invariants. Where practical, use plausible real-world constitution/steering rules in fixtures instead of toy placeholders.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 

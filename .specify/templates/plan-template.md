@@ -35,6 +35,7 @@
 - Design preserves deterministic behavior for identical inputs/configuration.
 - Red-Green-Refactor plan is explicit, with tests authored before implementation.
 - Property-based tests (CsCheck + xUnit) are defined for domain invariants.
+- Test suites use plausible real-world constitution/steering rules where practical, with synthetic fixtures reserved for isolated edge and failure cases.
 - Security plan includes misuse/abuse analysis and prompt-injection-style payload resistance tests.
 - Performance budgets and validation approach are defined for expected scale.
 - CLI UX and error semantics are explicit and consistent.

@@ -17,7 +17,7 @@
 
 ## Decision 4: PBT-first testing stack
 - Decision: Use CsCheck + xUnit for core invariants first, with targeted example tests and NSubstitute only where seams require mocking.
-- Rationale: Property-based testing best fits parser/merge/generation invariants and deterministic transformation guarantees.
+- Rationale: Property-based testing best fits parser/merge/generation invariants and deterministic transformation guarantees. Where practical, golden and integration tests should use plausible real-world constitution/steering rules so fixture corpora reflect actual governance authoring patterns.
 - Alternatives considered: Example-only unit testing. Rejected because it under-covers edge/input spaces and weakens invariance guarantees.
 
 ## Decision 5: Performance validation with BenchmarkDotNet

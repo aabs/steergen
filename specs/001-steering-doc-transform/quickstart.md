@@ -50,6 +50,8 @@ steergen update --version 1.2.3
 dotnet test
 ```
 
+- Test fixtures should use plausible constitution and steering rules representative of real-world governance content where practical.
+
 ## Run benchmarks
 ```bash
 dotnet run -c Release --project tests/Steergen.Benchmarks
