@@ -187,13 +187,13 @@
 
 ### Tests for User Story 7 (MANDATORY) ✅
 
-- [ ] T053 [P] [US7] Add CI workflow regression tests for validate/run exit codes and deterministic outputs in `tests/Steergen.Cli.IntegrationTests/CiWorkflowRegressionTests.cs`
-- [ ] T054 [P] [US7] Add scalability-envelope benchmarks for 100 docs/1,000 rules and warning behavior beyond the envelope in `tests/Steergen.Benchmarks/ScalabilityEnvelopeBenchmarks.cs`
+- [x] T053 [P] [US7] Add CI workflow regression tests for validate/run exit codes and deterministic outputs in `tests/Steergen.Cli.IntegrationTests/CiWorkflowRegressionTests.cs`
+- [x] T054 [P] [US7] Add scalability-envelope benchmarks for 100 docs/1,000 rules and warning behavior beyond the envelope in `tests/Steergen.Benchmarks/ScalabilityEnvelopeBenchmarks.cs`
 
 ### Implementation for User Story 7
 
-- [ ] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Core/Generation/GenerationPipeline.cs`
-- [ ] T056 [US7] Add CI workflow and release-gate documentation preserving stable and preview tag guidance in `.github/workflows/ci.yml` and `README.md`
+- [x] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Core/Generation/GenerationPipeline.cs`
+- [x] T056 [US7] Add CI workflow and release-gate documentation preserving stable and preview tag guidance in `.github/workflows/ci.yml` and `README.md`
 
 **Checkpoint**: User Story 7 independently supports CI gating and deterministic release verification.
 

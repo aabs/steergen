@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"          # stable: v1.2.3
+      - "v[0-9]+.[0-9]+.[0-9]+-preview*"  # preview: v1.2.3-preview1
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore specgen.slnx
+
+      - name: Build
+        run: dotnet build specgen.slnx --no-restore --no-incremental -c Release
+
+      - name: Test
+        run: dotnet test specgen.slnx --no-build -c Release --logger "trx;LogFileName=results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/*.trx"
+
+  validate-gate:
+    name: Validate Steering Docs
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build CLI
+        run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
+
+      # Exit code contract: 0 = clean, 1 = validation errors, 2 = config/IO error
+      - name: Validate steering documents
+        run: |
+          dotnet run --project src/Steergen.Cli --no-build -c Release -- \
+            validate \
+            --global specs/ \
+            --quiet
+        # Exits 1 if any steering document has schema or rule errors; CI fails the PR.
+
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build CLI
+        run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
+
+      - name: Verify tag matches stable or preview convention
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Stable release: $TAG"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview[0-9]+$ ]]; then
+            echo "Preview release: $TAG"
+          else
+            echo "ERROR: Tag '$TAG' does not match stable (vX.Y.Z) or preview (vX.Y.Z-previewN) format."
+            exit 1
+          fi
+
+      - name: Run generation and verify deterministic manifest
+        run: |
+          OUT=$(mktemp -d)
+          dotnet run --project src/Steergen.Cli --no-build -c Release -- \
+            run \
+            --global specs/ \
+            --output "$OUT" \
+            --target speckit
+          if [ ! -f "$OUT/generation-manifest.json" ]; then
+            echo "ERROR: generation-manifest.json not produced"
+            exit 1
+          fi
+          echo "Manifest produced:"
+          cat "$OUT/generation-manifest.json"
+          SUCCESS=$(jq -r '.success' "$OUT/generation-manifest.json")
+          if [ "$SUCCESS" != "true" ]; then
+            echo "ERROR: generation manifest reports failure"
+            exit 1
+          fi

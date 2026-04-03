@@ -18,6 +18,7 @@ public sealed class SpeckitGenerationService
         IReadOnlyList<string> activeProfiles,
         string outputPath,
         ITemplateProvider templateProvider,
+        bool writeManifest = false,
         CancellationToken cancellationToken = default)
     {
         var globalDocs = LoadDocumentsFromDirectory(globalRoot);
@@ -37,7 +38,8 @@ public sealed class SpeckitGenerationService
             activeProfiles,
             [targetComponent],
             [targetConfig],
-            cancellationToken);
+            cancellationToken,
+            manifestOutputPath: writeManifest ? outputPath : null);
     }
 
     private static IReadOnlyList<SteeringDocument> LoadDocumentsFromDirectory(string root)

@@ -245,3 +245,29 @@ Started: 2026-04-03 16:49:34
 - ProfileOption uses AllowMultipleArgumentsPerToken=false + ZeroOrMore arity for --profile multi-value
 - All 98 tests pass (37 property, 30 unit, 31 integration)
 ---
+
+---
+## Iteration 10 - 2026-04-03T07:03:40Z
+**User Story**: US-006 Extend the Tool with a New Output Target
+**Tasks Completed**: 
+- [x] T049: TargetRegistryCompatibilityTests.cs (7 unit tests: metadata round-trip, built-in flag, manifest file, sorted manifest, deprecated exclusion, side-by-side Speckit/Fixture, error on missing output path)
+- [x] T050: RunFixtureTargetCommandTests.cs (7 integration tests: success, manifest file, known IDs, sorted, no empty lines, missing dir = empty manifest, only manifest file produced)
+- [x] T051: FixtureTargetComponent.cs - writes sorted active rule IDs to fixture-manifest.txt; no template provider required
+- [x] T052: TargetRegistrationMetadata.cs + docs/targets/additive-targets.md - additive registration metadata record and extension guide
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 9c7976c
+**Files Changed**: 
+- src/Steergen.Core/Targets/Fixtures/FixtureTargetComponent.cs (new)
+- src/Steergen.Core/Generation/FixtureGenerationService.cs (new)
+- src/Steergen.Core/Targets/TargetRegistrationMetadata.cs (new)
+- docs/targets/additive-targets.md (new)
+- tests/Steergen.Core.UnitTests/Targets/TargetRegistryCompatibilityTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/RunFixtureTargetCommandTests.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T049-T052 marked done)
+**Learnings**:
+- FixtureTargetComponent needs no ITemplateProvider - purely model-driven, writes fixture-manifest.txt
+- Unit tests in Steergen.Core.UnitTests cannot reference Steergen.Templates (no project reference); use inline stub providers
+- xUnit2029: use Assert.DoesNotContain(collection, predicate) instead of Assert.Empty(LINQ query)
+- TargetRegistrationMetadata.FromDescriptor is a convenient factory for wrapping existing TargetDescriptors
+- All 113 tests pass (37 property, 38 unit, 38 integration)
+---
