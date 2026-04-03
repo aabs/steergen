@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "Steering Document Transformation Tool"
 
+## Clarifications
+
+### Session 2026-04-03
+
+- Q: What logging and diagnostic output should the `steergen` tool provide? → A: Silent by default; optional `--verbose`/`--debug` diagnostics.
+- Q: How should `steergen` handle concurrent modifications to the configuration file? → A: Use optimistic locking with conflict detection before write; fail safely with a clear conflict error.
+- Q: What is the security and secrets-handling design for the configuration file? → A: No secrets are supported in the config file for v1.
+- Q: What reliability target model should apply for v1? → A: No additional explicit reliability SLO targets beyond existing command correctness and failure handling requirements.
+- Q: Should scalability limits be formalized as a supported envelope? → A: Yes; define a validated support envelope with graceful warning/failure behavior beyond it.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Compile Steering Documents to Speckit Artefacts (Priority: P1)
@@ -220,6 +230,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **FR-014**: The tool MUST support an `inspect` command that outputs the fully resolved steering model as JSON to stdout.
 - **FR-015**: The tool MUST read configuration from a single YAML-based configuration file (`steergen.config.yaml`) in the working directory by default, overridable via `--config`.
 - **FR-016**: The tool MUST support CLI overrides `--profile`, `--target`, `--output`, and `--config` that take precedence over file-based configuration.
+- **FR-016-Config-Concurrency**: The tool MUST employ optimistic locking when modifying the configuration file: read the config at command start, apply the intended modification in memory, and validate that the config file has not been externally modified before writing the updated config. If the config file has been modified by another process since the read, the tool MUST report a clear conflict error message and exit non-zero without writing changes, enabling the user to manually resolve the conflict.
 - **FR-017**: The tool MUST implement a stable built-in target contract and deterministic registration model that allows new output targets to be added without refactoring existing core pipeline components or existing target components.
 - **FR-018**: The tool MUST generate artefacts for all enabled targets defined in configuration; disabled targets MUST be skipped.
 - **FR-019**: The tool MUST produce deterministic output: identical inputs MUST always produce identical outputs.
@@ -310,6 +321,10 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **NFR-007 (Portable Executable Distribution)**: Each release MUST provide a single portable executable file that runs without modification across all supported operating systems (Linux, macOS, Windows). The executable MUST be self-contained with no external runtime dependencies beyond the OS itself, enabling users to download one file and run it immediately on any supported platform without additional setup or installation steps.
 - **NFR-008 (Minimal Executable Size)**: The release executable MUST be trimmed before or during publication to achieve the minimum practical size. Assembly trimming, dead code elimination, and other size-reduction techniques MUST be applied during the build process.
 - **NFR-009 (AOT Compilation or Optimized Runtime)**: The executable SHOULD employ AOT (Ahead-of-Time) compilation or NGEN (Native Image Generator) optimization prior to or during release to reduce startup time and memory footprint, provided that such optimization does not conflict with the single portable artifact requirement (NFR-007). If platform-specific AOT compilation would violate the single portable artifact constraint, cross-platform optimization techniques (such as ReadyToRun or trimming) MUST be used instead.
+- **NFR-010 (Logging and Diagnostics)**: The tool MUST operate silently by default (producing no output except for error messages, validation reports, and command results). The tool MUST support optional `--verbose` and `--debug` flags to enable diagnostic output for troubleshooting; diagnostic output MUST be sent to stderr to allow clean separation of normal output from diagnostic data.
+- **NFR-011 (Config Security Scope)**: The primary configuration file (`steergen.config.yaml`) MUST NOT contain secrets, credentials, tokens, or private keys in v1. Configuration content is limited to non-sensitive operational metadata; if future secret support is introduced, it MUST be handled through a separate mechanism.
+- **NFR-012 (Reliability Scope for v1)**: v1 does not define additional service-level reliability targets (for example uptime, MTTR, or error-budget SLOs) beyond the explicit command correctness, deterministic output, non-destructive behavior, and safe-failure requirements already specified in this document.
+- **NFR-013 (Scalability Envelope)**: The tool MUST define and document a validated support envelope of up to 1,000 steering documents and 10,000 rules per execution. For inputs beyond this envelope, the tool MUST degrade gracefully by issuing a clear warning and either continuing best-effort processing or failing safely with actionable diagnostics.
 
 ### Key Entities
 
@@ -356,12 +371,13 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **SC-018**: Template and metadata updates can be performed without changing CLI binary version in 100% of lifecycle regression tests.
 - **SC-019**: `steergen run` without explicit targets generates outputs for 100% of registered targets in default-scope test scenarios.
 - **SC-020**: `steergen target add` correctly registers targets and initializes missing target folders with idempotent behavior in 100% of registration lifecycle tests.
+- **SC-021**: For input sets up to 1,000 steering documents and 10,000 rules, `steergen` completes processing without correctness regressions in 100% of scalability-envelope test scenarios; for inputs beyond this envelope, the tool emits a clear warning or safe-failure diagnostic in 100% of tested cases.
 
 ## Assumptions
 
 - Steering documents are authored by engineers or governance practitioners who understand YAML frontmatter and the `:::rule` fenced block syntax; no GUI authoring interface is in scope.
 - The initial release targets Speckit, Kiro, and at least one agent-spec output target; additional built-in targets are additive extensibility points.
-- The tool runs on standard .NET-supported platforms (Windows, macOS, Linux); no additional runtime dependencies beyond .NET are assumed.
+- The tool runs on standard .NET-supported platforms (Windows, macOS, Linux) and is distributed as a self-contained portable executable with no additional runtime installation required.
 - Document encoding is UTF-8; other encodings are out of scope.
 - The tool consumes steering documents from the local filesystem; remote document sources (URLs, git repositories) are out of scope for v1.
 - The `speckit.all.md` consolidated output is always generated when the Speckit target is enabled; selective module output is a future enhancement.

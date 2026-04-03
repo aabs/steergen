@@ -32,7 +32,7 @@
 ## Notes
 
 - All items pass. Specification is ready for `/speckit.clarify` or `/speckit.plan`.
-- FR-001 through FR-066 map directly to acceptance scenarios in User Stories 1–10; FR-043-CLI explicitly requires binary name `steergen`.
+- Numbered FR sequence FR-001 through FR-066 remains covered by User Stories 1–10, with supplemental FRs for CLI naming and config concurrency behavior.
 - Success criteria SC-001 through SC-020 are measurable without reference to implementation technology.
 - Assumptions section clearly bounds v1 scope and now includes non-plugin, additive target extensibility constraints.
 - Added agent-spec target requirements and acceptance scenarios, including platform-specific format mapping and semantic equivalence across targets.
@@ -47,3 +47,6 @@
 - Added Non-Functional Requirements for shell compatibility (bash, sh, zsh, PowerShell 7+, fish, DOS shells) and OS compatibility (Linux, macOS, Windows).
 - Added Non-Functional Requirement for portable executable distribution: one universal self-contained executable that runs across all supported OS platforms with no external runtime dependencies.
 - Added Non-Functional Requirements for minimal executable size (trimming, dead code elimination) and AOT/NGEN optimization (conditioned to maintain compatibility with single portable artifact requirement).
+- Clarification session integrated: logging defaults/verbosity flags, optimistic config concurrency handling, and explicit no-secrets-in-config v1 scope.
+- Additional clarification integrated: v1 reliability SLOs are explicitly out of scope beyond already-defined correctness and failure-handling requirements.
+- Additional clarification integrated: explicit validated scalability envelope (1,000 docs / 10,000 rules) with graceful warning or safe-failure behavior beyond envelope.
