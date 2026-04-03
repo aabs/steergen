@@ -2,12 +2,12 @@
 
 ## Command Surface
 - `steergen init <project-root> --target <target>...`
-- `steergen update [--version <x.y.z>]`
-- `steergen run [--target <target>...]`
-- `steergen validate [--config <path>] [--profile <name>...]`
-- `steergen inspect [--config <path>] [--profile <name>...]`
-- `steergen target add <target-id>`
-- `steergen target remove <target-id>`
+- `steergen update [--config <path>] [--version <x.y.z>] [--preview]`
+- `steergen run [--config <path>] [--global <dir>] [--project <dir>] [--output <dir>] [--target <target>...] [--quiet]`
+- `steergen validate [--global <dir>] [--project <dir>] [--quiet]`
+- `steergen inspect [--global <dir>] [--project <dir>] [--profile <name>...]`
+- `steergen target add <target-id> [--config <path>]`
+- `steergen target remove <target-id> [--config <path>]`
 
 ## Exit Codes
 - `0`: success

@@ -16,17 +16,23 @@ steergen init . --target speckit --target kiro-ide
 
 ## Validate steering sources
 ```bash
-steergen validate --config steergen.config.yaml
+steergen validate --global steering/global --project steering/project
 ```
 
 ## Run generation (all registered targets)
 ```bash
-steergen run
+steergen run --global steering/global --project steering/project --output .steergen/out
 ```
 
 ## Run generation for selected targets
 ```bash
-steergen run --target speckit --target kiro-ide
+steergen run --global steering/global --project steering/project --output .steergen/out --target speckit --target kiro-ide
+```
+
+## Inspect resolved steering model as JSON
+```bash
+steergen inspect --global steering/global --project steering/project
+steergen inspect --global steering/global --project steering/project --profile production
 ```
 
 ## Register additional targets

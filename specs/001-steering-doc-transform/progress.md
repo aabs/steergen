@@ -351,3 +351,28 @@ Started: 2026-04-03 16:49:34
 - UpdateCommand writes status to Console.Error (stderr) matching other commands (init, inspect)
 - All 191 tests pass (37 property, 87 unit, 67 integration)
 ---
+
+---
+## Iteration 14 - 2026-04-03T08:03:50Z
+**User Story**: US-010 Execute Generation and Manage Target Registration via CLI
+**Tasks Completed**: 
+- [x] T066: TargetRegistrationConfigLockTests.cs (12 unit tests: add/remove/conflict/idempotency/missing-file)
+- [x] T065: RunAndTargetCommandsTests.cs (17 integration tests: run with --target, registered-targets from config, target add/remove idempotency)
+- [x] T067: RunCommand.cs (--config, --global, --project, --output, --target, --quiet; creates components on-demand, no static registry dependency)
+- [x] T068: TargetRegistrationService.cs (idempotent add/remove with optimistic locking) + TargetCommand.cs (target add/remove subcommands wired into CommandFactory)
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 2007728
+**Files Changed**: 
+- src/Steergen.Cli/Commands/RunCommand.cs (new)
+- src/Steergen.Cli/Commands/TargetCommand.cs (new)
+- src/Steergen.Core/Configuration/TargetRegistrationService.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (wired RunCommand + TargetCommand)
+- tests/Steergen.Core.UnitTests/Configuration/TargetRegistrationConfigLockTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/RunAndTargetCommandsTests.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T065-T068 marked done)
+**Learnings**:
+- RunCommand creates ITargetComponent instances on-demand (not via static TargetRegistry) - avoids InvalidOperationException on duplicate registration across tests
+- TargetRegistrationService returns a TargetRegistrationResult record indicating success, AlreadyPresent, NotPresent, or Fail - avoids exception-as-control-flow
+- TreatWarningsAsErrors is active; xUnit2031 (Where before Assert.Single) is a build error - use Assert.Single(collection, predicate) overload
+- All 217 tests pass (37 property, 98 unit, 82 integration)
+---

@@ -1,6 +1,64 @@
 # specgen
 a simple CLI tool to work with tool independent specification files
 
+## Quick Command Reference
+
+### `steergen init` — Bootstrap folder layout
+
+```sh
+steergen init <project-root> --target speckit --target kiro-ide
+```
+
+Creates `steering/global/`, `steering/project/`, and per-target output folders.  
+`--target` is repeatable. Idempotent: safe to re-run.
+
+### `steergen validate` — Gate on document correctness
+
+```sh
+steergen validate --global steering/global --project steering/project
+steergen validate --global steering/global --project steering/project --quiet
+```
+
+Reads all `*.md` files in both directories, parses frontmatter and rule blocks, and reports schema errors, duplicate IDs, invalid severities, and supersedes warnings.
+
+### `steergen run` — Generate target outputs
+
+```sh
+steergen run --global steering/global --project steering/project --output .steergen/out
+steergen run --global steering/global --project steering/project --output .steergen/out --target speckit
+steergen run --config steergen.config.yaml --quiet
+```
+
+Resolves overlays and profiles, then generates output for all registered targets (or the specified `--target` list). Writes a `generation-manifest.json` alongside output artefacts.
+
+### `steergen inspect` — View the resolved model as JSON
+
+```sh
+steergen inspect --global steering/global --project steering/project
+steergen inspect --global steering/global --project steering/project --profile production
+```
+
+Outputs the fully-resolved, profile-filtered steering model to stdout as JSON.
+
+### `steergen target add / remove` — Manage registered targets
+
+```sh
+steergen target add copilot-agent
+steergen target remove kiro-ide --config steergen.config.yaml
+```
+
+Idempotent: `add` is safe when the target is already registered. `remove` only updates the config and does not delete generated artefacts.
+
+### `steergen update` — Update template-pack version
+
+```sh
+steergen update
+steergen update --version 1.2.3
+steergen update --preview
+```
+
+Resolves latest compatible (`steergen update`), pins an exact version, or includes preview candidates with `--preview`.
+
 ## CI Integration
 
 ### Exit-code contract
@@ -17,7 +75,7 @@ a simple CLI tool to work with tool independent specification files
 Add a `validate` step to your pipeline to gate on document correctness:
 
 ```sh
-specgen validate --global <global-docs-dir> --project <project-docs-dir>
+steergen validate --global steering/global --project steering/project
 ```
 
 Exit code `1` blocks the build. Exit code `0` allows it to proceed.
@@ -28,8 +86,8 @@ The `run` command produces a `generation-manifest.json` alongside output artefac
 The manifest records SHA-256 hashes for every generated file and a `success` boolean.
 
 ```sh
-specgen run --global <global-docs-dir> --output <out-dir> --target speckit
-cat <out-dir>/generation-manifest.json
+steergen run --global steering/global --output .steergen/out --target speckit
+cat .steergen/out/generation-manifest.json
 ```
 
 CI pipelines can:
