@@ -130,6 +130,41 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 
 ---
 
+### User Story 8 - Initialize Project Structure via CLI (Priority: P8)
+
+A tooling engineer wants to bootstrap a repository for specgen by creating required steering and target output folders through a single CLI command. They run `specgen init <project-root> --target <target>...` and the tool initializes missing folders/files without overwriting existing artifacts.
+
+**Why this priority**: Initialization removes setup friction and ensures a consistent baseline structure for teams adopting multiple target platforms.
+
+**Independent Test**: Can be fully tested by running `specgen init . --target speckit --target kiro-ide` in an empty project and verifying expected directories/files are created, then re-running the same command and verifying no existing content is overwritten.
+
+**Acceptance Scenarios**:
+
+1. **Given** a project root path and one or more `--target` arguments, **When** the user runs `specgen init <root> --target <target>...`, **Then** the tool creates initial steering document location(s) and target platform folder structure for each specified target if missing.
+2. **Given** existing steering and target folders, **When** the user re-runs `specgen init` with the same targets, **Then** the command is idempotent and does not overwrite existing files.
+3. **Given** multiple targets in one invocation, **When** init runs, **Then** each valid target's folder structure is initialized in the same command execution.
+4. **Given** an unknown target identifier, **When** init runs, **Then** the tool reports a clear validation error and exits non-zero.
+
+---
+
+### User Story 9 - Update Project Templates and Metadata In Place (Priority: P9)
+
+A tooling engineer wants to refresh the local project template pack and metadata without upgrading the CLI binary. They run `specgen update` to pull and apply the latest compatible template/metadata release, or provide an explicit version to pin to a specific release.
+
+**Why this priority**: Template and metadata evolution happens more frequently than CLI binary releases. Decoupling these update streams keeps projects current with lower operational friction.
+
+**Independent Test**: Can be fully tested by running `specgen update` in an initialized project and verifying template/metadata versions advance while the CLI binary version remains unchanged, then running `specgen update --version <x.y.z>` and verifying the requested template/metadata version is applied.
+
+**Acceptance Scenarios**:
+
+1. **Given** an initialized project, **When** the user runs `specgen update`, **Then** the tool updates local templates and metadata in place to the latest available compatible release.
+2. **Given** an initialized project and a valid version argument, **When** the user runs `specgen update --version <x.y.z>`, **Then** the tool applies templates and metadata for that specific version.
+3. **Given** an invalid or unavailable version argument, **When** update runs, **Then** the tool reports a clear version resolution error and exits non-zero.
+4. **Given** a fresh CLI install, **When** the tool is first run for project initialization, **Then** templates and metadata are updated to the latest available release by default.
+5. **Given** subsequent tool usage after initial install, **When** no update command is invoked, **Then** templates and metadata remain at the currently installed template-pack version.
+
+---
+
 ### Edge Cases
 
 - What happens when a steering document contains no rule blocks (only prose)?
@@ -188,6 +223,21 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 - **FR-041**: Domain-specific or context-specific rules MUST be emitted as platform-appropriate modular artifacts (for example agents, skills, or equivalent on-demand modules) rather than being inlined into the main constitution when the target platform supports such modularization.
 - **FR-042**: When a target platform permits constitution references/includes (for example a main constitution referring to additional guidance files), generated outputs MUST preserve valid references and resolve paths according to platform conventions.
 - **FR-043**: Every Steering Rule MUST include domain metadata. The `core` domain value MUST indicate the rule belongs to the core constitution rule set; non-`core` domain values indicate domain-specific guidance eligible for modular target outputs where supported.
+- **FR-044**: The system MUST provide a modular command-based CLI built on the `System.CommandLine` package.
+- **FR-045**: The CLI MUST provide an `init` command for repository bootstrap.
+- **FR-046**: `init` MUST accept a positional argument specifying the project root path.
+- **FR-047**: `init` MUST accept one or more `--target` options in a single invocation.
+- **FR-048**: `init` MUST create initial steering document folder(s) and target platform folder structures for all specified valid targets when those folders do not already exist.
+- **FR-049**: `init` MUST be idempotent and MUST NOT overwrite existing steering or target files/folders.
+- **FR-050**: The CLI MUST support invocation equivalent to `specgen init . --target speckit --target kiro-ide`.
+- **FR-051**: If any provided target identifier is invalid, `init` MUST return a non-zero exit code and emit a clear validation message identifying the invalid target.
+- **FR-052**: The CLI MUST provide an `update` command that updates project templates and related metadata in place for the current project.
+- **FR-053**: The `update` command MUST support an optional version argument (for example `--version <x.y.z>`) to apply a specific template/metadata release.
+- **FR-054**: If no version is provided to `update`, the command MUST resolve and apply the latest available compatible template/metadata release.
+- **FR-055**: Templates and metadata MUST be versioned and released independently of the CLI binary version.
+- **FR-056**: On first installation or first-run bootstrap, the tool MUST update templates and metadata to the latest available release by default.
+- **FR-057**: After initial installation, template/metadata updates MUST remain independently invocable without requiring a CLI binary upgrade.
+- **FR-058**: The `update` command MUST fail safely on invalid/unavailable versions with non-zero exit code and actionable diagnostics.
 
 ### Key Entities
 
@@ -202,6 +252,10 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 - **Agent Specification Profile**: Target-specific mapping rules that transform neutral guidance semantics into platform-specific agent specification syntax and metadata.
 - **Core Constitution Rule Set**: A minimal set of universally applicable governance rules that must remain in the generated main constitution artifact for each target platform.
 - **Domain Guidance Module**: A platform-specific modular guidance artifact (for example an agent file, skill file, or equivalent) containing domain-scoped rules designed for on-demand inclusion or invocation.
+- **CLI Target Descriptor**: A normalized target identifier accepted by CLI options (for example `speckit`, `kiro-ide`) and mapped to initialization/generation rules.
+- **Initialization Manifest**: Derived initialization intent from `init` inputs (project root + target list) used to create missing steering and target directories safely.
+- **Template Pack Version**: The independently versioned release identifier for templates and project metadata applied to a repository.
+- **Update Manifest**: Resolved update intent and provenance for an `update` execution, including selected version, compatibility checks, and applied artifact set.
 - **Resolved Steering Model**: The post-overlay, post-filter model representing the effective set of rules for a given profile configuration.
 
 ## Success Criteria *(mandatory)*
@@ -221,6 +275,11 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 - **SC-011**: Adding a new target requires only additive changes (new target component + registration metadata) and zero refactor edits to existing target components in 100% of audited target-addition PRs.
 - **SC-012**: For every supported target, generated artifacts pass platform naming and structure validation in 100% of golden test scenarios.
 - **SC-013**: For every supported target that allows modular guidance, generated outputs separate universal core constitution rules from domain-specific modules in 100% of audited output bundles.
+- **SC-014**: `specgen init` successfully initializes missing baseline steering and target folder structures for 100% of supported-target test cases.
+- **SC-015**: Re-running the same `specgen init` command in an already initialized project performs zero destructive changes in 100% of idempotency test scenarios.
+- **SC-016**: `specgen update` applies the latest compatible template/metadata release successfully in 100% of supported-project update test scenarios.
+- **SC-017**: Version-pinned updates via `specgen update --version <x.y.z>` apply the exact requested template/metadata version in 100% of valid-version test scenarios.
+- **SC-018**: Template and metadata updates can be performed without changing CLI binary version in 100% of lifecycle regression tests.
 
 ## Assumptions
 
@@ -234,4 +293,5 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 - The `default` profile is always implicitly active and cannot be excluded by profile filtering.
 - Target extensibility is intentionally non-plugin-based; all targets are implemented and versioned in-repo.
 - Target platforms differ in modularity capabilities; outputs are generated to use the highest level of valid modular decomposition each platform supports while preserving core-rule portability.
+- Template and metadata distribution is decoupled from CLI binary distribution and supports independent semantic versioning.
 - The tool is intended for open-source distribution under a license permitting commercial and private use; steering document content remains the intellectual property of the document authors.
