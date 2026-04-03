@@ -44,3 +44,4 @@
 - Added CLI update requirements for in-place template/metadata refresh, optional version pinning, latest-by-default first run behavior, and independent template release lifecycle.
 - Added CLI execution and target-registration requirements, including `run` default-all-target behavior and `target add` folder initialization/idempotency semantics.
 - Added Non-Functional Requirements for a single YAML configuration source-of-truth, CLI/manual config edit support, VCS-friendly config size, and separate lock-file handling when needed.
+- Added Non-Functional Requirements for shell compatibility (bash, sh, zsh, PowerShell 7+, fish, DOS shells) and OS compatibility (Linux, macOS, Windows).

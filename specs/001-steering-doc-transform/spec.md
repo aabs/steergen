@@ -305,6 +305,8 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **NFR-002 (CLI Config Operability)**: The CLI MUST provide complete command coverage to create, update, and control configuration content stored in that YAML file, while allowing manual editing as a supported workflow.
 - **NFR-003 (Version Control Friendliness)**: The primary YAML configuration file is expected to be committed to version control and MUST remain concise and reviewable rather than growing into a volatile lock-file style artifact.
 - **NFR-004 (Locking Separation)**: If lock semantics are required, lock state MUST be written to and tracked in a separate file from the primary YAML configuration file.
+- **NFR-005 (Shell Compatibility)**: The `steergen` CLI tool MUST operate correctly when invoked from the following shells: bash (POSIX), sh, zsh, PowerShell 7+, fish shell, and Windows DOS shells (cmd.exe, PowerShell legacy variants). Command invocation syntax may vary by shell, but the tool MUST be executable and produce correct results across all specified shells.
+- **NFR-006 (Operating System Compatibility)**: The `steergen` CLI tool MUST be deployable and functional on Linux, macOS, and Windows operating systems. The tool MUST support platform-native conventions for file paths, line endings, and shell invocation where applicable.
 
 ### Key Entities
 
