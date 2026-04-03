@@ -4,6 +4,15 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <!-- Single portable executable publish profile (used by CI release-gate) -->
+  <PropertyGroup Condition="'$(PublishPortable)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="3.0.0-preview.2.26159.112" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />

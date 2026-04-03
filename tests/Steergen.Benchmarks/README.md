@@ -62,3 +62,27 @@ BenchmarkDotNet.Artifacts/
 ```
 
 Attach the Markdown report to release PRs as evidence of performance compliance.
+
+## Executable size budget
+
+The single portable executable distribution (self-contained, ReadyToRun, linux-x64) must remain under **80 MB**.
+
+Verify the size after publishing:
+
+```bash
+dotnet publish src/Steergen.Cli/Steergen.Cli.csproj \
+  -c Release \
+  -r linux-x64 \
+  -p:PublishPortable=true \
+  --output /tmp/steergen-publish
+
+ls -lh /tmp/steergen-publish/Steergen.Cli
+```
+
+If the budget is exceeded:
+1. Profile embedded resources (template files) — remove unused templates.
+2. Evaluate trimming: set `<PublishTrimmed>true</PublishTrimmed>` on `PublishPortable=true` builds and resolve any trim warnings.
+3. Consider AOT compilation for maximum size reduction (requires trim-safe code; see `docs/release/release-checklist.md`).
+
+The CI release-gate job automatically enforces this budget and will fail if the executable exceeds 80 MB.
+

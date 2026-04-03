@@ -114,3 +114,36 @@ jobs:
             echo "ERROR: generation manifest reports failure"
             exit 1
           fi
+
+      # T075: Publish single portable executable (ReadyToRun, self-contained)
+      - name: Publish portable executable (linux-x64)
+        run: |
+          dotnet publish src/Steergen.Cli/Steergen.Cli.csproj \
+            -c Release \
+            -r linux-x64 \
+            -p:PublishPortable=true \
+            --output publish/linux-x64
+
+      # T076: Verify executable exists and check size budget (< 80 MB)
+      - name: Verify portable executable size budget
+        run: |
+          EXE=$(find publish/linux-x64 -maxdepth 1 -name "Steergen.Cli" -o -name "steergen" | head -1)
+          if [ -z "$EXE" ]; then
+            EXE=$(find publish/linux-x64 -maxdepth 1 -type f -not -name "*.pdb" | head -1)
+          fi
+          if [ -z "$EXE" ]; then
+            echo "ERROR: No executable found in publish/linux-x64"
+            ls -lh publish/linux-x64/
+            exit 1
+          fi
+          SIZE_BYTES=$(stat -c %s "$EXE")
+          SIZE_MB=$(echo "scale=2; $SIZE_BYTES / 1048576" | bc)
+          echo "Executable: $EXE  Size: ${SIZE_MB} MB (${SIZE_BYTES} bytes)"
+          # Budget: single portable executable must remain under 80 MB (docs/release/release-checklist.md)
+          MAX_BYTES=$((80 * 1024 * 1024))
+          if [ "$SIZE_BYTES" -gt "$MAX_BYTES" ]; then
+            echo "ERROR: Executable exceeds 80 MB size budget (${SIZE_MB} MB > 80 MB)"
+            exit 1
+          fi
+          echo "Size budget check PASSED: ${SIZE_MB} MB <= 80 MB"
+

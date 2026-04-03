@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steergen.Cli.Diagnostics;
 using Steergen.Core.Configuration;
 using Steergen.Core.Generation;
 using Steergen.Core.Model;
@@ -30,6 +31,8 @@ public static class RunCommand
             Arity = ArgumentArity.ZeroOrMore,
         };
         var quietOption = new Option<bool>("--quiet", "Suppress informational output");
+        var verboseOption = new Option<bool>("--verbose", "Enable verbose diagnostics including opt-in measurement output (SC-001/SC-005)");
+        var debugOption = new Option<bool>("--debug", "Enable debug-level diagnostics including opt-in measurement output");
 
         var cmd = new Command("run", "Generate outputs from steering documents")
         {
@@ -39,6 +42,8 @@ public static class RunCommand
             outputOption,
             targetOption,
             quietOption,
+            verboseOption,
+            debugOption,
         };
 
         cmd.SetAction(async (parseResult, cancellationToken) =>
@@ -49,6 +54,8 @@ public static class RunCommand
             var outputBase = parseResult.GetValue(outputOption);
             var explicitTargets = parseResult.GetValue(targetOption) ?? [];
             var quiet = parseResult.GetValue(quietOption);
+            var verbose = parseResult.GetValue(verboseOption);
+            var debug = parseResult.GetValue(debugOption);
 
             return await RunAsync(
                 configPath,
@@ -57,6 +64,8 @@ public static class RunCommand
                 outputBase,
                 explicitTargets,
                 quiet,
+                verbose,
+                debug,
                 cancellationToken);
         });
 
@@ -70,8 +79,11 @@ public static class RunCommand
         string? outputBase,
         IReadOnlyList<string> explicitTargets,
         bool quiet,
+        bool verbose = false,
+        bool debug = false,
         CancellationToken cancellationToken = default)
     {
+        var reporter = new MeasurementProtocolReporter(verbose || debug);
         try
         {
             SteeringConfiguration? config = null;
@@ -154,17 +166,24 @@ public static class RunCommand
                     .ToList();
             }
 
-            var globalDocs = LoadDocuments(resolvedGlobal);
-            var projectDocs = LoadDocuments(resolvedProject);
+            var (globalDocs, projectDocs) = await reporter.MeasureAsync("load-documents", () =>
+            {
+                var g = LoadDocuments(resolvedGlobal);
+                var p = LoadDocuments(resolvedProject);
+                return Task.FromResult((g, p));
+            });
 
             var pipeline = new GenerationPipeline();
-            var result = await pipeline.RunAsync(
-                globalDocs,
-                projectDocs,
-                activeProfiles,
-                selectedComponents,
-                targetConfigs,
-                cancellationToken);
+            var result = await reporter.MeasureAsync("run-pipeline", () =>
+                pipeline.RunAsync(
+                    globalDocs,
+                    projectDocs,
+                    activeProfiles,
+                    selectedComponents,
+                    targetConfigs,
+                    cancellationToken));
+
+            reporter.EmitTotal();
 
             foreach (var diag in result.Diagnostics)
             {

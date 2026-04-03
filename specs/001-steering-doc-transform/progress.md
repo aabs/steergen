@@ -403,3 +403,22 @@ Started: 2026-04-03 16:49:34
 - Governance fixture files must use quoted-attribute format `:::rule id="..." severity="..." domain="..."` — positional IDs not supported
 - All 238 tests pass (37 property, 98 unit, 103 integration; +21 from this iteration)
 ---
+
+---
+## Iteration 4 - 2026-04-03T08:18:33Z
+**User Story**: Final Phase - T073/T074 Constitution Provenance Recording
+**Tasks Completed**: 
+- [x] T073: Add integration tests for constitution amendment provenance capture
+- [x] T074: Implement constitution provenance recording and wire into TemplatePackUpdater
+**Tasks Remaining in Story**: None - tasks complete (T075-T080 remain in Final Phase)
+**Commit**: 22fe4d1
+**Files Changed**: 
+- src/Steergen.Core/Updates/ConstitutionProvenanceRecorder.cs (new)
+- src/Steergen.Core/Updates/TemplatePackUpdater.cs (wired recorder, new optional params)
+- src/Steergen.Cli/Commands/UpdateCommand.cs (named CT arg fix)
+- tests/Steergen.Cli.IntegrationTests/ConstitutionProvenanceTests.cs (new, 10 tests)
+- specs/001-steering-doc-transform/tasks.md (T073/T074 marked [x])
+**Learnings**:
+- Collection spread expression `[..existing, entry]` is ambiguous without explicit type target; use `new List<T>(existing) { entry }` instead
+- Adding optional parameters before CancellationToken requires callers to use named argument `cancellationToken:` to avoid positional binding errors
+---

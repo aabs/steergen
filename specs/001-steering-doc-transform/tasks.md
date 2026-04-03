@@ -269,12 +269,12 @@
 - [x] T072 Run quickstart and contract validation cleanup against `specs/001-steering-doc-transform/quickstart.md`, `specs/001-steering-doc-transform/contracts/cli-contract.md`, and `specs/001-steering-doc-transform/contracts/config-schema.md`
 - [x] T073 [P] Add integration tests for constitution amendment provenance capture (version rationale, amendment date, impacted-artifact sync record) in `tests/Steergen.Cli.IntegrationTests/ConstitutionProvenanceTests.cs`
 - [x] T074 Implement constitution provenance recording in `src/Steergen.Core/Updates/ConstitutionProvenanceRecorder.cs` and wire it into `src/Steergen.Core/Updates/TemplatePackUpdater.cs`
-- [ ] T075 [P] Add publish-profile and CI validation for single portable executable distribution in `src/Steergen.Cli/Steergen.Cli.csproj` and `.github/workflows/ci.yml`
-- [ ] T076 [P] Add trimming and executable-size budget verification checks in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
-- [ ] T077 [P] Add optimization-mode verification (AOT/ReadyToRun decision path) in `docs/release/release-checklist.md` and `Directory.Build.props`
-- [ ] T078 [P] Add cross-target include/reference path resolution tests for constitution modular references in `tests/Steergen.Core.UnitTests/Targets/ConstitutionReferenceResolutionTests.cs`
-- [ ] T079 [P] Add integration tests that validate measurement protocol routines for SC-001/SC-005 only execute when `--verbose` or `--debug` is enabled, and remain disabled in default mode, in `tests/Steergen.Cli.IntegrationTests/Measurement/MeasurementProtocolOptInTests.cs`
-- [ ] T080 Implement timing-measurement protocol instrumentation for SC-001/SC-005 as opt-in diagnostics routed to stderr and gated behind verbose/debug flags in `src/Steergen.Cli/Diagnostics/MeasurementProtocolReporter.cs` and `src/Steergen.Cli/Commands/RunCommand.cs`
+- [x] T075 [P] Add publish-profile and CI validation for single portable executable distribution in `src/Steergen.Cli/Steergen.Cli.csproj` and `.github/workflows/ci.yml`
+- [x] T076 [P] Add trimming and executable-size budget verification checks in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
+- [x] T077 [P] Add optimization-mode verification (AOT/ReadyToRun decision path) in `docs/release/release-checklist.md` and `Directory.Build.props`
+- [x] T078 [P] Add cross-target include/reference path resolution tests for constitution modular references in `tests/Steergen.Core.UnitTests/Targets/ConstitutionReferenceResolutionTests.cs`
+- [x] T079 [P] Add integration tests that validate measurement protocol routines for SC-001/SC-005 only execute when `--verbose` or `--debug` is enabled, and remain disabled in default mode, in `tests/Steergen.Cli.IntegrationTests/Measurement/MeasurementProtocolOptInTests.cs`
+- [x] T080 Implement timing-measurement protocol instrumentation for SC-001/SC-005 as opt-in diagnostics routed to stderr and gated behind verbose/debug flags in `src/Steergen.Cli/Diagnostics/MeasurementProtocolReporter.cs` and `src/Steergen.Cli/Commands/RunCommand.cs`
 
 ---
 
