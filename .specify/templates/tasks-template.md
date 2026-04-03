@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: Tests are MANDATORY. Follow Red-Green-Refactor and author tests before implementation. Prefer property-based testing (FsCheck + xUnit) for invariants.
+**Tests**: Tests are MANDATORY. Follow Red-Green-Refactor and author tests before implementation. Prefer property-based testing (CsCheck + xUnit) for invariants.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -248,7 +248,7 @@ With multiple developers:
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
 - Verify tests fail before implementing
-- Prefer property-based testing (FsCheck + xUnit) for invariants and transformation correctness
+- Prefer property-based testing (CsCheck + xUnit) for invariants and transformation correctness
 - Include explicit security tests for malicious input and prompt-injection-style payload handling
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently

@@ -34,12 +34,12 @@
 - Runtime/language choice is idiomatic .NET 10 and C# 14.
 - Design preserves deterministic behavior for identical inputs/configuration.
 - Red-Green-Refactor plan is explicit, with tests authored before implementation.
-- Property-based tests (FsCheck + xUnit) are defined for domain invariants.
+- Property-based tests (CsCheck + xUnit) are defined for domain invariants.
 - Security plan includes misuse/abuse analysis and prompt-injection-style payload resistance tests.
 - Performance budgets and validation approach are defined for expected scale.
 - CLI UX and error semantics are explicit and consistent.
 - Documentation updates (README/quickstart/migration notes as applicable) are planned.
-- Release impact is assessed against SemVer and tag-triggered release flow (`vMAJOR.MINOR.PATCH` on master).
+- Release impact is assessed against SemVer, including testing preview tags (`vMAJOR.MINOR.PATCH-previewN`) and stable tag-triggered release flow (`vMAJOR.MINOR.PATCH` on master).
 
 ## Project Structure
 

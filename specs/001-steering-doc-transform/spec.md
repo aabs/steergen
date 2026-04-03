@@ -325,6 +325,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **NFR-011 (Config Security Scope)**: The primary configuration file (`steergen.config.yaml`) MUST NOT contain secrets, credentials, tokens, or private keys in v1. Configuration content is limited to non-sensitive operational metadata; if future secret support is introduced, it MUST be handled through a separate mechanism.
 - **NFR-012 (Reliability Scope for v1)**: v1 does not define additional service-level reliability targets (for example uptime, MTTR, or error-budget SLOs) beyond the explicit command correctness, deterministic output, non-destructive behavior, and safe-failure requirements already specified in this document.
 - **NFR-013 (Scalability Envelope)**: The tool MUST define and document a validated support envelope of up to 1,000 steering documents and 10,000 rules per execution. For inputs beyond this envelope, the tool MUST degrade gracefully by issuing a clear warning and either continuing best-effort processing or failing safely with actionable diagnostics.
+- **NFR-014 (Preview Release Versioning for Testing)**: During testing, preview releases MAY be issued using SemVer pre-release tags in the form `vMAJOR.MINOR.PATCH-previewN` (for example `v1.2.3-preview4`). Stable production releases MUST continue to use `vMAJOR.MINOR.PATCH`.
 
 ### Key Entities
 

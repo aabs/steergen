@@ -45,7 +45,7 @@ development, and downstream integrations.
 
 ### III. Test-First Development with Property-Based Testing (NON-NEGOTIABLE)
 Development MUST follow strict Red-Green-Refactor. Tests MUST be authored
-before implementation. Property-based testing with FsCheck and xUnit MUST be the
+before implementation. Property-based testing with CsCheck and xUnit MUST be the
 default strategy for domain invariants, parsers, transforms, merge rules,
 ordering guarantees, and serialization behavior. Example-based unit tests MAY be
 used only where properties are not practical, and must be explicitly justified.
@@ -115,6 +115,8 @@ directly impacts correctness of user workflows.
 
 - Releases MUST follow SemVer and be triggered by tagging master with
 	`vMAJOR.MINOR.PATCH` (example: `v0.23.4`).
+- During testing, preview releases MAY use SemVer pre-release tags in the form
+	`vMAJOR.MINOR.PATCH-previewN` (example: `v1.2.3-preview4`).
 - Tagged release pipelines MUST build, run full tests, verify package metadata,
 	and publish to NuGet only after all required checks pass.
 - Every PR MUST include constitutional compliance notes for security, test-first

@@ -50,3 +50,4 @@
 - Clarification session integrated: logging defaults/verbosity flags, optimistic config concurrency handling, and explicit no-secrets-in-config v1 scope.
 - Additional clarification integrated: v1 reliability SLOs are explicitly out of scope beyond already-defined correctness and failure-handling requirements.
 - Additional clarification integrated: explicit validated scalability envelope (1,000 docs / 10,000 rules) with graceful warning or safe-failure behavior beyond envelope.
+- Testing release policy now explicitly permits preview tags in the form `vMAJOR.MINOR.PATCH-previewN` (for example `v1.2.3-preview4`), while stable releases remain `vMAJOR.MINOR.PATCH`.
