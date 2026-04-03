@@ -325,3 +325,29 @@ Started: 2026-04-03 16:49:34
 - Argument<T> in System.CommandLine 3.0.0-preview.2 only accepts name (single arg); description and DefaultValueFactory are properties set separately
 - All 150 tests pass (37 property, 56 unit, 57 integration)
 ---
+
+---
+## Iteration 13 - 2026-04-03T07:59:19Z
+**User Story**: US-009 Update Project Templates and Metadata In Place
+**Tasks Completed**: 
+- [x] T062: TemplateVersionResolverTests.cs (17 unit tests: IsValidVersion, IsPreviewVersion, ResolveLatestStable, ResolveLatestIncludingPreview, ResolveExact, ordering/preview-beats-stable)
+- [x] T061: UpdateCommandTests.cs (10 integration tests: latest-compatible exit 0, version persisted, exact-version success, not-in-catalog = exit 2, preview flag, preview version persisted, invalid format = exit 2, missing config = exit 2)
+- [x] T063: TemplateVersionResolver.cs (regex-based stable/previewN parsing, OrderByDescending with custom comparer, stable beats preview for same base) + TemplatePackUpdater.cs (built-in catalog, UpdateAsync with latest/exact/preview flows, UpdateResult record)
+- [x] T064: UpdateCommand.cs (steergen update [--config] [--version] [--preview], calls TemplatePackUpdater) + wired into CommandFactory
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 9ead246
+**Files Changed**: 
+- src/Steergen.Core/Updates/TemplateVersionResolver.cs (new)
+- src/Steergen.Core/Updates/TemplatePackUpdater.cs (new)
+- src/Steergen.Cli/Commands/UpdateCommand.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (added UpdateCommand.Create())
+- tests/Steergen.Core.UnitTests/Updates/TemplateVersionResolverTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/UpdateCommandTests.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T061-T064 marked done)
+**Learnings**:
+- readonly record struct positional parameter names are PascalCase; named arg must use PascalCase (previewNumber → PreviewNumber)
+- IComparer<T> with OrderByDescending: stable (PreviewNumber=null) should beat preview (PreviewNumber=N) for same Major.Minor.Patch
+- TemplatePackUpdater.BuiltInCatalog is a static list of known versions; real distribution would discover from assembly metadata
+- UpdateCommand writes status to Console.Error (stderr) matching other commands (init, inspect)
+- All 191 tests pass (37 property, 87 unit, 67 integration)
+---

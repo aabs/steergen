@@ -247,13 +247,13 @@
 
 ### Tests for User Story 10 (MANDATORY) ✅
 
-- [ ] T065 [P] [US10] Add run/target-add/target-remove integration tests in `tests/Steergen.Cli.IntegrationTests/RunAndTargetCommandsTests.cs`
-- [ ] T066 [P] [US10] Add optimistic-lock conflict tests for target registration commands in `tests/Steergen.Core.UnitTests/Configuration/TargetRegistrationConfigLockTests.cs`
+- [x] T065 [P] [US10] Add run/target-add/target-remove integration tests in `tests/Steergen.Cli.IntegrationTests/RunAndTargetCommandsTests.cs`
+- [x] T066 [P] [US10] Add optimistic-lock conflict tests for target registration commands in `tests/Steergen.Core.UnitTests/Configuration/TargetRegistrationConfigLockTests.cs`
 
 ### Implementation for User Story 10
 
-- [ ] T067 [US10] Extend the existing run command with explicit target scoping and registered-target selection behavior in `src/Steergen.Cli/Commands/RunCommand.cs`
-- [ ] T068 [US10] Implement target add/remove command handling and idempotent config mutation in `src/Steergen.Cli/Commands/TargetCommand.cs` and `src/Steergen.Core/Configuration/TargetRegistrationService.cs`
+- [x] T067 [US10] Extend the existing run command with explicit target scoping and registered-target selection behavior in `src/Steergen.Cli/Commands/RunCommand.cs`
+- [x] T068 [US10] Implement target add/remove command handling and idempotent config mutation in `src/Steergen.Cli/Commands/TargetCommand.cs` and `src/Steergen.Core/Configuration/TargetRegistrationService.cs`
 
 **Checkpoint**: User Story 10 independently supports day-to-day generation and target registration workflows.
 
