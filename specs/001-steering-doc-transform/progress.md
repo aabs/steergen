@@ -221,3 +221,27 @@ Started: 2026-04-03 16:49:34
 - V007 = duplicate rule IDs (Error), V008 = supersedes unknown rule (Warning, not Error)
 - All 86 tests pass (31 property, 30 unit, 25 integration)
 ---
+
+---
+## Iteration 9 - 2026-04-03T07:00:00Z
+**User Story**: US-005 Inspect the Merged Steering Model
+**Tasks Completed**: 
+- [x] T045: InspectCommandTests.cs (6 integration tests: exit 0, valid JSON stdout, profile filtering, missing dir exit 2, top-level JSON fields)
+- [x] T046: InspectJsonProperties.cs (6 property tests: stable ordering, rules sorted by ID, profiles sorted, documents sorted, null fields omitted, deprecated=false omitted)
+- [x] T047: InspectModelWriter.cs - serializes ResolvedSteeringModel to deterministic camelCase JSON, null fields omitted
+- [x] T048: InspectCommand.cs with --global/--project/--profile options, wired into CommandFactory
+**Tasks Remaining in Story**: None - story complete
+**Commit**: d9ad06b
+**Files Changed**: 
+- src/Steergen.Core/Generation/InspectModelWriter.cs (new)
+- src/Steergen.Cli/Commands/InspectCommand.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (replaced stub with real InspectCommand.Create())
+- tests/Steergen.Cli.IntegrationTests/InspectCommandTests.cs (new)
+- tests/Steergen.Core.PropertyTests/Generation/InspectJsonProperties.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T045-T048 marked done)
+**Learnings**:
+- InspectModelWriter uses System.Text.Json with WhenWritingNull + camelCase; private record DTOs keep model clean
+- bool? nullable trick: Deprecated = r.Deprecated ? true : null - omits false from output cleanly
+- ProfileOption uses AllowMultipleArgumentsPerToken=false + ZeroOrMore arity for --profile multi-value
+- All 98 tests pass (37 property, 30 unit, 31 integration)
+---

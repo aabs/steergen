@@ -167,13 +167,13 @@
 
 ### Tests for User Story 6 (MANDATORY) ✅
 
-- [ ] T049 [P] [US6] Add compatibility tests proving additive registration does not change existing target outputs in `tests/Steergen.Core.UnitTests/Targets/TargetRegistryCompatibilityTests.cs`
-- [ ] T050 [P] [US6] Add fixture-target run integration tests in `tests/Steergen.Cli.IntegrationTests/RunFixtureTargetCommandTests.cs`
+- [x] T049 [P] [US6] Add compatibility tests proving additive registration does not change existing target outputs in `tests/Steergen.Core.UnitTests/Targets/TargetRegistryCompatibilityTests.cs`
+- [x] T050 [P] [US6] Add fixture-target run integration tests in `tests/Steergen.Cli.IntegrationTests/RunFixtureTargetCommandTests.cs`
 
 ### Implementation for User Story 6
 
-- [ ] T051 [P] [US6] Implement a minimal fixture target used to verify the extension seam in `src/Steergen.Core/Targets/Fixtures/FixtureTargetComponent.cs`
-- [ ] T052 [US6] Implement additive registration metadata and target-extension guidance in `src/Steergen.Core/Targets/TargetRegistrationMetadata.cs` and `docs/targets/additive-targets.md`
+- [x] T051 [P] [US6] Implement a minimal fixture target used to verify the extension seam in `src/Steergen.Core/Targets/Fixtures/FixtureTargetComponent.cs`
+- [x] T052 [US6] Implement additive registration metadata and target-extension guidance in `src/Steergen.Core/Targets/TargetRegistrationMetadata.cs` and `docs/targets/additive-targets.md`
 
 **Checkpoint**: User Story 6 independently validates the non-plugin additive target model.
 
