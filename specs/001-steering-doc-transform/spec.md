@@ -240,7 +240,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 
 - **FR-021**: The Speckit target component MUST map steering documents to Speckit Markdown modules, mapping rules to Speckit rule entries with severity, category, and text fields.
 - **FR-022**: The tool MUST generate Markdown output format for the Speckit target.
-- **FR-023**: The tool MUST generate a consolidated `speckit.all.md` artefact containing all modules in addition to per-module files.
+- **FR-023**: The Speckit target MUST generate a primary `constitution.md` artifact containing only the universally applicable core rules; domain-specific guidance MUST be emitted as separate modular files unless all resolved rules are core.
 
 #### Kiro Target Requirements
 
@@ -380,7 +380,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - The tool runs on standard .NET-supported platforms (Windows, macOS, Linux) and is distributed as a self-contained portable executable with no additional runtime installation required.
 - Document encoding is UTF-8; other encodings are out of scope.
 - The tool consumes steering documents from the local filesystem; remote document sources (URLs, git repositories) are out of scope for v1.
-- The `speckit.all.md` consolidated output is always generated when the Speckit target is enabled; selective module output is a future enhancement.
+- The `constitution.md` output is always generated when the Speckit target is enabled and contains only core rules; separate modular files are generated for non-core guidance unless all resolved rules are core.
 - Profile names are case-sensitive strings; no normalisation or aliasing is assumed.
 - The `default` profile is always implicitly active and cannot be excluded by profile filtering.
 - Target extensibility is intentionally non-plugin-based; all targets are implemented and versioned in-repo.

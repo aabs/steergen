@@ -36,7 +36,7 @@
 - Success criteria SC-001 through SC-020 are measurable without reference to implementation technology.
 - Assumptions section clearly bounds v1 scope and now includes non-plugin, additive target extensibility constraints.
 - Added agent-spec target requirements and acceptance scenarios, including platform-specific format mapping and semantic equivalence across targets.
-- Speckit target output requirements now specify Markdown (`speckit.all.md`) and include governance/provenance tracking for substantive constitution updates.
+- Speckit target output requirements now specify Markdown (`constitution.md`) as a core-only constitution artifact, with non-core guidance emitted as modular files, and include governance/provenance tracking for substantive constitution updates.
 - Added cross-target requirements for platform naming compliance, platform-supported modularity, and separation of universally applicable core constitution rules from domain-specific on-demand modules.
 - CLI command name consolidated across all examples and requirements to use `steergen`; all command invocations (init, update, run, target add, target remove) unified on this binary name.
 - Config file name fixed to `steergen.config.yaml` in all references; separate lock file (if needed) tracked independently per NFR-004.
