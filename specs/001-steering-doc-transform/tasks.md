@@ -82,16 +82,16 @@
 
 ### Tests for User Story 2 (MANDATORY) ✅
 
-- [ ] T028 [P] [US2] Add Kiro run integration tests for per-document output, inclusion modes, and deprecated-rule exclusion in `tests/Steergen.Cli.IntegrationTests/RunKiroCommandTests.cs`
-- [ ] T029 [P] [US2] Add Kiro renderer unit tests for `always`, `fileMatch`, and `auto` frontmatter behavior in `tests/Steergen.Core.UnitTests/Targets/KiroTargetComponentTests.cs`
-- [ ] T030 [P] [US2] Add property tests proving prose output never leaks rule IDs, severities, or `:::rule` syntax in `tests/Steergen.Core.PropertyTests/Generation/KiroRenderingProperties.cs`
+- [x] T028 [P] [US2] Add Kiro run integration tests for per-document output, inclusion modes, and deprecated-rule exclusion in `tests/Steergen.Cli.IntegrationTests/RunKiroCommandTests.cs`
+- [x] T029 [P] [US2] Add Kiro renderer unit tests for `always`, `fileMatch`, and `auto` frontmatter behavior in `tests/Steergen.Core.UnitTests/Targets/KiroTargetComponentTests.cs`
+- [x] T030 [P] [US2] Add property tests proving prose output never leaks rule IDs, severities, or `:::rule` syntax in `tests/Steergen.Core.PropertyTests/Generation/KiroRenderingProperties.cs`
 
 ### Implementation for User Story 2
 
-- [ ] T031 [P] [US2] Implement Kiro inclusion mapping and options handling in `src/Steergen.Core/Targets/Kiro/KiroTargetOptions.cs` and `src/Steergen.Core/Targets/Kiro/KiroInclusionMapper.cs`
-- [ ] T032 [P] [US2] Implement the Kiro target renderer in `src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs`
-- [ ] T033 [P] [US2] Add the Kiro document template in `src/Steergen.Templates/Scriban/kiro/document.scriban`
-- [ ] T034 [US2] Register the Kiro target and configuration translation in `src/Steergen.Core/Targets/TargetRegistry.cs` and `src/Steergen.Core/Model/SteeringConfiguration.cs`
+- [x] T031 [P] [US2] Implement Kiro inclusion mapping and options handling in `src/Steergen.Core/Targets/Kiro/KiroTargetOptions.cs` and `src/Steergen.Core/Targets/Kiro/KiroInclusionMapper.cs`
+- [x] T032 [P] [US2] Implement the Kiro target renderer in `src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs`
+- [x] T033 [P] [US2] Add the Kiro document template in `src/Steergen.Templates/Scriban/kiro/document.scriban`
+- [x] T034 [US2] Register the Kiro target and configuration translation in `src/Steergen.Core/Targets/TargetRegistry.cs` and `src/Steergen.Core/Model/SteeringConfiguration.cs`
 
 **Checkpoint**: User Story 2 independently produces Kiro-ready steering documents.
 

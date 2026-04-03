@@ -86,3 +86,44 @@ Started: 2026-04-03 16:49:34
 - ExitCodes: 0=success, 1=validation, 2=config, 3=generation, 5=conflict
 - CsCheck property tests run deterministically with seed-based shrinking
 ---
+
+---
+## Iteration 3 - 2026-04-03T06:20:06Z
+**User Story**: Phase 3 - User Story 1: Run Steering Generation to Speckit Artefacts (MVP)
+**Tasks Completed**: 
+- [x] T020: Run-to-Speckit integration tests (RunSpeckitCommandTests.cs)
+- [x] T021: Property tests for core-vs-domain partitioning (SpeckitPartitionProperties.cs)
+- [x] T022: Speckit golden/unit tests (SpeckitTargetComponentTests.cs)
+- [x] T023: GenerationPipeline orchestration (load→validate→resolve→generate)
+- [x] T024: SpeckitTargetComponent + SpeckitDocumentModel
+- [x] T025: Scriban templates (constitution.scriban, module.scriban)
+- [x] T026: SpeckitGenerationService (high-level run command service)
+- [x] T027: CoreGuidancePartitioner (core vs domain splitting)
+**Tasks Remaining in Story**: None - story complete
+**Commit**: c5d6db1
+**Files Changed**: 
+- src/Steergen.Core/Generation/CoreGuidancePartitioner.cs
+- src/Steergen.Core/Generation/GenerationPipeline.cs
+- src/Steergen.Core/Generation/SpeckitGenerationService.cs
+- src/Steergen.Core/Targets/ITemplateProvider.cs
+- src/Steergen.Core/Targets/Speckit/SpeckitDocumentModel.cs
+- src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs
+- src/Steergen.Templates/EmbeddedTemplateProvider.cs
+- src/Steergen.Templates/Scriban/speckit/constitution.scriban
+- src/Steergen.Templates/Scriban/speckit/module.scriban
+- src/Steergen.Templates/Steergen.Templates.csproj (EmbeddedResource added)
+- src/Steergen.Cli/Steergen.Cli.csproj (reference to Steergen.Templates added)
+- tests/Fixtures/RealisticGovernance/global/constitution.md (updated rule format)
+- tests/Fixtures/RealisticGovernance/project/project-steering.md (updated rule format + domain="api")
+- tests/Steergen.Cli.IntegrationTests/RunSpeckitCommandTests.cs
+- tests/Steergen.Core.PropertyTests/Generation/SpeckitPartitionProperties.cs
+- tests/Steergen.Core.UnitTests/Targets/SpeckitTargetComponentTests.cs
+**Learnings**:
+- :::rule syntax must use id="..." quoted attributes on the opening line; positional ID not supported
+- Fixtures needed updating from YAML-style `key: value` per-line format to HTML-like `id="..." severity="..."` format
+- Steergen.Templates uses EmbeddedResource glob: `Scriban\**\*.scriban`; resource name is namespace-prefixed dot-path
+- Steergen.Cli now references Steergen.Templates (via which EmbeddedTemplateProvider is accessible to IntegrationTests)
+- ITemplateProvider interface in Steergen.Core.Targets; EmbeddedTemplateProvider in Steergen.Templates
+- Domain rules need explicit domain="<name>" in rule attributes; "core" is the default when domain omitted
+- All 37 tests pass (17 property, 15 unit, 5 integration)
+---
