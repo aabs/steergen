@@ -94,7 +94,7 @@ A governance author wants to check that their steering documents are well-formed
 
 A tooling engineer or integrator wants to inspect the fully merged and resolved steering model (after overlay resolution and profile filtering) without generating target artefacts. They run the `inspect` command to output the merged model as structured data for debugging and integration purposes.
 
-**Why this priority**: The inspect command enables debugging of complex overlay and profile scenarios and supports integration with other tooling that consumes the model. It is independently useful without requiring full compilation.
+**Why this priority**: The inspect command enables debugging of complex overlay and profile scenarios and supports integration with other tooling that consumes the model. It is independently useful without requiring a full generation run.
 
 **Independent Test**: Can be fully tested by running `inspect` on a set of documents with known overlays and profile configurations, then verifying that the output JSON precisely reflects the expected merged model.
 
@@ -108,7 +108,7 @@ A tooling engineer or integrator wants to inspect the fully merged and resolved 
 
 ### User Story 6 - Extend the Tool with a New Output Target (Priority: P6)
 
-A tooling engineer wants to add support for a new SDD output format (e.g., a different artefact schema or a proprietary governance platform) without modifying the core tool or refactoring existing target components. They implement and register a new target component in-repo, and the tool invokes it during compilation.
+A tooling engineer wants to add support for a new SDD output format (e.g., a different artefact schema or a proprietary governance platform) without modifying the core tool or refactoring existing target components. They implement and register a new target component in-repo, and the tool invokes it during generation.
 
 **Why this priority**: Extensibility is a stated architectural requirement. Without a verified non-plugin extension seam, the tool cannot scale to many targets while preserving stability and maintainability.
 
