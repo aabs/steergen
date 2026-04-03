@@ -132,16 +132,16 @@ A DevOps or governance engineer wants to integrate the tool into a CI pipeline s
 
 ### User Story 8 - Initialize Project Structure via CLI (Priority: P8)
 
-A tooling engineer wants to bootstrap a repository for specgen by creating required steering and target output folders through a single CLI command. They run `specgen init <project-root> --target <target>...` and the tool initializes missing folders/files without overwriting existing artifacts.
+A tooling engineer wants to bootstrap a repository for steering generation by creating required steering and target output folders through a single CLI command. They run `steergen init <project-root> --target <target>...` and the tool initializes missing folders/files without overwriting existing artifacts.
 
 **Why this priority**: Initialization removes setup friction and ensures a consistent baseline structure for teams adopting multiple target platforms.
 
-**Independent Test**: Can be fully tested by running `specgen init . --target speckit --target kiro-ide` in an empty project and verifying expected directories/files are created, then re-running the same command and verifying no existing content is overwritten.
+**Independent Test**: Can be fully tested by running `steergen init . --target speckit --target kiro-ide` in an empty project and verifying expected directories/files are created, then re-running the same command and verifying no existing content is overwritten.
 
 **Acceptance Scenarios**:
 
-1. **Given** a project root path and one or more `--target` arguments, **When** the user runs `specgen init <root> --target <target>...`, **Then** the tool creates initial steering document location(s) and target platform folder structure for each specified target if missing.
-2. **Given** existing steering and target folders, **When** the user re-runs `specgen init` with the same targets, **Then** the command is idempotent and does not overwrite existing files.
+1. **Given** a project root path and one or more `--target` arguments, **When** the user runs `steergen init <root> --target <target>...`, **Then** the tool creates initial steering document location(s) and target platform folder structure for each specified target if missing.
+2. **Given** existing steering and target folders, **When** the user re-runs `steergen init` with the same targets, **Then** the command is idempotent and does not overwrite existing files.
 3. **Given** multiple targets in one invocation, **When** init runs, **Then** each valid target's folder structure is initialized in the same command execution.
 4. **Given** an unknown target identifier, **When** init runs, **Then** the tool reports a clear validation error and exits non-zero.
 
@@ -149,19 +149,38 @@ A tooling engineer wants to bootstrap a repository for specgen by creating requi
 
 ### User Story 9 - Update Project Templates and Metadata In Place (Priority: P9)
 
-A tooling engineer wants to refresh the local project template pack and metadata without upgrading the CLI binary. They run `specgen update` to pull and apply the latest compatible template/metadata release, or provide an explicit version to pin to a specific release.
+A tooling engineer wants to refresh the local project template pack and metadata without upgrading the CLI binary. They run `steergen update` to pull and apply the latest compatible template/metadata release, or provide an explicit version to pin to a specific release.
 
 **Why this priority**: Template and metadata evolution happens more frequently than CLI binary releases. Decoupling these update streams keeps projects current with lower operational friction.
 
-**Independent Test**: Can be fully tested by running `specgen update` in an initialized project and verifying template/metadata versions advance while the CLI binary version remains unchanged, then running `specgen update --version <x.y.z>` and verifying the requested template/metadata version is applied.
+**Independent Test**: Can be fully tested by running `steergen update` in an initialized project and verifying template/metadata versions advance while the CLI binary version remains unchanged, then running `steergen update --version <x.y.z>` and verifying the requested template/metadata version is applied.
 
 **Acceptance Scenarios**:
 
-1. **Given** an initialized project, **When** the user runs `specgen update`, **Then** the tool updates local templates and metadata in place to the latest available compatible release.
-2. **Given** an initialized project and a valid version argument, **When** the user runs `specgen update --version <x.y.z>`, **Then** the tool applies templates and metadata for that specific version.
+1. **Given** an initialized project, **When** the user runs `steergen update`, **Then** the tool updates local templates and metadata in place to the latest available compatible release.
+2. **Given** an initialized project and a valid version argument, **When** the user runs `steergen update --version <x.y.z>`, **Then** the tool applies templates and metadata for that specific version.
 3. **Given** an invalid or unavailable version argument, **When** update runs, **Then** the tool reports a clear version resolution error and exits non-zero.
 4. **Given** a fresh CLI install, **When** the tool is first run for project initialization, **Then** templates and metadata are updated to the latest available release by default.
 5. **Given** subsequent tool usage after initial install, **When** no update command is invoked, **Then** templates and metadata remain at the currently installed template-pack version.
+
+---
+
+### User Story 10 - Execute Generation and Manage Target Registration via CLI (Priority: P10)
+
+A tooling engineer wants to run generation from the CLI and manage target registration directly in the same command system. They run `steergen run` to invoke generation and may use `--target` to scope generation, or omit `--target` to generate for all registered targets. They run `steergen target add <target-id>` to register a new target and initialize required folders.
+
+**Why this priority**: Day-to-day usability requires a direct execution command and a clear target-registration workflow so teams can add and run targets without manual metadata edits.
+
+**Independent Test**: Can be fully tested by registering a new target with `steergen target add <target-id>`, then running `steergen run` with and without `--target` and verifying generation scope and output folders match expectations.
+
+**Acceptance Scenarios**:
+
+1. **Given** one or more registered targets, **When** the user runs `steergen run` without `--target`, **Then** generation runs for all registered targets.
+2. **Given** one or more registered targets, **When** the user runs `steergen run --target <target-id>`, **Then** generation runs only for the specified target(s).
+3. **Given** an unregistered target supplied to `run --target`, **When** the command executes, **Then** the tool exits non-zero with a clear target resolution error.
+4. **Given** a new target identifier, **When** the user runs `steergen target add <target-id>`, **Then** the target is added to the registration metadata and required target folders are created if missing.
+5. **Given** an already registered target, **When** `steergen target add <target-id>` is re-run, **Then** the command is idempotent and does not duplicate registration entries or overwrite existing target files.
+6. **Given** a registered target identifier, **When** the user runs `steergen target remove <target-id>`, **Then** the target is removed from registration metadata and no longer selected by default `steergen run` execution, and previously generated steering artefacts for that target remain untouched.
 
 ---
 
@@ -199,7 +218,7 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-012**: The tool MUST support a `compile` command that runs the full pipeline: load → validate → overlay → profile filter → generate artefacts.
 - **FR-013**: The tool MUST support a `validate` command that runs load and validation steps only, reporting all errors with document ID and source location.
 - **FR-014**: The tool MUST support an `inspect` command that outputs the fully resolved steering model as JSON to stdout.
-- **FR-015**: The tool MUST read configuration from `sdd-steer.config.json` or `sdd-steer.config.yaml` in the working directory by default, overridable via `--config`.
+- **FR-015**: The tool MUST read configuration from a single YAML-based configuration file (`steergen.config.yaml`) in the working directory by default, overridable via `--config`.
 - **FR-016**: The tool MUST support CLI overrides `--profile`, `--target`, `--output`, and `--config` that take precedence over file-based configuration.
 - **FR-017**: The tool MUST implement a stable built-in target contract and deterministic registration model that allows new output targets to be added without refactoring existing core pipeline components or existing target components.
 - **FR-018**: The tool MUST generate artefacts for all enabled targets defined in configuration; disabled targets MUST be skipped.
@@ -249,13 +268,14 @@ A tooling engineer wants to refresh the local project template pack and metadata
 
 #### CLI Architecture and Init Command
 
+- **FR-043-CLI**: The deliverable MUST provide a command-line binary executable named `steergen`.
 - **FR-044**: The system MUST provide a modular command-based CLI built on the `System.CommandLine` package.
 - **FR-045**: The CLI MUST provide an `init` command for repository bootstrap.
 - **FR-046**: `init` MUST accept a positional argument specifying the project root path.
 - **FR-047**: `init` MUST accept one or more `--target` options in a single invocation.
 - **FR-048**: `init` MUST create initial steering document folder(s) and target platform folder structures for all specified valid targets when those folders do not already exist.
 - **FR-049**: `init` MUST be idempotent and MUST NOT overwrite existing steering or target files/folders.
-- **FR-050**: The CLI MUST support invocation equivalent to `specgen init . --target speckit --target kiro-ide`.
+- **FR-050**: The CLI MUST support invocation equivalent to `steergen init . --target speckit --target kiro-ide`.
 - **FR-051**: If any provided target identifier is invalid, `init` MUST return a non-zero exit code and emit a clear validation message identifying the invalid target.
 
 #### CLI Update and Template Lifecycle
@@ -267,6 +287,24 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **FR-056**: On first installation or first-run bootstrap, the tool MUST update templates and metadata to the latest available release by default.
 - **FR-057**: After initial installation, template/metadata updates MUST remain independently invocable without requiring a CLI binary upgrade.
 - **FR-058**: The `update` command MUST fail safely on invalid/unavailable versions with non-zero exit code and actionable diagnostics.
+
+#### CLI Run and Target Registration
+
+- **FR-059**: The CLI MUST provide a `run` command that invokes the generation process.
+- **FR-060**: If `run` is invoked without any `--target` option, generation MUST execute for all registered targets by default.
+- **FR-061**: If `run` is invoked with one or more `--target` options, generation MUST execute only for the specified target(s).
+- **FR-062**: The CLI MUST provide a `target add` command/subcommand pair to register a new target identifier.
+- **FR-063**: `target add` MUST create required target folders if they do not already exist.
+- **FR-064**: `target add` MUST be idempotent and MUST NOT create duplicate target registrations or overwrite existing target files/folders.
+- **FR-065**: The CLI MUST provide a corresponding `target remove` subcommand that deregisters a target identifier from the registered target set.
+- **FR-066**: `target remove` MUST NOT delete or modify previously generated steering artefacts for the removed target; artifact cleanup is an explicit user-managed action.
+
+### Non-Functional Requirements
+
+- **NFR-001 (Configuration Source of Truth)**: Target registrations and related project configuration MUST be stored in a single YAML configuration file (default filename: `steergen.config.yaml`) that is human-readable and well documented.
+- **NFR-002 (CLI Config Operability)**: The CLI MUST provide complete command coverage to create, update, and control configuration content stored in that YAML file, while allowing manual editing as a supported workflow.
+- **NFR-003 (Version Control Friendliness)**: The primary YAML configuration file is expected to be committed to version control and MUST remain concise and reviewable rather than growing into a volatile lock-file style artifact.
+- **NFR-004 (Locking Separation)**: If lock semantics are required, lock state MUST be written to and tracked in a separate file from the primary YAML configuration file.
 
 ### Key Entities
 
@@ -285,6 +323,8 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **Initialization Manifest**: Derived initialization intent from `init` inputs (project root + target list) used to create missing steering and target directories safely.
 - **Template Pack Version**: The independently versioned release identifier for templates and project metadata applied to a repository.
 - **Update Manifest**: Resolved update intent and provenance for an `update` execution, including selected version, compatibility checks, and applied artifact set.
+- **Registered Target Set**: The canonical list of target identifiers configured for generation in a project.
+- **Target Registration Record**: Metadata entry created by `target add` describing a target identifier, associated folder layout, and registration state.
 - **Resolved Steering Model**: The post-overlay, post-filter model representing the effective set of rules for a given profile configuration.
 
 ## Success Criteria *(mandatory)*
@@ -304,11 +344,13 @@ A tooling engineer wants to refresh the local project template pack and metadata
 - **SC-011**: Adding a new target requires only additive changes (new target component + registration metadata) and zero refactor edits to existing target components in 100% of audited target-addition PRs.
 - **SC-012**: For every supported target, generated artifacts pass platform naming and structure validation in 100% of golden test scenarios.
 - **SC-013**: For every supported target that allows modular guidance, generated outputs separate universal core constitution rules from domain-specific modules in 100% of audited output bundles.
-- **SC-014**: `specgen init` successfully initializes missing baseline steering and target folder structures for 100% of supported-target test cases.
-- **SC-015**: Re-running the same `specgen init` command in an already initialized project performs zero destructive changes in 100% of idempotency test scenarios.
-- **SC-016**: `specgen update` applies the latest compatible template/metadata release successfully in 100% of supported-project update test scenarios.
-- **SC-017**: Version-pinned updates via `specgen update --version <x.y.z>` apply the exact requested template/metadata version in 100% of valid-version test scenarios.
+- **SC-014**: `steergen init` successfully initializes missing baseline steering and target folder structures for 100% of supported-target test cases.
+- **SC-015**: Re-running the same `steergen init` command in an already initialized project performs zero destructive changes in 100% of idempotency test scenarios.
+- **SC-016**: `steergen update` applies the latest compatible template/metadata release successfully in 100% of supported-project update test scenarios.
+- **SC-017**: Version-pinned updates via `steergen update --version <x.y.z>` apply the exact requested template/metadata version in 100% of valid-version test scenarios.
 - **SC-018**: Template and metadata updates can be performed without changing CLI binary version in 100% of lifecycle regression tests.
+- **SC-019**: `steergen run` without explicit targets generates outputs for 100% of registered targets in default-scope test scenarios.
+- **SC-020**: `steergen target add` correctly registers targets and initializes missing target folders with idempotent behavior in 100% of registration lifecycle tests.
 
 ## Assumptions
 
