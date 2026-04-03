@@ -227,13 +227,13 @@
 
 ### Tests for User Story 9 (MANDATORY) ✅
 
-- [ ] T061 [P] [US9] Add update-command integration tests for latest-compatible, exact-version, and preview-version flows in `tests/Steergen.Cli.IntegrationTests/UpdateCommandTests.cs`
-- [ ] T062 [P] [US9] Add version-resolution unit tests preserving stable and `previewN` SemVer behavior in `tests/Steergen.Core.UnitTests/Updates/TemplateVersionResolverTests.cs`
+- [x] T061 [P] [US9] Add update-command integration tests for latest-compatible, exact-version, and preview-version flows in `tests/Steergen.Cli.IntegrationTests/UpdateCommandTests.cs`
+- [x] T062 [P] [US9] Add version-resolution unit tests preserving stable and `previewN` SemVer behavior in `tests/Steergen.Core.UnitTests/Updates/TemplateVersionResolverTests.cs`
 
 ### Implementation for User Story 9
 
-- [ ] T063 [US9] Implement template-pack update orchestration and version resolution in `src/Steergen.Core/Updates/TemplatePackUpdater.cs` and `src/Steergen.Core/Updates/TemplateVersionResolver.cs`
-- [ ] T064 [US9] Implement the update command and config version persistence in `src/Steergen.Cli/Commands/UpdateCommand.cs` and `src/Steergen.Core/Configuration/SteergenConfigWriter.cs`
+- [x] T063 [US9] Implement template-pack update orchestration and version resolution in `src/Steergen.Core/Updates/TemplatePackUpdater.cs` and `src/Steergen.Core/Updates/TemplateVersionResolver.cs`
+- [x] T064 [US9] Implement the update command and config version persistence in `src/Steergen.Cli/Commands/UpdateCommand.cs` and `src/Steergen.Core/Configuration/SteergenConfigWriter.cs`
 
 **Checkpoint**: User Story 9 independently manages template-pack lifecycle and release-version semantics.
 

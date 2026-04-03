@@ -20,10 +20,13 @@ public static class CommandFactory
 
         var initCommand = Commands.InitCommand.Create();
 
+        var updateCommand = Commands.UpdateCommand.Create();
+
         rootCommand.Add(runCommand);
         rootCommand.Add(validateCommand);
         rootCommand.Add(inspectCommand);
         rootCommand.Add(initCommand);
+        rootCommand.Add(updateCommand);
 
         return rootCommand;
     }

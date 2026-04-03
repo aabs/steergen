@@ -298,3 +298,30 @@ Started: 2026-04-03 16:49:34
 - Benchmark class needs [MemoryDiagnoser], ValidateCorpus takes IEnumerable<SteeringDocument>
 - All 122 tests pass (37 property, 38 unit, 47 integration)
 ---
+
+---
+## Iteration 12 - 2026-04-03T07:17:55Z
+**User Story**: US-008 Initialize Project Structure via CLI
+**Tasks Completed**: 
+- [x] T057: InitCommandTests.cs (10 integration tests: single target, multi-target, idempotency, sentinel preservation, invalid target, missing root, no targets)
+- [x] T058: TargetLayoutInitializerTests.cs (12 unit tests: IsValidTargetId, GetLayoutFolders, Initialize error/success/idempotency/multi-target)
+- [x] T059: TargetLayoutInitializer.cs (idempotent folder bootstrap, validates known target IDs, creates steering/{global,project} + per-target output dirs, returns InitResult)
+- [x] T060: InitCommand.cs ('steergen init <project-root> --target ...' with exit 0/2, wired into CommandFactory)
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 7463cff
+**Files Changed**: 
+- src/Steergen.Core/Targets/TargetLayoutInitializer.cs (new)
+- src/Steergen.Cli/Commands/InitCommand.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (added InitCommand.Create())
+- tests/Steergen.Cli.IntegrationTests/InitCommandTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/InspectCommandTests.cs ([Collection("CliOutput")] added)
+- tests/Steergen.Core.UnitTests/Targets/TargetLayoutInitializerTests.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T057-T060 marked done)
+**Learnings**:
+- InitResult pattern: bool Success, CreatedFolders, ExistingFolders, ErrorMessage? - clean way to return structured init results
+- TargetLayoutInitializer always creates steering/global + steering/project regardless of target count
+- InitCommand writes status output to Console.Error (stderr), not stdout - keeps stdout clean for data commands
+- xUnit v3 captures Console.Error via async-local mechanism and may route it to the same sink as Console.Out; when CaptureStdout uses Console.SetOut(sw), Console.Error writes from concurrent tests can end up in sw - fix: [Collection("CliOutput")] on both InspectCommandTests and InitCommandTests
+- Argument<T> in System.CommandLine 3.0.0-preview.2 only accepts name (single arg); description and DefaultValueFactory are properties set separately
+- All 150 tests pass (37 property, 56 unit, 57 integration)
+---
