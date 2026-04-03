@@ -127,13 +127,13 @@
 
 ### Tests for User Story 4 (MANDATORY) ✅
 
-- [ ] T041 [P] [US4] Add validate-command integration tests for schema errors, duplicate IDs, severity validation, and warnings in `tests/Steergen.Cli.IntegrationTests/ValidateCommandTests.cs`
-- [ ] T042 [P] [US4] Add property tests for stable diagnostic ordering and location reporting in `tests/Steergen.Core.PropertyTests/Validation/ValidationDiagnosticProperties.cs`
+- [x] T041 [P] [US4] Add validate-command integration tests for schema errors, duplicate IDs, severity validation, and warnings in `tests/Steergen.Cli.IntegrationTests/ValidateCommandTests.cs`
+- [x] T042 [P] [US4] Add property tests for stable diagnostic ordering and location reporting in `tests/Steergen.Core.PropertyTests/Validation/ValidationDiagnosticProperties.cs`
 
 ### Implementation for User Story 4
 
-- [ ] T043 [US4] Implement the validate command handler in `src/Steergen.Cli/Commands/ValidateCommand.cs`
-- [ ] T044 [US4] Extend the validation pipeline for frontmatter, duplicate IDs, severity values, and supersedes warnings in `src/Steergen.Core/Validation/SteeringValidator.cs`
+- [x] T043 [US4] Implement the validate command handler in `src/Steergen.Cli/Commands/ValidateCommand.cs`
+- [x] T044 [US4] Extend the validation pipeline for frontmatter, duplicate IDs, severity values, and supersedes warnings in `src/Steergen.Core/Validation/SteeringValidator.cs`
 
 **Checkpoint**: User Story 4 independently provides CI-ready document validation.
 
