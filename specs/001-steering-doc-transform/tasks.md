@@ -17,12 +17,12 @@
 
 **Purpose**: Create the solution, projects, and baseline repository structure required by all stories.
 
-- [ ] T001 Create the .NET solution and project skeleton in `specgen.sln`, `src/Steergen.Cli/Steergen.Cli.csproj`, `src/Steergen.Core/Steergen.Core.csproj`, `src/Steergen.Templates/Steergen.Templates.csproj`, `tests/Steergen.Core.PropertyTests/Steergen.Core.PropertyTests.csproj`, `tests/Steergen.Core.UnitTests/Steergen.Core.UnitTests.csproj`, `tests/Steergen.Cli.IntegrationTests/Steergen.Cli.IntegrationTests.csproj`, and `tests/Steergen.Benchmarks/Steergen.Benchmarks.csproj`
-- [ ] T002 Configure repository-wide SDK, nullable, analyzers, and deterministic build defaults in `global.json`, `Directory.Build.props`, and `Directory.Build.targets`
-- [ ] T003 [P] Add runtime dependencies for the CLI and rendering pipeline in `src/Steergen.Cli/Steergen.Cli.csproj`, `src/Steergen.Core/Steergen.Core.csproj`, and `src/Steergen.Templates/Steergen.Templates.csproj`
-- [ ] T004 [P] Add test and benchmark dependencies for xUnit, CsCheck, NSubstitute, and BenchmarkDotNet in `tests/Steergen.Core.PropertyTests/Steergen.Core.PropertyTests.csproj`, `tests/Steergen.Core.UnitTests/Steergen.Core.UnitTests.csproj`, `tests/Steergen.Cli.IntegrationTests/Steergen.Cli.IntegrationTests.csproj`, and `tests/Steergen.Benchmarks/Steergen.Benchmarks.csproj`
-- [ ] T005 [P] Create realistic governance fixture scaffolding for constitution and steering corpora in `tests/Fixtures/RealisticGovernance/README.md`, `tests/Fixtures/RealisticGovernance/global/constitution.md`, and `tests/Fixtures/RealisticGovernance/project/project-steering.md`
-- [ ] T006 [P] Add initial template asset folders and placeholder files in `src/Steergen.Templates/Scriban/speckit/.gitkeep`, `src/Steergen.Templates/Scriban/kiro/.gitkeep`, and `src/Steergen.Templates/Scriban/agents/.gitkeep`
+- [x] T001 Create the .NET solution and project skeleton in `specgen.sln`, `src/Steergen.Cli/Steergen.Cli.csproj`, `src/Steergen.Core/Steergen.Core.csproj`, `src/Steergen.Templates/Steergen.Templates.csproj`, `tests/Steergen.Core.PropertyTests/Steergen.Core.PropertyTests.csproj`, `tests/Steergen.Core.UnitTests/Steergen.Core.UnitTests.csproj`, `tests/Steergen.Cli.IntegrationTests/Steergen.Cli.IntegrationTests.csproj`, and `tests/Steergen.Benchmarks/Steergen.Benchmarks.csproj`
+- [x] T002 Configure repository-wide SDK, nullable, analyzers, and deterministic build defaults in `global.json`, `Directory.Build.props`, and `Directory.Build.targets`
+- [x] T003 [P] Add runtime dependencies for the CLI and rendering pipeline in `src/Steergen.Cli/Steergen.Cli.csproj`, `src/Steergen.Core/Steergen.Core.csproj`, and `src/Steergen.Templates/Steergen.Templates.csproj`
+- [x] T004 [P] Add test and benchmark dependencies for xUnit, CsCheck, NSubstitute, and BenchmarkDotNet in `tests/Steergen.Core.PropertyTests/Steergen.Core.PropertyTests.csproj`, `tests/Steergen.Core.UnitTests/Steergen.Core.UnitTests.csproj`, `tests/Steergen.Cli.IntegrationTests/Steergen.Cli.IntegrationTests.csproj`, and `tests/Steergen.Benchmarks/Steergen.Benchmarks.csproj`
+- [x] T005 [P] Create realistic governance fixture scaffolding for constitution and steering corpora in `tests/Fixtures/RealisticGovernance/README.md`, `tests/Fixtures/RealisticGovernance/global/constitution.md`, and `tests/Fixtures/RealisticGovernance/project/project-steering.md`
+- [x] T006 [P] Add initial template asset folders and placeholder files in `src/Steergen.Templates/Scriban/speckit/.gitkeep`, `src/Steergen.Templates/Scriban/kiro/.gitkeep`, and `src/Steergen.Templates/Scriban/agents/.gitkeep`
 
 ---
 

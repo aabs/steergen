@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Steergen.Core\Steergen.Core.csproj" />
+  </ItemGroup>
+
+</Project>
