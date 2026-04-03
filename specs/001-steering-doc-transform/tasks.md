@@ -147,13 +147,13 @@
 
 ### Tests for User Story 5 (MANDATORY) ✅
 
-- [ ] T045 [P] [US5] Add inspect-command integration tests for stdout JSON and profile-scoped output in `tests/Steergen.Cli.IntegrationTests/InspectCommandTests.cs`
-- [ ] T046 [P] [US5] Add property tests for deterministic inspect JSON ordering in `tests/Steergen.Core.PropertyTests/Inspection/InspectJsonProperties.cs`
+- [x] T045 [P] [US5] Add inspect-command integration tests for stdout JSON and profile-scoped output in `tests/Steergen.Cli.IntegrationTests/InspectCommandTests.cs`
+- [x] T046 [P] [US5] Add property tests for deterministic inspect JSON ordering in `tests/Steergen.Core.PropertyTests/Inspection/InspectJsonProperties.cs`
 
 ### Implementation for User Story 5
 
-- [ ] T047 [US5] Implement the inspect model serializer in `src/Steergen.Core/Generation/InspectModelWriter.cs`
-- [ ] T048 [US5] Implement the inspect command handler in `src/Steergen.Cli/Commands/InspectCommand.cs`
+- [x] T047 [US5] Implement the inspect model serializer in `src/Steergen.Core/Generation/InspectModelWriter.cs`
+- [x] T048 [US5] Implement the inspect command handler in `src/Steergen.Cli/Commands/InspectCommand.cs`
 
 **Checkpoint**: User Story 5 independently supports resolved-model inspection workflows.
 

@@ -16,11 +16,7 @@ public static class CommandFactory
 
         var validateCommand = Commands.ValidateCommand.Create();
 
-        var inspectCommand = new Command("inspect", "Inspect the merged steering model");
-        inspectCommand.SetAction(_ =>
-        {
-            Console.WriteLine("inspect: not yet implemented");
-        });
+        var inspectCommand = Commands.InspectCommand.Create();
 
         rootCommand.Add(runCommand);
         rootCommand.Add(validateCommand);

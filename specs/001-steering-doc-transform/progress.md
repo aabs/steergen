@@ -196,3 +196,28 @@ Started: 2026-04-03 16:49:34
 - RequiredMetadata keys checked before rendering; missing key throws TargetGenerationException
 - All 71 tests pass (23 property, 30 unit, 18 integration)
 ---
+
+---
+## Iteration 8 - 2026-04-03T06:54:05Z
+**User Story**: US-004 Validate Steering Documents
+**Tasks Completed**: 
+- [x] T041: ValidateCommandTests.cs (7 integration tests: valid corpus, missing id, bad severity, duplicate IDs, supersedes warning, missing dir, combined paths)
+- [x] T042: ValidationDiagnosticProperties.cs (8 property tests: stable ordering, path ordering, location reporting, duplicate ID detection, supersedes warning)
+- [x] T043: ValidateCommand.cs with --global/--project/--quiet options, exit 0/1/2
+- [x] T044: SteeringValidator extended with ValidateCorpus (deterministic order), V007 duplicate rule IDs, V008 supersedes unknown rule warning
+**Tasks Remaining in Story**: None - story complete
+**Commit**: ee1b16b
+**Files Changed**: 
+- src/Steergen.Cli/Commands/ValidateCommand.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (wired up validate command)
+- src/Steergen.Core/Validation/SteeringValidator.cs (added ValidateCorpus, V007, V008)
+- tests/Steergen.Cli.IntegrationTests/ValidateCommandTests.cs (new)
+- tests/Steergen.Core.PropertyTests/Validation/ValidationDiagnosticProperties.cs (new)
+- specs/001-steering-doc-transform/tasks.md (T041-T044 marked done)
+**Learnings**:
+- ValidateCommand.RunAsync must be public (not internal) for integration test direct access
+- Assert.Empty on filtered LINQ collections triggers xUnit2029 - use Assert.DoesNotContain instead
+- ValidateCorpus returns diagnostics sorted by FilePath then Code (deterministic)
+- V007 = duplicate rule IDs (Error), V008 = supersedes unknown rule (Warning, not Error)
+- All 86 tests pass (31 property, 30 unit, 25 integration)
+---
