@@ -267,8 +267,8 @@
 - [x] T070 [P] Add end-to-end malicious-input regression coverage and expand realistic governance corpora in `tests/Steergen.Cli.IntegrationTests/Security/CliSecurityRegressionTests.cs` and `tests/Fixtures/RealisticGovernance/`
 - [x] T071 [P] Record benchmark execution guidance and release/versioning checks for stable and preview tags in `docs/release/release-checklist.md` and `tests/Steergen.Benchmarks/README.md`
 - [x] T072 Run quickstart and contract validation cleanup against `specs/001-steering-doc-transform/quickstart.md`, `specs/001-steering-doc-transform/contracts/cli-contract.md`, and `specs/001-steering-doc-transform/contracts/config-schema.md`
-- [ ] T073 [P] Add integration tests for constitution amendment provenance capture (version rationale, amendment date, impacted-artifact sync record) in `tests/Steergen.Cli.IntegrationTests/ConstitutionProvenanceTests.cs`
-- [ ] T074 Implement constitution provenance recording in `src/Steergen.Core/Updates/ConstitutionProvenanceRecorder.cs` and wire it into `src/Steergen.Core/Updates/TemplatePackUpdater.cs`
+- [x] T073 [P] Add integration tests for constitution amendment provenance capture (version rationale, amendment date, impacted-artifact sync record) in `tests/Steergen.Cli.IntegrationTests/ConstitutionProvenanceTests.cs`
+- [x] T074 Implement constitution provenance recording in `src/Steergen.Core/Updates/ConstitutionProvenanceRecorder.cs` and wire it into `src/Steergen.Core/Updates/TemplatePackUpdater.cs`
 - [ ] T075 [P] Add publish-profile and CI validation for single portable executable distribution in `src/Steergen.Cli/Steergen.Cli.csproj` and `.github/workflows/ci.yml`
 - [ ] T076 [P] Add trimming and executable-size budget verification checks in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
 - [ ] T077 [P] Add optimization-mode verification (AOT/ReadyToRun decision path) in `docs/release/release-checklist.md` and `Directory.Build.props`

@@ -32,18 +32,21 @@ public sealed class TemplatePackUpdater
         "1.2.0-preview2",
     ];
 
-    private readonly IReadOnlyList<string> _catalog;
-    private readonly SteergenConfigLoader  _loader;
-    private readonly SteergenConfigWriter  _writer;
+    private readonly IReadOnlyList<string>        _catalog;
+    private readonly SteergenConfigLoader         _loader;
+    private readonly SteergenConfigWriter         _writer;
+    private readonly ConstitutionProvenanceRecorder? _provenance;
 
     public TemplatePackUpdater(
-        IReadOnlyList<string>? catalog = null,
-        SteergenConfigLoader?  loader  = null,
-        SteergenConfigWriter?  writer  = null)
+        IReadOnlyList<string>?        catalog    = null,
+        SteergenConfigLoader?         loader     = null,
+        SteergenConfigWriter?         writer     = null,
+        ConstitutionProvenanceRecorder? provenance = null)
     {
-        _catalog = catalog ?? BuiltInCatalog;
-        _loader  = loader  ?? new SteergenConfigLoader();
-        _writer  = writer  ?? new SteergenConfigWriter();
+        _catalog    = catalog    ?? BuiltInCatalog;
+        _loader     = loader     ?? new SteergenConfigLoader();
+        _writer     = writer     ?? new SteergenConfigWriter();
+        _provenance = provenance;
     }
 
     /// <summary>
@@ -53,10 +56,14 @@ public sealed class TemplatePackUpdater
     /// <param name="version">Exact version requested, or <see langword="null"/> for latest.</param>
     /// <param name="preview">When <see langword="true"/> and <paramref name="version"/> is null,
     ///   considers preview versions when resolving latest.</param>
+    /// <param name="versionRationale">Optional human-readable reason for this amendment, stored in the provenance log.</param>
+    /// <param name="impactedArtifacts">Artifacts that may need re-synchronisation after this amendment.</param>
     public async Task<UpdateResult> UpdateAsync(
         string configPath,
         string? version,
         bool preview,
+        string? versionRationale = null,
+        IReadOnlyList<string>? impactedArtifacts = null,
         CancellationToken cancellationToken = default)
     {
         if (!File.Exists(configPath))
@@ -84,8 +91,22 @@ public sealed class TemplatePackUpdater
         }
 
         var config = await _loader.LoadAsync(configPath, cancellationToken).ConfigureAwait(false);
+        var previousVersion = config.TemplatePackVersion ?? "(none)";
         var updated = config with { TemplatePackVersion = resolved };
         await _writer.WriteAsync(configPath, updated, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (_provenance is not null)
+        {
+            var entry = new ConstitutionProvenanceEntry
+            {
+                PreviousVersion   = previousVersion,
+                NewVersion        = resolved,
+                AmendmentDate     = DateTimeOffset.UtcNow,
+                VersionRationale  = versionRationale,
+                ImpactedArtifacts = impactedArtifacts ?? [],
+            };
+            await _provenance.RecordAsync(entry, cancellationToken).ConfigureAwait(false);
+        }
 
         return UpdateResult.Ok(resolved);
     }

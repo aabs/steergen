@@ -376,3 +376,30 @@ Started: 2026-04-03 16:49:34
 - TreatWarningsAsErrors is active; xUnit2031 (Where before Assert.Single) is a build error - use Assert.Single(collection, predicate) overload
 - All 217 tests pass (37 property, 98 unit, 82 integration)
 ---
+
+---
+## Iteration 15 - 2026-04-03T08:10:30Z
+**User Story**: Final Phase (Polish & Cross-Cutting Concerns) — T069-T072
+**Tasks Completed**: 
+- [x] T069: README.md updated with full "Quick Command Reference" section (init/validate/run/inspect/target/update with correct options); CI section updated to use `steergen` CLI name
+- [x] T070: CliSecurityRegressionTests.cs (21 integration tests: prompt-injection, path-traversal, script-injection, unicode/special chars, long inputs, empty/missing dirs, realistic corpus); added security-governance.md and data-platform-steering.md governance fixtures
+- [x] T071: docs/release/release-checklist.md (pre-release checks, versioning rules, benchmark envelope, optimization-mode guidance, portable executable, CI gates, post-release steps); tests/Steergen.Benchmarks/README.md (how to run, benchmark table, SLO envelope reference)
+- [x] T072: quickstart.md corrected (validate → --global/--project, run with explicit paths, added inspect section); contracts/cli-contract.md command surface updated to match actual option names
+**Tasks Remaining in Story**: T073-T080 (8 tasks)
+**Commit**: 80ca306
+**Files Changed**: 
+- README.md
+- specs/001-steering-doc-transform/quickstart.md
+- specs/001-steering-doc-transform/contracts/cli-contract.md
+- tests/Steergen.Cli.IntegrationTests/Security/CliSecurityRegressionTests.cs (new)
+- tests/Fixtures/RealisticGovernance/global/security-governance.md (new)
+- tests/Fixtures/RealisticGovernance/project/data-platform-steering.md (new)
+- docs/release/release-checklist.md (new)
+- tests/Steergen.Benchmarks/README.md (new)
+- specs/001-steering-doc-transform/tasks.md (T069-T072 marked done)
+**Learnings**:
+- ValidateCommand.RunAsync returns exit 2 for non-existent directories and exit 0 for empty directories (no documents to validate = valid)
+- Security regression tests should cover: prompt-injection, path traversal, script injection, unicode/null bytes, extreme size, missing dirs — all verified no exceptions thrown
+- Governance fixture files must use quoted-attribute format `:::rule id="..." severity="..." domain="..."` — positional IDs not supported
+- All 238 tests pass (37 property, 98 unit, 103 integration; +21 from this iteration)
+---

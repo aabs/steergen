@@ -48,7 +48,7 @@ public static class UpdateCommand
         try
         {
             var updater = new TemplatePackUpdater();
-            var result  = await updater.UpdateAsync(configPath, version, preview, cancellationToken)
+            var result  = await updater.UpdateAsync(configPath, version, preview, cancellationToken: cancellationToken)
                                        .ConfigureAwait(false);
 
             if (!result.Success)
