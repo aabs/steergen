@@ -5,7 +5,7 @@
 
 ## Summary
 
-Build a deterministic, security-hardened .NET 10/C# 14 CLI (`steergen`) that parses steering Markdown, resolves overlays/profiles, and generates platform-compliant outputs for Speckit, Kiro, and agent-spec targets. Use a non-plugin additive target architecture, YAML project config (`steergen.config.yaml`), command system via `System.CommandLine`, and templating via Scriban. Development is strict Red-Green-Refactor with PBT-first testing (CsCheck + xUnit), targeted mocking (NSubstitute), and performance regression measurement with BenchmarkDotNet. Template/rule examples are standards-first; public repository examples are fallback only when standards are incomplete, and test fixtures should use plausible real-world constitution/steering rules where practical.
+Build a deterministic, security-hardened .NET 10/C# 14 CLI (`steergen`) that parses steering Markdown, resolves overlays/profiles, and generates platform-compliant outputs for Speckit, Kiro, and agent-spec targets. Use a non-plugin additive target architecture, YAML project config (`steergen.config.yaml`), command system via `System.CommandLine`, and templating via Scriban. Generation is invoked via the `run` command as the single canonical command. Development is strict Red-Green-Refactor with PBT-first testing (CsCheck + xUnit), targeted mocking (NSubstitute), and performance regression measurement with BenchmarkDotNet. Template/rule examples are standards-first; public repository examples are fallback only when standards are incomplete, and test fixtures should use plausible real-world constitution/steering rules where practical.
 
 ## Technical Context
 

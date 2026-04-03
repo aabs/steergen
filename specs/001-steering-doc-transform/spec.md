@@ -17,27 +17,27 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Compile Steering Documents to Speckit Artefacts (Priority: P1)
+### User Story 1 - Run Steering Generation to Speckit Artefacts (Priority: P1)
 
-A governance author or tooling engineer has one or more steering documents (Markdown files with embedded rule blocks) and wants to produce Speckit-compatible Markdown artefacts for consumption by downstream tooling. They run the `compile` command, which discovers all documents, validates them, applies profile filtering and overlay resolution, and writes the output artefacts to the configured output directory.
+A governance author or tooling engineer has one or more steering documents (Markdown files with embedded rule blocks) and wants to produce Speckit-compatible Markdown artefacts for consumption by downstream tooling. They run the `run` command, which discovers all documents, validates them, applies profile filtering and overlay resolution, and writes the output artefacts to the configured output directory.
 
-**Why this priority**: This is the core value proposition of the tool. Without the ability to compile steering documents into consumable artefacts, no other feature matters. All other user stories depend on or extend this capability.
+**Why this priority**: This is the core value proposition of the tool. Without the ability to run steering generation into consumable artefacts, no other feature matters. All other user stories depend on or extend this capability.
 
 **Independent Test**: Can be fully tested by providing a directory of valid steering documents and verifying that the output directory contains correctly structured Speckit Markdown files matching the document content.
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid configuration file and a directory containing well-formed steering documents, **When** the user runs `compile`, **Then** the tool produces Speckit Markdown artefacts in the configured output directory without errors and exits with code 0.
-2. **Given** both global and project-level steering documents where the project document defines a rule with the same ID as a global rule, **When** the user runs `compile`, **Then** the project rule replaces the global rule in the output artefacts.
-3. **Given** a configuration specifying an active profile (e.g., `clientA`), **When** the user runs `compile`, **Then** only rules whose profile matches the active profile set or the `default` profile are included in the output.
-4. **Given** a steering document containing deprecated rules, **When** the user runs `compile`, **Then** deprecation metadata is preserved in the output artefacts.
-5. **Given** multiple steering documents with rules referencing `supersedes` relationships, **When** the user runs `compile`, **Then** supersession metadata is preserved in the output artefacts.
+1. **Given** a valid configuration file and a directory containing well-formed steering documents, **When** the user runs `run`, **Then** the tool produces Speckit Markdown artefacts in the configured output directory without errors and exits with code 0.
+2. **Given** both global and project-level steering documents where the project document defines a rule with the same ID as a global rule, **When** the user runs `run`, **Then** the project rule replaces the global rule in the output artefacts.
+3. **Given** a configuration specifying an active profile (e.g., `clientA`), **When** the user runs `run`, **Then** only rules whose profile matches the active profile set or the `default` profile are included in the output.
+4. **Given** a steering document containing deprecated rules, **When** the user runs `run`, **Then** deprecation metadata is preserved in the output artefacts.
+5. **Given** multiple steering documents with rules referencing `supersedes` relationships, **When** the user runs `run`, **Then** supersession metadata is preserved in the output artefacts.
 
 ---
 
-### User Story 2 - Compile Steering Documents to Kiro IDE Steering Files (Priority: P2)
+### User Story 2 - Run Steering Generation to Kiro IDE Steering Files (Priority: P2)
 
-A governance author or tooling engineer has steering documents and wants to produce Kiro IDE-compatible steering files for use in one or more Kiro workspaces. They run the `compile` command with the Kiro target enabled, which generates one Markdown steering file per source document in the configured output directory. Each output file contains YAML frontmatter specifying the appropriate Kiro inclusion mode and prose-rendered rule content — ready to be placed in a `.kiro/steering/` directory.
+A governance author or tooling engineer has steering documents and wants to produce Kiro IDE-compatible steering files for use in one or more Kiro workspaces. They run the `run` command with the Kiro target enabled, which generates one Markdown steering file per source document in the configured output directory. Each output file contains YAML frontmatter specifying the appropriate Kiro inclusion mode and prose-rendered rule content — ready to be placed in a `.kiro/steering/` directory.
 
 **Why this priority**: Kiro IDE's steering format is a first-class output target with meaningfully different semantics from Speckit Markdown outputs. Unlike Kiro's prose-first steering files, Speckit preserves structured guidance representation in Markdown modules. Both output formats are primary deliverables, making this story equally critical to Story 1.
 
@@ -45,30 +45,30 @@ A governance author or tooling engineer has steering documents and wants to prod
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid configuration with the Kiro target enabled and a directory of well-formed steering documents, **When** the user runs `compile`, **Then** the tool produces one Markdown file per source document in the configured output directory, each containing valid YAML frontmatter and prose-rendered rule content, and exits with code 0.
+1. **Given** a valid configuration with the Kiro target enabled and a directory of well-formed steering documents, **When** the user runs `run`, **Then** the tool produces one Markdown file per source document in the configured output directory, each containing valid YAML frontmatter and prose-rendered rule content, and exits with code 0.
 2. **Given** a steering document whose rules have no explicit `inclusion` mapping configured, **When** the Kiro adapter generates the output file, **Then** the frontmatter defaults to `inclusion: always`.
 3. **Given** a steering document whose target configuration specifies `inclusion: fileMatch` and a `fileMatchPattern`, **When** the Kiro adapter generates the output file, **Then** the frontmatter contains `inclusion: fileMatch` and the configured `fileMatchPattern` value.
 4. **Given** a steering document whose target configuration specifies `inclusion: auto`, **When** the Kiro adapter generates the output file, **Then** the frontmatter contains `inclusion: auto`, a `name` field derived from the document title, and a `description` field derived from the document description.
 5. **Given** a steering document with multiple rules, **When** the Kiro adapter generates the output file, **Then** each rule's primary directive and explanatory material are rendered as natural language prose paragraphs; no rule IDs, severity values, or `:::rule` syntax appear in the output.
 6. **Given** a steering document containing deprecated rules, **When** the Kiro adapter generates the output file, **Then** deprecated rules are excluded from the prose output.
-7. **Given** both global and project-level steering documents where the project document defines a rule with the same ID as a global rule, **When** the user runs `compile` with the Kiro target, **Then** the project rule's prose replaces the global rule's prose in the output file.
+7. **Given** both global and project-level steering documents where the project document defines a rule with the same ID as a global rule, **When** the user runs `run` with the Kiro target, **Then** the project rule's prose replaces the global rule's prose in the output file.
 
 ---
 
-### User Story 3 - Compile Steering Guidance to Agent Specification Files (Priority: P3)
+### User Story 3 - Run Steering Generation to Agent Specification Files (Priority: P3)
 
-A governance author or tooling engineer wants to generate agent-specification files for a chosen AI platform from the same neutral steering model. They run `compile` with an agent-spec target (for example `copilot-agent`, `kiro-agent`, or `agents-md`), and the tool emits target-specific agent instruction files that preserve platform-compatible semantics.
+A governance author or tooling engineer wants to generate agent-specification files for a chosen AI platform from the same neutral steering model. They run `run` with an agent-spec target (for example `copilot-agent`, `kiro-agent`, or `agents-md`), and the tool emits target-specific agent instruction files that preserve platform-compatible semantics.
 
 **Why this priority**: Agent specification files are a core output class alongside Speckit and Kiro steering. Platform formats differ materially (for example Kiro agent format differs from Copilot agent format), so the transformation pipeline must support format-specific generation from shared source guidance.
 
-**Independent Test**: Can be fully tested by running `compile` for two distinct agent-spec targets against the same steering corpus and verifying both outputs are syntactically valid for their platforms and semantically consistent with the source guidance.
+**Independent Test**: Can be fully tested by running `run` for two distinct agent-spec targets against the same steering corpus and verifying both outputs are syntactically valid for their platforms and semantically consistent with the source guidance.
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid configuration with `copilot-agent` target enabled, **When** the user runs `compile`, **Then** the tool generates Copilot-compatible agent specification files in the configured output path.
-2. **Given** a valid configuration with `kiro-agent` target enabled, **When** the user runs `compile`, **Then** the tool generates Kiro-compatible agent specification files in the configured output path.
-3. **Given** the same source steering guidance and profile selection, **When** the user compiles for multiple agent targets, **Then** target-specific syntax differs but the normative guidance semantics remain equivalent.
-4. **Given** a target-specific required metadata field is missing for an agent target, **When** `compile` runs, **Then** the tool reports a target generation error and exits with code 3.
+1. **Given** a valid configuration with `copilot-agent` target enabled, **When** the user runs `run`, **Then** the tool generates Copilot-compatible agent specification files in the configured output path.
+2. **Given** a valid configuration with `kiro-agent` target enabled, **When** the user runs `run`, **Then** the tool generates Kiro-compatible agent specification files in the configured output path.
+3. **Given** the same source steering guidance and profile selection, **When** the user runs generation for multiple agent targets, **Then** target-specific syntax differs but the normative guidance semantics remain equivalent.
+4. **Given** a target-specific required metadata field is missing for an agent target, **When** `run` executes, **Then** the tool reports a target generation error and exits with code 3.
 
 ---
 
@@ -112,31 +112,31 @@ A tooling engineer wants to add support for a new SDD output format (e.g., a dif
 
 **Why this priority**: Extensibility is a stated architectural requirement. Without a verified non-plugin extension seam, the tool cannot scale to many targets while preserving stability and maintainability.
 
-**Independent Test**: Can be fully tested by implementing a minimal test adapter that writes a fixed file, registering it, and verifying that `compile` invokes it and produces the expected output.
+**Independent Test**: Can be fully tested by implementing a minimal test adapter that writes a fixed file, registering it, and verifying that `run` invokes it and produces the expected output.
 
 **Acceptance Scenarios**:
 
-1. **Given** a new target component registered via static target registration metadata, **When** the user runs `compile` with that target enabled, **Then** the tool invokes the target component and includes its output in the output directory.
-2. **Given** an adapter that returns a generation error, **When** the user runs `compile`, **Then** the tool reports the error and exits with code 3.
-3. **Given** multiple targets enabled in configuration, **When** the user runs `compile`, **Then** all enabled targets produce output; disabled targets are skipped.
+1. **Given** a new target component registered via static target registration metadata, **When** the user runs `run` with that target enabled, **Then** the tool invokes the target component and includes its output in the output directory.
+2. **Given** an adapter that returns a generation error, **When** the user runs `run`, **Then** the tool reports the error and exits with code 3.
+3. **Given** multiple targets enabled in configuration, **When** the user runs `run`, **Then** all enabled targets produce output; disabled targets are skipped.
 4. **Given** an existing target suite (Speckit, Kiro, and agent targets), **When** a new target is added, **Then** no existing target implementation files require refactoring to enable the new target.
 
 ---
 
 ### User Story 7 - Integrate with CI Pipelines (Priority: P7)
 
-A DevOps or governance engineer wants to integrate the tool into a CI pipeline so that steering document changes are validated and compiled automatically on every commit, with appropriate failure signals for the pipeline.
+A DevOps or governance engineer wants to integrate the tool into a CI pipeline so that steering document changes are validated and generated automatically on every commit, with appropriate failure signals for the pipeline.
 
 **Why this priority**: CI integration is the primary delivery mechanism for governance workflows. The tool must produce reliable, machine-readable exit codes to serve as a CI gate.
 
-**Independent Test**: Can be fully tested by scripting a CI-like sequence (`validate` then `compile`) and verifying that exit codes are correct for both success and failure scenarios.
+**Independent Test**: Can be fully tested by scripting a CI-like sequence (`validate` then `run`) and verifying that exit codes are correct for both success and failure scenarios.
 
 **Acceptance Scenarios**:
 
 1. **Given** a CI step running `validate`, **When** all documents are valid, **Then** the tool exits with code 0, allowing the pipeline to continue.
 2. **Given** a CI step running `validate`, **When** a document has validation errors, **Then** the tool exits with code 1, causing the pipeline to fail.
-3. **Given** a CI step running `compile`, **When** a configuration error is present, **Then** the tool exits with code 2, causing the pipeline to fail.
-4. **Given** identical steering document inputs across two pipeline runs, **When** both runs execute `compile`, **Then** the output artefacts are byte-for-byte identical (deterministic output).
+3. **Given** a CI step running `run`, **When** a configuration error is present, **Then** the tool exits with code 2, causing the pipeline to fail.
+4. **Given** identical steering document inputs across two pipeline runs, **When** both runs execute `run`, **Then** the output artefacts are byte-for-byte identical (deterministic output).
 
 ---
 
@@ -225,7 +225,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 
 #### Core Commands and Runtime Behavior
 
-- **FR-012**: The tool MUST support a `compile` command that runs the full pipeline: load → validate → overlay → profile filter → generate artefacts.
+- **FR-012**: When generation is invoked, the system MUST execute one canonical full pipeline in this order: load → validate → overlay → profile filter → generate artefacts.
 - **FR-013**: The tool MUST support a `validate` command that runs load and validation steps only, reporting all errors with document ID and source location.
 - **FR-014**: The tool MUST support an `inspect` command that outputs the fully resolved steering model as JSON to stdout.
 - **FR-015**: The tool MUST read configuration from a single YAML-based configuration file (`steergen.config.yaml`) in the working directory by default, overridable via `--config`.
@@ -279,7 +279,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 
 #### CLI Architecture and Init Command
 
-- **FR-043-CLI**: The deliverable MUST provide a command-line binary executable named `steergen`.
+- **FR-043A**: The deliverable MUST provide a command-line binary executable named `steergen`.
 - **FR-044**: The system MUST provide a modular command-based CLI built on the `System.CommandLine` package.
 - **FR-045**: The CLI MUST provide an `init` command for repository bootstrap.
 - **FR-046**: `init` MUST accept a positional argument specifying the project root path.
@@ -292,7 +292,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 #### CLI Update and Template Lifecycle
 
 - **FR-052**: The CLI MUST provide an `update` command that updates project templates and related metadata in place for the current project.
-- **FR-053**: The `update` command MUST support an optional version argument (for example `--version <x.y.z>`) to apply a specific template/metadata release.
+- **FR-053**: The `update` command MUST support an optional version argument (for example `--version <x.y.z>` or `--version <x.y.z-previewN>`) to apply a specific template/metadata release.
 - **FR-054**: If no version is provided to `update`, the command MUST resolve and apply the latest available compatible template/metadata release.
 - **FR-055**: Templates and metadata MUST be versioned and released independently of the CLI binary version.
 - **FR-056**: On first installation or first-run bootstrap, the tool MUST update templates and metadata to the latest available release by default.
@@ -301,7 +301,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 
 #### CLI Run and Target Registration
 
-- **FR-059**: The CLI MUST provide a `run` command that invokes the generation process.
+- **FR-059**: The CLI MUST provide a `run` command as the canonical generation command that invokes the full generation pipeline.
 - **FR-060**: If `run` is invoked without any `--target` option, generation MUST execute for all registered targets by default.
 - **FR-061**: If `run` is invoked with one or more `--target` options, generation MUST execute only for the specified target(s).
 - **FR-062**: The CLI MUST provide a `target add` command/subcommand pair to register a new target identifier.
@@ -359,7 +359,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **SC-004**: All validation errors include the document identifier and source location, enabling a developer to locate the issue without reading the entire document.
 - **SC-005**: A tooling engineer familiar with the adapter interface can implement and register a new output target in under 2 hours.
 - **SC-006**: The tool processes a corpus of 100 steering documents containing 1,000 rules in under 5 seconds on standard developer hardware.
-- **SC-007**: CI pipelines integrating the tool via `validate` and `compile` commands receive correct exit codes in 100% of tested pass and fail scenarios.
+- **SC-007**: CI pipelines integrating the tool via `validate` and `run` commands receive correct exit codes in 100% of tested pass and fail scenarios.
 - **SC-008**: Profile filtering correctly includes and excludes rules in all tested multi-profile scenarios, with zero false inclusions or exclusions.
 - **SC-009**: Kiro IDE correctly applies the configured inclusion mode for every generated steering file in 100% of tested workspace scenarios (always-included files load on every interaction; fileMatch files load only for matching file patterns; auto files load only when request context matches the description).
 - **SC-010**: For at least two distinct agent-spec targets, generated outputs are validated as platform-compatible and semantically equivalent to source guidance in 100% of golden test scenarios.
@@ -369,7 +369,7 @@ A tooling engineer wants to run generation from the CLI and manage target regist
 - **SC-014**: `steergen init` successfully initializes missing baseline steering and target folder structures for 100% of supported-target test cases.
 - **SC-015**: Re-running the same `steergen init` command in an already initialized project performs zero destructive changes in 100% of idempotency test scenarios.
 - **SC-016**: `steergen update` applies the latest compatible template/metadata release successfully in 100% of supported-project update test scenarios.
-- **SC-017**: Version-pinned updates via `steergen update --version <x.y.z>` apply the exact requested template/metadata version in 100% of valid-version test scenarios.
+- **SC-017**: Version-pinned updates via `steergen update --version <x.y.z>` and `steergen update --version <x.y.z-previewN>` apply the exact requested template/metadata version in 100% of valid-version test scenarios.
 - **SC-018**: Template and metadata updates can be performed without changing CLI binary version in 100% of lifecycle regression tests.
 - **SC-019**: `steergen run` without explicit targets generates outputs for 100% of registered targets in default-scope test scenarios.
 - **SC-020**: `steergen target add` correctly registers targets and initializes missing target folders with idempotent behavior in 100% of registration lifecycle tests.

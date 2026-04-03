@@ -50,39 +50,39 @@
 
 ---
 
-## Phase 3: User Story 1 - Compile Steering Documents to Speckit Artefacts (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Run Steering Generation to Speckit Artefacts (Priority: P1) 🎯 MVP
 
-**Goal**: Compile valid steering documents into deterministic Speckit Markdown artifacts, including a core-only `constitution.md` plus modular domain guidance files.
+**Goal**: Run deterministic steering generation into Speckit Markdown artifacts, including a core-only `constitution.md` plus modular domain guidance files.
 
-**Independent Test**: Run `compile` against realistic global and project fixtures and verify deterministic Speckit outputs, overlay replacement, profile filtering, and preserved deprecation/supersedes metadata.
+**Independent Test**: Run `run` against realistic global and project fixtures and verify deterministic Speckit outputs, overlay replacement, profile filtering, and preserved deprecation/supersedes metadata.
 
 ### Tests for User Story 1 (MANDATORY) ✅
 
-- [ ] T020 [P] [US1] Add compile-to-Speckit integration tests using realistic governance fixtures in `tests/Steergen.Cli.IntegrationTests/CompileSpeckitCommandTests.cs`
+- [ ] T020 [P] [US1] Add run-to-Speckit integration tests using realistic governance fixtures in `tests/Steergen.Cli.IntegrationTests/RunSpeckitCommandTests.cs`
 - [ ] T021 [P] [US1] Add property tests for core-vs-domain partitioning and constitution-only output rules in `tests/Steergen.Core.PropertyTests/Generation/SpeckitPartitionProperties.cs`
 - [ ] T022 [P] [US1] Add Speckit golden tests covering overlay, profile, deprecation, and supersedes behavior in `tests/Steergen.Core.UnitTests/Targets/SpeckitTargetComponentTests.cs`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [P] [US1] Implement compile pipeline orchestration in `src/Steergen.Core/Generation/CompilePipeline.cs`
+- [ ] T023 [P] [US1] Implement generation pipeline orchestration in `src/Steergen.Core/Generation/GenerationPipeline.cs`
 - [ ] T024 [P] [US1] Implement Speckit target mapping and rendering in `src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs` and `src/Steergen.Core/Targets/Speckit/SpeckitDocumentModel.cs`
 - [ ] T025 [P] [US1] Add Speckit Scriban templates for constitution and modular guidance in `src/Steergen.Templates/Scriban/speckit/constitution.scriban` and `src/Steergen.Templates/Scriban/speckit/module.scriban`
-- [ ] T026 [US1] Implement compile command handling and output persistence for Speckit in `src/Steergen.Cli/Commands/CompileCommand.cs`
+- [ ] T026 [US1] Implement Speckit generation orchestration and output persistence service consumed by `run` in `src/Steergen.Core/Generation/SpeckitGenerationService.cs`
 - [ ] T027 [US1] Implement core-only constitution emission and domain-module splitting in `src/Steergen.Core/Generation/CoreGuidancePartitioner.cs`
 
-**Checkpoint**: User Story 1 independently compiles Speckit outputs and forms the MVP.
+**Checkpoint**: User Story 1 independently produces Speckit outputs and forms the MVP.
 
 ---
 
-## Phase 4: User Story 2 - Compile Steering Documents to Kiro IDE Steering Files (Priority: P2)
+## Phase 4: User Story 2 - Run Steering Generation to Kiro IDE Steering Files (Priority: P2)
 
 **Goal**: Generate one Kiro-compatible Markdown file per source document with correct frontmatter, prose rendering, inclusion mapping, and deprecated-rule exclusion.
 
-**Independent Test**: Run `compile` with the Kiro target enabled and verify per-document outputs, inclusion defaults/mappings, natural-language rendering, and deprecated-rule filtering.
+**Independent Test**: Run `run` with the Kiro target enabled and verify per-document outputs, inclusion defaults/mappings, natural-language rendering, and deprecated-rule filtering.
 
 ### Tests for User Story 2 (MANDATORY) ✅
 
-- [ ] T028 [P] [US2] Add Kiro compile integration tests for per-document output, inclusion modes, and deprecated-rule exclusion in `tests/Steergen.Cli.IntegrationTests/CompileKiroCommandTests.cs`
+- [ ] T028 [P] [US2] Add Kiro run integration tests for per-document output, inclusion modes, and deprecated-rule exclusion in `tests/Steergen.Cli.IntegrationTests/RunKiroCommandTests.cs`
 - [ ] T029 [P] [US2] Add Kiro renderer unit tests for `always`, `fileMatch`, and `auto` frontmatter behavior in `tests/Steergen.Core.UnitTests/Targets/KiroTargetComponentTests.cs`
 - [ ] T030 [P] [US2] Add property tests proving prose output never leaks rule IDs, severities, or `:::rule` syntax in `tests/Steergen.Core.PropertyTests/Generation/KiroRenderingProperties.cs`
 
@@ -97,16 +97,16 @@
 
 ---
 
-## Phase 5: User Story 3 - Compile Steering Guidance to Agent Specification Files (Priority: P3)
+## Phase 5: User Story 3 - Run Steering Generation to Agent Specification Files (Priority: P3)
 
 **Goal**: Generate target-specific agent instruction files while preserving equivalent normative guidance semantics across platforms.
 
-**Independent Test**: Compile the same fixture corpus to multiple agent targets and verify syntax differs by platform while required metadata and normative intent remain aligned.
+**Independent Test**: Run the same fixture corpus to multiple agent targets and verify syntax differs by platform while required metadata and normative intent remain aligned.
 
 ### Tests for User Story 3 (MANDATORY) ✅
 
 - [ ] T035 [P] [US3] Add semantic-parity tests across Copilot and Kiro agent outputs in `tests/Steergen.Core.UnitTests/Targets/AgentTargetSemanticParityTests.cs`
-- [ ] T036 [P] [US3] Add integration tests for agent-target metadata validation and exit code 3 failures in `tests/Steergen.Cli.IntegrationTests/CompileAgentTargetsCommandTests.cs`
+- [ ] T036 [P] [US3] Add integration tests for agent-target metadata validation and exit code 3 failures in `tests/Steergen.Cli.IntegrationTests/RunAgentTargetsCommandTests.cs`
 
 ### Implementation for User Story 3
 
@@ -168,7 +168,7 @@
 ### Tests for User Story 6 (MANDATORY) ✅
 
 - [ ] T049 [P] [US6] Add compatibility tests proving additive registration does not change existing target outputs in `tests/Steergen.Core.UnitTests/Targets/TargetRegistryCompatibilityTests.cs`
-- [ ] T050 [P] [US6] Add fixture-target compile integration tests in `tests/Steergen.Cli.IntegrationTests/CompileFixtureTargetCommandTests.cs`
+- [ ] T050 [P] [US6] Add fixture-target run integration tests in `tests/Steergen.Cli.IntegrationTests/RunFixtureTargetCommandTests.cs`
 
 ### Implementation for User Story 6
 
@@ -181,18 +181,18 @@
 
 ## Phase 9: User Story 7 - Integrate with CI Pipelines (Priority: P7)
 
-**Goal**: Make validate and compile deterministic, scriptable CI gates with explicit exit-code behavior and performance visibility.
+**Goal**: Make validate and run deterministic, scriptable CI gates with explicit exit-code behavior and performance visibility.
 
-**Independent Test**: Run a CI-style validate/compile sequence and verify expected exit codes, deterministic artifacts, and benchmark coverage for the supported scale envelope.
+**Independent Test**: Run a CI-style validate/run sequence and verify expected exit codes, deterministic artifacts, and benchmark coverage for the supported scale envelope.
 
 ### Tests for User Story 7 (MANDATORY) ✅
 
-- [ ] T053 [P] [US7] Add CI workflow regression tests for validate/compile exit codes and deterministic outputs in `tests/Steergen.Cli.IntegrationTests/CiWorkflowRegressionTests.cs`
+- [ ] T053 [P] [US7] Add CI workflow regression tests for validate/run exit codes and deterministic outputs in `tests/Steergen.Cli.IntegrationTests/CiWorkflowRegressionTests.cs`
 - [ ] T054 [P] [US7] Add scalability-envelope benchmarks for 100 docs/1,000 rules and warning behavior beyond the envelope in `tests/Steergen.Benchmarks/ScalabilityEnvelopeBenchmarks.cs`
 
 ### Implementation for User Story 7
 
-- [ ] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Cli/Commands/CompileCommand.cs`
+- [ ] T055 [US7] Implement deterministic output manifest generation and CI-facing failure reporting in `src/Steergen.Core/Generation/DeterministicOutputManifest.cs` and `src/Steergen.Cli/Commands/RunCommand.cs`
 - [ ] T056 [US7] Add CI workflow and release-gate documentation preserving stable and preview tag guidance in `.github/workflows/ci.yml` and `README.md`
 
 **Checkpoint**: User Story 7 independently supports CI gating and deterministic release verification.
@@ -267,6 +267,12 @@
 - [ ] T070 [P] Add end-to-end malicious-input regression coverage and expand realistic governance corpora in `tests/Steergen.Cli.IntegrationTests/Security/CliSecurityRegressionTests.cs` and `tests/Fixtures/RealisticGovernance/`
 - [ ] T071 [P] Record benchmark execution guidance and release/versioning checks for stable and preview tags in `docs/release/release-checklist.md` and `tests/Steergen.Benchmarks/README.md`
 - [ ] T072 Run quickstart and contract validation cleanup against `specs/001-steering-doc-transform/quickstart.md`, `specs/001-steering-doc-transform/contracts/cli-contract.md`, and `specs/001-steering-doc-transform/contracts/config-schema.md`
+- [ ] T073 [P] Add integration tests for constitution amendment provenance capture (version rationale, amendment date, impacted-artifact sync record) in `tests/Steergen.Cli.IntegrationTests/ConstitutionProvenanceTests.cs`
+- [ ] T074 Implement constitution provenance recording in `src/Steergen.Core/Updates/ConstitutionProvenanceRecorder.cs` and wire it into `src/Steergen.Core/Updates/TemplatePackUpdater.cs`
+- [ ] T075 [P] Add publish-profile and CI validation for single portable executable distribution in `src/Steergen.Cli/Steergen.Cli.csproj` and `.github/workflows/ci.yml`
+- [ ] T076 [P] Add trimming and executable-size budget verification checks in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
+- [ ] T077 [P] Add optimization-mode verification (AOT/ReadyToRun decision path) in `docs/release/release-checklist.md` and `Directory.Build.props`
+- [ ] T078 [P] Add cross-target include/reference path resolution tests for constitution modular references in `tests/Steergen.Core.UnitTests/Targets/ConstitutionReferenceResolutionTests.cs`
 
 ---
 
@@ -281,13 +287,13 @@
 
 ### User Story Dependencies
 
-- **US1 (P1)**: Starts immediately after Foundational; establishes the MVP compile path
-- **US2 (P2)**: Starts after Foundational; shares compile infrastructure but is independently testable
+- **US1 (P1)**: Starts immediately after Foundational; establishes the MVP generation path
+- **US2 (P2)**: Starts after Foundational; shares generation infrastructure but is independently testable
 - **US3 (P3)**: Starts after Foundational; depends on the target contract, not on US1 or US2 output files
 - **US4 (P4)**: Starts after Foundational; validates the same parser/resolver pipeline independently of generation
 - **US5 (P5)**: Starts after Foundational; depends on the resolved model only
 - **US6 (P6)**: Starts after Foundational; depends on the registry contract and verifies additive growth
-- **US7 (P7)**: Starts after Foundational; becomes most valuable once compile and validate paths exist
+- **US7 (P7)**: Starts after Foundational; becomes most valuable once run and validate paths exist
 - **US8 (P8)**: Starts after Foundational; depends on target registration metadata and layout rules
 - **US9 (P9)**: Starts after Foundational; depends on configuration write support and release/version rules
 - **US10 (P10)**: Starts after Foundational; depends on configuration mutation and registered target behavior
@@ -453,7 +459,7 @@ Then finish: T067, T068
 
 ### Incremental Delivery
 
-1. US1 establishes core compile value
+1. US1 establishes core generation value
 2. US2 adds Kiro output support
 3. US4 hardens validation as a CI gate
 4. US3, US5, and US6 expand platform reach and observability
