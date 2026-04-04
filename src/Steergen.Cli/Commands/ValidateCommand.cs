@@ -92,7 +92,8 @@ public static class ValidateCommand
 
                 if (diag.Severity == DiagnosticSeverity.Error || !quiet)
                 {
-                    var location = diag.Location is not null ? $"{diag.Location.FilePath}(0): " : string.Empty;
+                    var lineInfo = diag.Location is not null ? $"({diag.Location.LineNumber})" : string.Empty;
+                    var location = diag.Location is not null ? $"{diag.Location.FilePath}{lineInfo}: " : string.Empty;
                     Console.Error.WriteLine($"{location}[{severity}] {diag.Code}: {diag.Message}");
                 }
             }

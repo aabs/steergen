@@ -11,7 +11,7 @@ dotnet build
 
 ## Initialize project structure
 ```bash
-steergen init . --target speckit --target kiro-ide
+steergen init . --target speckit --target kiro
 ```
 
 ## Validate steering sources
@@ -26,7 +26,7 @@ steergen run --global steering/global --project steering/project --output .steer
 
 ## Run generation for selected targets
 ```bash
-steergen run --global steering/global --project steering/project --output .steergen/out --target speckit --target kiro-ide
+steergen run --global steering/global --project steering/project --output .steergen/out --target speckit --target kiro
 ```
 
 ## Inspect resolved steering model as JSON

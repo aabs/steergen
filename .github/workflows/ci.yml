@@ -62,7 +62,8 @@ jobs:
         run: |
           dotnet run --project src/Steergen.Cli --no-build -c Release -- \
             validate \
-            --global specs/ \
+            --global tests/Fixtures/RealisticGovernance/global \
+            --project tests/Fixtures/RealisticGovernance/project \
             --quiet
         # Exits 1 if any steering document has schema or rule errors; CI fails the PR.
 
@@ -98,18 +99,20 @@ jobs:
       - name: Run generation and verify deterministic manifest
         run: |
           OUT=$(mktemp -d)
+          MANIFEST="$OUT/generation-manifest.json"
           dotnet run --project src/Steergen.Cli --no-build -c Release -- \
             run \
-            --global specs/ \
+            --global tests/Fixtures/RealisticGovernance/global \
+            --project tests/Fixtures/RealisticGovernance/project \
             --output "$OUT" \
             --target speckit
-          if [ ! -f "$OUT/generation-manifest.json" ]; then
+          if [ ! -f "$MANIFEST" ]; then
             echo "ERROR: generation-manifest.json not produced"
             exit 1
           fi
           echo "Manifest produced:"
-          cat "$OUT/generation-manifest.json"
-          SUCCESS=$(jq -r '.success' "$OUT/generation-manifest.json")
+          cat "$MANIFEST"
+          SUCCESS=$(jq -r '.success' "$MANIFEST")
           if [ "$SUCCESS" != "true" ]; then
             echo "ERROR: generation manifest reports failure"
             exit 1

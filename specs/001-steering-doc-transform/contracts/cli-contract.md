@@ -14,6 +14,7 @@
 - `1`: validation error
 - `2`: configuration/argument error
 - `3`: target generation error
+- `5`: conflict error — optimistic-lock conflict (config changed between read and write)
 
 ## Behavioral Rules
 - `run` without `--target` executes all registered targets

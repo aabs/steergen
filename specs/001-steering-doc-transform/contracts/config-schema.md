@@ -9,10 +9,10 @@
 - `templatePackVersion`: currently applied template/metadata version
 
 ## Target Configuration
-- `id`: normalized target identifier (e.g., `speckit`, `kiro-ide`, `copilot-agent`)
+- `id`: normalized target identifier (e.g., `speckit`, `kiro`, `copilot-agent`, `kiro-agent`)
 - `enabled`: boolean
 - `outputPath`: output directory path
-- `requiredMetadata`: target-specific metadata object
+- `requiredMetadata`: list of required metadata key names that must be present in each steering document
 - `formatOptions`: renderer options per target
 
 ## Concurrency Contract

@@ -181,7 +181,8 @@ public static class RunCommand
                     activeProfiles,
                     selectedComponents,
                     targetConfigs,
-                    cancellationToken));
+                    cancellationToken,
+                    manifestOutputPath: outputBase));
 
             reporter.EmitTotal();
 
@@ -204,7 +205,7 @@ public static class RunCommand
                 return Composition.ExitCodeMapper.ValidationError;
 
             if (!quiet)
-                Console.Error.WriteLine($"[info] Generation complete. Files written: {result.FilesWritten}");
+                Console.Error.WriteLine($"[info] Generation complete. Targets executed: {result.TargetsExecuted}");
 
             return Composition.ExitCodeMapper.Success;
         }

@@ -11,7 +11,7 @@ namespace Steergen.Core.Generation;
 public sealed record GenerationResult(
     bool Success,
     IReadOnlyList<Diagnostic> Diagnostics,
-    int FilesWritten,
+    int TargetsExecuted,
     DeterministicOutputManifest? Manifest = null)
 {
     /// <summary>
@@ -59,10 +59,7 @@ public sealed class GenerationPipeline
         var globalList = globalDocuments.ToList();
         var projectList = projectDocuments.ToList();
 
-        foreach (var doc in globalList.Concat(projectList))
-        {
-            allDiagnostics.AddRange(_validator.Validate(doc));
-        }
+        allDiagnostics.AddRange(_validator.ValidateCorpus(globalList.Concat(projectList)));
 
         if (allDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error))
         {
@@ -82,14 +79,14 @@ public sealed class GenerationPipeline
             .Where(t => t.Id is not null)
             .ToDictionary(t => t.Id!, StringComparer.Ordinal);
 
-        int filesWritten = 0;
+        int targetsExecuted = 0;
         foreach (var target in targets)
         {
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
             await target.GenerateAsync(model, config, cancellationToken);
-            filesWritten++;
+            targetsExecuted++;
         }
 
         DeterministicOutputManifest? manifest = null;
@@ -102,6 +99,6 @@ public sealed class GenerationPipeline
             await manifest.WriteAsync(manifestOutputPath, cancellationToken);
         }
 
-        return new GenerationResult(true, allDiagnostics, filesWritten, manifest);
+        return new GenerationResult(true, allDiagnostics, targetsExecuted, manifest);
     }
 }

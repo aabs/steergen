@@ -6,7 +6,7 @@ a simple CLI tool to work with tool independent specification files
 ### `steergen init` — Bootstrap folder layout
 
 ```sh
-steergen init <project-root> --target speckit --target kiro-ide
+steergen init <project-root> --target speckit --target kiro
 ```
 
 Creates `steering/global/`, `steering/project/`, and per-target output folders.  
@@ -44,7 +44,7 @@ Outputs the fully-resolved, profile-filtered steering model to stdout as JSON.
 
 ```sh
 steergen target add copilot-agent
-steergen target remove kiro-ide --config steergen.config.yaml
+steergen target remove kiro --config steergen.config.yaml
 ```
 
 Idempotent: `add` is safe when the target is already registered. `remove` only updates the config and does not delete generated artefacts.
@@ -69,6 +69,7 @@ Resolves latest compatible (`steergen update`), pins an exact version, or includ
 | `1` | Validation error — one or more steering documents have schema or rule violations |
 | `2` | Configuration error — missing directory, unreadable file, or bad CLI arguments |
 | `3` | Generation error — target component failed to write output |
+| `5` | Conflict error — optimistic-lock conflict detected (config changed between read and write) |
 
 ### validate step
 

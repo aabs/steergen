@@ -62,7 +62,7 @@ TargetRegistry.Register(component);
 
 ### 3. Add a `TargetConfiguration` entry
 
-In your `steergen.yml` (or programmatic config), add an entry referencing your target ID:
+In your `steergen.config.yaml` (or programmatic config), add an entry referencing your target ID:
 
 ```yaml
 targets:

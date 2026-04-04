@@ -23,7 +23,7 @@ Core transformation pipeline: parse → validate → resolve.
 | `ParseSmallDocument` | Parse a 10-rule steering document |
 | `ParseLargeDocument` | Parse a 100-rule steering document |
 | `ValidateDocument` | Validate a 50-rule document |
-| `ResolveSmallCorpus` | Resolve 5+5 docs (10 rules each) |
+| `ResolveModel` | Resolve 5+5 docs (10 rules each) |
 
 ### ScalabilityEnvelopeBenchmarks
 
@@ -31,11 +31,11 @@ Scalability envelope verification against SC-006 targets (100 docs / 1,000 rules
 
 | Benchmark | Description | Envelope |
 |-----------|-------------|---------|
-| `ParseHundredDocuments` | Parse 100 documents | < 5 s |
-| `ValidateEnvelope` | Validate 100 docs × 10 rules | < 5 s |
-| `ValidateBeyondEnvelope` | Validate 100 docs × 100 rules (warning zone) | — |
-| `ResolveEnvelope` | Resolve 100 docs | < 5 s |
-| `ResolveBeyondEnvelope` | Resolve 100 docs (heavy) | — |
+| `ParseEnvelopeDocuments` | Parse 100 documents | < 5 s |
+| `ValidateEnvelopeCorpus` | Validate 100 docs × 10 rules | < 5 s |
+| `ValidateBeyondEnvelopeCorpus` | Validate 100 docs × 100 rules (warning zone) | — |
+| `ResolveEnvelopeModel` | Resolve 100 docs | < 5 s |
+| `ResolveBeyondEnvelopeModel` | Resolve 100 docs (heavy) | — |
 
 ## Interpreting results
 
