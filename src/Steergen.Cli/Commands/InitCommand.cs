@@ -1,4 +1,6 @@
 using System.CommandLine;
+using Steergen.Core.Configuration;
+using Steergen.Core.Model;
 using Steergen.Core.Targets;
 
 namespace Steergen.Cli.Commands;
@@ -59,11 +61,25 @@ public static class InitCommand
                 return Composition.ExitCodeMapper.ConfigurationError;
             }
 
+            var normalizedProjectRoot = Path.GetFullPath(projectRoot);
+            var registeredTargets = targetIds.Distinct(StringComparer.Ordinal).ToList();
+            var config = new SteeringConfiguration
+            {
+                GlobalRoot = Path.Combine(normalizedProjectRoot, "steering", "global"),
+                ProjectRoot = Path.Combine(normalizedProjectRoot, "steering", "project"),
+                RegisteredTargets = registeredTargets,
+            };
+            var configPath = ConfigPathResolver.DefaultPathForDirectory(normalizedProjectRoot);
+            var writer = new SteergenConfigWriter();
+            writer.WriteAsync(configPath, config).GetAwaiter().GetResult();
+
             foreach (var folder in result.CreatedFolders)
                 Console.Error.WriteLine($"  created  {folder}");
 
             foreach (var folder in result.ExistingFolders)
                 Console.Error.WriteLine($"  exists   {folder}");
+
+            Console.Error.WriteLine($"  wrote    {configPath}");
 
             return Composition.ExitCodeMapper.Success;
         }

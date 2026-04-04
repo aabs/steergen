@@ -11,10 +11,9 @@ public static class UpdateCommand
 {
     public static Command Create()
     {
-        var configOption = new Option<string>("--config")
+        var configOption = new Option<string?>("--config")
         {
-            Description = "Path to steergen.config.yaml",
-            DefaultValueFactory = _ => "steergen.config.yaml",
+            Description = "Path to steergen.config.yaml (default: steergen.config.yaml in the current directory)",
         };
 
         var versionOption = new Option<string?>("--version")
@@ -36,7 +35,7 @@ public static class UpdateCommand
 
         cmd.SetAction(async (parseResult, ct) =>
         {
-            var configPath = parseResult.GetValue(configOption)!;
+            var configPath = ConfigPathResolver.ResolveRequired(parseResult.GetValue(configOption));
             var version = parseResult.GetValue(versionOption);
             var preview = parseResult.GetValue(previewOption);
 

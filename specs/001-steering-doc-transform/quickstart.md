@@ -14,14 +14,16 @@ dotnet build
 steergen init . --target speckit --target kiro
 ```
 
+This writes `steergen.config.yaml` in the project root with `globalRoot`, `projectRoot`, and the registered targets.
+
 ## Validate steering sources
 ```bash
-steergen validate --global steering/global --project steering/project
+steergen validate
 ```
 
 ## Run generation (all registered targets)
 ```bash
-steergen run --global steering/global --project steering/project --output .steergen/out
+steergen run --output .steergen/out
 ```
 
 ## Run generation for selected targets
@@ -31,8 +33,8 @@ steergen run --global steering/global --project steering/project --output .steer
 
 ## Inspect resolved steering model as JSON
 ```bash
-steergen inspect --global steering/global --project steering/project
-steergen inspect --global steering/global --project steering/project --profile production
+steergen inspect
+steergen inspect --profile production
 ```
 
 ## Register additional targets
@@ -50,6 +52,8 @@ steergen target remove copilot-agent
 steergen update
 steergen update --version 1.2.3
 ```
+
+All of the commands above auto-discover `steergen.config.yaml` from the current directory. Use `--config <path>` only when the config file has a different name or lives elsewhere.
 
 ## Run test suite (PBT-first)
 ```bash

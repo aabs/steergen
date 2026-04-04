@@ -35,7 +35,7 @@ public static class TargetCommand
         addCmd.SetAction(async (parseResult, cancellationToken) =>
         {
             var targetId = parseResult.GetValue(targetIdArg)!;
-            var configPath = parseResult.GetValue(configOption) ?? DefaultConfigPath();
+            var configPath = ConfigPathResolver.ResolveRequired(parseResult.GetValue(configOption));
             return await AddAsync(configPath, targetId, cancellationToken);
         });
 
@@ -59,7 +59,7 @@ public static class TargetCommand
         removeCmd.SetAction(async (parseResult, cancellationToken) =>
         {
             var targetId = parseResult.GetValue(targetIdArg)!;
-            var configPath = parseResult.GetValue(configOption) ?? DefaultConfigPath();
+            var configPath = ConfigPathResolver.ResolveRequired(parseResult.GetValue(configOption));
             return await RemoveAsync(configPath, targetId, cancellationToken);
         });
 
@@ -141,7 +141,4 @@ public static class TargetCommand
         {
             Description = "Path to the steergen config file (default: steergen.config.yaml)",
         };
-
-    private static string DefaultConfigPath() =>
-        Path.Combine(Directory.GetCurrentDirectory(), "steergen.config.yaml");
 }

@@ -1,6 +1,7 @@
 using Steergen.Cli.Commands;
 using Steergen.Core.Configuration;
 using Steergen.Core.Model;
+using System.CommandLine;
 using Xunit;
 
 namespace Steergen.Cli.IntegrationTests;
@@ -101,6 +102,29 @@ public sealed class RunAndTargetCommandsTests
                 explicitTargets: [],
                 quiet: true,
                 cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")));
+        }
+        finally { Directory.Delete(workDir, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Run_CommandAutoDiscoversConfigFromCurrentDirectory()
+    {
+        var workDir = MakeTempDir();
+        try
+        {
+            var outputDir = Path.Combine(workDir, "output");
+            Directory.CreateDirectory(outputDir);
+            await WriteConfigAsync(
+                workDir,
+                globalRoot: Path.Combine(FixturesRoot, "global"),
+                projectRoot: Path.Combine(FixturesRoot, "project"),
+                registeredTargets: ["speckit"]);
+
+            using var scope = new CurrentDirectoryScope(workDir);
+            var exitCode = await RunCommand.Create().Parse($"--output {outputDir}").InvokeAsync();
 
             Assert.Equal(0, exitCode);
             Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")));
@@ -228,6 +252,26 @@ public sealed class RunAndTargetCommandsTests
     {
         var exitCode = await TargetCommand.AddAsync("/nonexistent/steergen.config.yaml", "speckit");
         Assert.Equal(2, exitCode);
+    }
+
+    [Fact]
+    public async Task TargetAdd_CommandAutoDiscoversConfigFromCurrentDirectory()
+    {
+        var workDir = MakeTempDir();
+        try
+        {
+            var configPath = await WriteConfigAsync(workDir);
+
+            using var scope = new CurrentDirectoryScope(workDir);
+            var exitCode = await TargetCommand.Create().Parse("add kiro").InvokeAsync();
+
+            Assert.Equal(0, exitCode);
+
+            var loader = new SteergenConfigLoader();
+            var loaded = await loader.LoadAsync(configPath);
+            Assert.Contains("kiro", loaded.RegisteredTargets);
+        }
+        finally { Directory.Delete(workDir, recursive: true); }
     }
 
     // ── Target remove ────────────────────────────────────────────────────────

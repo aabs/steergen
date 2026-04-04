@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Steergen.Cli.Commands;
+using Steergen.Core.Configuration;
+using Steergen.Core.Model;
 
 namespace Steergen.Cli.IntegrationTests;
 
@@ -42,6 +44,29 @@ public sealed class InspectCommandTests
         using var doc = JsonDocument.Parse(stdout);
         Assert.True(doc.RootElement.TryGetProperty("rules", out var rules));
         Assert.Equal(JsonValueKind.Array, rules.ValueKind);
+    }
+
+    [Fact]
+    public async Task Inspect_CommandAutoDiscoversConfigFromCurrentDirectory()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            await WriteConfigAsync(
+                dir,
+                Path.Combine(FixturesRoot, "global"),
+                Path.Combine(FixturesRoot, "project"));
+
+            using var scope = new CurrentDirectoryScope(dir);
+            var (exitCode, stdout) = await CaptureStdout(() =>
+                InspectCommand.Create().Parse("").InvokeAsync());
+
+            Assert.Equal(0, exitCode);
+
+            using var doc = JsonDocument.Parse(stdout);
+            Assert.True(doc.RootElement.TryGetProperty("rules", out _));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
     }
 
     // ── Profile scoping ────────────────────────────────────────────────────
@@ -166,5 +191,17 @@ public sealed class InspectCommandTests
         {
             Console.SetOut(original);
         }
+    }
+
+    private static async Task WriteConfigAsync(string dir, string globalRoot, string projectRoot)
+    {
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(
+            Path.Combine(dir, "steergen.config.yaml"),
+            new SteeringConfiguration
+            {
+                GlobalRoot = globalRoot,
+                ProjectRoot = projectRoot,
+            });
     }
 }

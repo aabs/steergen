@@ -10,6 +10,7 @@ steergen init <project-root> --target speckit --target kiro
 ```
 
 Creates `steering/global/`, `steering/project/`, and per-target output folders.  
+Writes `steergen.config.yaml` with the bootstrapped global/project paths and registered targets.  
 `--target` is repeatable. Idempotent: safe to re-run.
 
 ### `steergen validate` — Gate on document correctness
@@ -26,10 +27,10 @@ Reads all `*.md` files in both directories, parses frontmatter and rule blocks, 
 ```sh
 steergen run --global steering/global --project steering/project --output .steergen/out
 steergen run --global steering/global --project steering/project --output .steergen/out --target speckit
-steergen run --config steergen.config.yaml --quiet
+steergen run --quiet
 ```
 
-Resolves overlays and profiles, then generates output for all registered targets (or the specified `--target` list). Writes a `generation-manifest.json` alongside output artefacts.
+Resolves overlays and profiles, then generates output for all registered targets (or the specified `--target` list). When `steergen.config.yaml` exists in the current directory, it is discovered automatically unless `--config` points elsewhere. Writes a `generation-manifest.json` alongside output artefacts.
 
 ### `steergen inspect` — View the resolved model as JSON
 
@@ -44,10 +45,10 @@ Outputs the fully-resolved, profile-filtered steering model to stdout as JSON.
 
 ```sh
 steergen target add copilot-agent
-steergen target remove kiro --config steergen.config.yaml
+steergen target remove kiro
 ```
 
-Idempotent: `add` is safe when the target is already registered. `remove` only updates the config and does not delete generated artefacts.
+Idempotent: `add` is safe when the target is already registered. `remove` only updates the config and does not delete generated artefacts. Both commands use `steergen.config.yaml` from the current directory by default.
 
 ### `steergen update` — Update template-pack version
 

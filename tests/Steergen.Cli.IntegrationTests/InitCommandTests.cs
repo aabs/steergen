@@ -1,4 +1,5 @@
 using Steergen.Cli.Commands;
+using Steergen.Core.Configuration;
 
 namespace Steergen.Cli.IntegrationTests;
 
@@ -47,6 +48,27 @@ public sealed class InitCommandTests
             InitCommand.RunAsync(root, ["kiro"]);
 
             Assert.True(Directory.Exists(Path.Combine(root, "kiro")));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Init_SingleValidTarget_WritesBootstrapConfigFile()
+    {
+        var root = CreateTempDir();
+        try
+        {
+            var result = InitCommand.RunAsync(root, ["speckit"]);
+
+            Assert.Equal(0, result);
+            Assert.True(File.Exists(Path.Combine(root, "steergen.config.yaml")));
+
+            var loader = new SteergenConfigLoader();
+            var config = await loader.LoadAsync(Path.Combine(root, "steergen.config.yaml"));
+
+            Assert.Equal(Path.Combine(root, "steering", "global"), config.GlobalRoot);
+            Assert.Equal(Path.Combine(root, "steering", "project"), config.ProjectRoot);
+            Assert.Equal(["speckit"], config.RegisteredTargets);
         }
         finally { Directory.Delete(root, recursive: true); }
     }
@@ -152,6 +174,24 @@ public sealed class InitCommandTests
             Assert.Equal(0, result);
             Assert.True(Directory.Exists(Path.Combine(root, "steering", "global")));
             Assert.True(Directory.Exists(Path.Combine(root, "steering", "project")));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Init_NoTargets_WritesConfigWithEmptyRegisteredTargets()
+    {
+        var root = CreateTempDir();
+        try
+        {
+            var result = InitCommand.RunAsync(root, []);
+
+            Assert.Equal(0, result);
+
+            var loader = new SteergenConfigLoader();
+            var config = await loader.LoadAsync(Path.Combine(root, "steergen.config.yaml"));
+
+            Assert.Empty(config.RegisteredTargets);
         }
         finally { Directory.Delete(root, recursive: true); }
     }

@@ -1,4 +1,6 @@
 using System.CommandLine;
+using Steergen.Core.Configuration;
+using Steergen.Core.Model;
 using Steergen.Core.Parsing;
 using Steergen.Core.Validation;
 
@@ -12,6 +14,10 @@ public static class ValidateCommand
 {
     public static Command Create()
     {
+        var configOption = new Option<string?>("--config")
+        {
+            Description = "Path to steergen.config.yaml (default: steergen.config.yaml in the current directory)",
+        };
         var globalOption = new Option<string?>("--global")
         {
             Description = "Path to the global steering documents directory",
@@ -27,6 +33,7 @@ public static class ValidateCommand
 
         var cmd = new Command("validate", "Validate steering documents")
         {
+            configOption,
             globalOption,
             projectOption,
             quietOption,
@@ -34,11 +41,12 @@ public static class ValidateCommand
 
         cmd.SetAction(async (parseResult, cancellationToken) =>
         {
+            var configPath = ConfigPathResolver.ResolveOptional(parseResult.GetValue(configOption));
             var globalRoot = parseResult.GetValue(globalOption);
             var projectRoot = parseResult.GetValue(projectOption);
             var quiet = parseResult.GetValue(quietOption);
 
-            return await RunAsync(globalRoot, projectRoot, quiet, cancellationToken);
+            return await RunAsync(globalRoot, projectRoot, quiet, configPath, cancellationToken);
         });
 
         return cmd;
@@ -48,10 +56,27 @@ public static class ValidateCommand
         string? globalRoot,
         string? projectRoot,
         bool quiet,
+        string? configPath = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            SteeringConfiguration? config = null;
+            if (configPath is not null)
+            {
+                if (!File.Exists(configPath))
+                {
+                    Console.Error.WriteLine($"[error] Config file not found: {configPath}");
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
+                var loader = new SteergenConfigLoader();
+                config = await loader.LoadAsync(configPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            globalRoot ??= config?.GlobalRoot;
+            projectRoot ??= config?.ProjectRoot;
+
             var allDocuments = new List<Core.Model.SteeringDocument>();
 
             if (globalRoot is not null)

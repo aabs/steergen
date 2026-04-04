@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Steergen.Core.Configuration;
 using Steergen.Core.Merge;
 using Steergen.Core.Parsing;
 
@@ -12,6 +13,10 @@ public static class InspectCommand
 {
     public static Command Create()
     {
+        var configOption = new Option<string?>("--config")
+        {
+            Description = "Path to steergen.config.yaml (default: steergen.config.yaml in the current directory)",
+        };
         var globalOption = new Option<string?>("--global")
         {
             Description = "Path to the global steering documents directory",
@@ -29,6 +34,7 @@ public static class InspectCommand
 
         var cmd = new Command("inspect", "Inspect the merged steering model as JSON")
         {
+            configOption,
             globalOption,
             projectOption,
             profileOption,
@@ -36,11 +42,12 @@ public static class InspectCommand
 
         cmd.SetAction(async (parseResult, cancellationToken) =>
         {
+            var configPath = ConfigPathResolver.ResolveOptional(parseResult.GetValue(configOption));
             var globalRoot = parseResult.GetValue(globalOption);
             var projectRoot = parseResult.GetValue(projectOption);
             var profiles = parseResult.GetValue(profileOption) ?? [];
 
-            return await RunAsync(globalRoot, projectRoot, profiles, cancellationToken);
+            return await RunAsync(globalRoot, projectRoot, profiles, configPath, cancellationToken);
         });
 
         return cmd;
@@ -50,10 +57,28 @@ public static class InspectCommand
         string? globalRoot,
         string? projectRoot,
         IEnumerable<string>? activeProfiles = null,
+        string? configPath = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            Steergen.Core.Model.SteeringConfiguration? config = null;
+            if (configPath is not null)
+            {
+                if (!File.Exists(configPath))
+                {
+                    Console.Error.WriteLine($"[error] Config file not found: {configPath}");
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
+                var loader = new SteergenConfigLoader();
+                config = await loader.LoadAsync(configPath, cancellationToken).ConfigureAwait(false);
+            }
+
+            globalRoot ??= config?.GlobalRoot;
+            projectRoot ??= config?.ProjectRoot;
+            activeProfiles ??= config?.ActiveProfiles ?? [];
+
             var globalDocuments = new List<Core.Model.SteeringDocument>();
             var projectDocuments = new List<Core.Model.SteeringDocument>();
 
@@ -78,7 +103,7 @@ public static class InspectCommand
             }
 
             var resolver = new SteeringResolver();
-            var model = resolver.Resolve(globalDocuments, projectDocuments, activeProfiles ?? []);
+            var model = resolver.Resolve(globalDocuments, projectDocuments, activeProfiles);
 
             var json = Core.Generation.InspectModelWriter.Write(model);
             await Console.Out.WriteLineAsync(json);

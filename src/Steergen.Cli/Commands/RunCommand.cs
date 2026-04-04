@@ -70,7 +70,7 @@ public static class RunCommand
 
         cmd.SetAction(async (parseResult, cancellationToken) =>
         {
-            var configPath = parseResult.GetValue(configOption);
+            var configPath = ConfigPathResolver.ResolveOptional(parseResult.GetValue(configOption));
             var globalRoot = parseResult.GetValue(globalOption);
             var projectRoot = parseResult.GetValue(projectOption);
             var outputBase = parseResult.GetValue(outputOption);
@@ -120,7 +120,7 @@ public static class RunCommand
                 config = await loader.LoadAsync(configPath, cancellationToken);
             }
 
-            // Resolve roots: CLI args > config file > defaults
+            // Resolve roots: CLI args > config file
             var resolvedGlobal = globalRoot ?? config?.GlobalRoot;
             var resolvedProject = projectRoot ?? config?.ProjectRoot;
             var activeProfiles = config?.ActiveProfiles ?? [];

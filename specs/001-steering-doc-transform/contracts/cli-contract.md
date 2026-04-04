@@ -4,8 +4,8 @@
 - `steergen init <project-root> --target <target>...`
 - `steergen update [--config <path>] [--version <x.y.z>] [--preview]`
 - `steergen run [--config <path>] [--global <dir>] [--project <dir>] [--output <dir>] [--target <target>...] [--quiet]`
-- `steergen validate [--global <dir>] [--project <dir>] [--quiet]`
-- `steergen inspect [--global <dir>] [--project <dir>] [--profile <name>...]`
+- `steergen validate [--config <path>] [--global <dir>] [--project <dir>] [--quiet]`
+- `steergen inspect [--config <path>] [--global <dir>] [--project <dir>] [--profile <name>...]`
 - `steergen target add <target-id> [--config <path>]`
 - `steergen target remove <target-id> [--config <path>]`
 
@@ -19,6 +19,8 @@
 ## Behavioral Rules
 - `run` without `--target` executes all registered targets
 - `run --target ...` executes only specified targets
+- Commands that accept config-backed defaults auto-discover `steergen.config.yaml` in the current directory when `--config` is omitted
+- `init` writes `steergen.config.yaml` with bootstrapped `globalRoot`, `projectRoot`, and `registeredTargets`
 - `target add` is idempotent and creates missing target folders
 - `target remove` updates registration only and does not delete generated artifacts
 - `update` without version resolves latest compatible template/metadata release

@@ -1,6 +1,10 @@
 using Steergen.Cli.Commands;
+using Steergen.Core.Configuration;
+using Steergen.Core.Model;
 
 namespace Steergen.Cli.IntegrationTests;
+
+[Collection("CliOutput")]
 
 public sealed class ValidateCommandTests
 {
@@ -20,6 +24,25 @@ public sealed class ValidateCommandTests
             quiet: true);
 
         Assert.Equal(0, result);
+    }
+
+    [Fact]
+    public async Task Validate_CommandAutoDiscoversConfigFromCurrentDirectory()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            await WriteConfigAsync(
+                dir,
+                Path.Combine(FixturesRoot, "global"),
+                Path.Combine(FixturesRoot, "project"));
+
+            using var scope = new CurrentDirectoryScope(dir);
+            var result = await ValidateCommand.Create().Parse("--quiet").InvokeAsync();
+
+            Assert.Equal(0, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
     }
 
     // ── Schema errors: missing document ID ─────────────────────────────────
@@ -192,5 +215,17 @@ public sealed class ValidateCommandTests
         var dir = Path.Combine(Path.GetTempPath(), $"validate-integ-{Guid.NewGuid():N}");
         Directory.CreateDirectory(dir);
         return dir;
+    }
+
+    private static async Task WriteConfigAsync(string dir, string globalRoot, string projectRoot)
+    {
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(
+            Path.Combine(dir, "steergen.config.yaml"),
+            new SteeringConfiguration
+            {
+                GlobalRoot = globalRoot,
+                ProjectRoot = projectRoot,
+            });
     }
 }
