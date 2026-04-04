@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore specgen.slnx
+
+      - name: Build
+        run: dotnet build specgen.slnx --no-restore --no-incremental -c Release
+
+      - name: Test
+        run: dotnet test specgen.slnx --no-build -c Release --logger "trx;LogFileName=results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/*.trx"
+
+  release-gate:
+    name: Release Gate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: build-and-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore CLI project
+        run: dotnet restore src/Steergen.Cli/Steergen.Cli.csproj
+
+      - name: Build CLI
+        run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
+
+      - name: Verify tag matches stable or preview convention
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Stable release: $TAG"
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview[0-9]+$ ]]; then
+            echo "Preview release: $TAG"
+          else
+            echo "ERROR: Tag '$TAG' does not match stable (vX.Y.Z) or preview (vX.Y.Z-previewN) format."
+            exit 1
+          fi
+
+      - name: Derive package version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $version = "${env:GITHUB_REF_NAME}".TrimStart('v')
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Pack global tool package
+        run: |
+          dotnet pack src/Steergen.Cli/Steergen.Cli.csproj \
+            -c Release \
+            -p:ContinuousIntegrationBuild=true \
+            -p:Version="${{ steps.version.outputs.version }}" \
+            -o artifacts/nuget
+
+      - name: Smoke test tool install on ${{ matrix.os }}
+        shell: pwsh
+        run: |
+          dotnet tool install --tool-path ./.tool-test aabs.steergen --version "${{ steps.version.outputs.version }}" --add-source artifacts/nuget
+
+          $tool = Join-Path ".tool-test" "steergen"
+          if ($IsWindows) {
+            $tool = "$tool.exe"
+          }
+
+          & $tool --help
+
+  publish-nuget-tool:
+    name: Publish NuGet Tool
+    runs-on: ubuntu-latest
+    needs: [release-gate]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Derive package version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Pack global tool
+        run: |
+          dotnet pack src/Steergen.Cli/Steergen.Cli.csproj \
+            -c Release \
+            -p:ContinuousIntegrationBuild=true \
+            -p:Version="${{ steps.version.outputs.version }}" \
+            -o artifacts/nuget
+
+      - name: Push package to NuGet.org
+        run: |
+          if [ -z "${{ secrets.NUGET_API_KEY }}" ]; then
+            echo "ERROR: NUGET_API_KEY secret is not configured."
+            exit 1
+          fi
+
+          dotnet nuget push "artifacts/nuget/*.nupkg" \
+            --source "https://api.nuget.org/v3/index.json" \
+            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --skip-duplicate
