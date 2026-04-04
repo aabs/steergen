@@ -1,0 +1,12 @@
+# Engineering Constitution
+{{- for rule in rules }}
+
+## {{ rule.id }}{{ if rule.deprecated }} *(deprecated)*{{ end }}
+{{ if rule.supersedes -}}
+*Supersedes: {{ rule.supersedes }}*
+
+{{ end -}}
+**Severity**: {{ rule.severity }}{{ if rule.category }} | **Category**: {{ rule.category }}{{ end }}
+
+{{ rule.primary_text }}
+{{- end }}

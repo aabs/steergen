@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Steergen.Cli/Steergen.Cli.csproj" />
+    <Project Path="src/Steergen.Core/Steergen.Core.csproj" />
+    <Project Path="src/Steergen.Templates/Steergen.Templates.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Steergen.Benchmarks/Steergen.Benchmarks.csproj" />
+    <Project Path="tests/Steergen.Cli.IntegrationTests/Steergen.Cli.IntegrationTests.csproj" />
+    <Project Path="tests/Steergen.Core.PropertyTests/Steergen.Core.PropertyTests.csproj" />
+    <Project Path="tests/Steergen.Core.UnitTests/Steergen.Core.UnitTests.csproj" />
+  </Folder>
+</Solution>

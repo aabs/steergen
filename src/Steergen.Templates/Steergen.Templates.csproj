@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scriban\**\*.scriban" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Steergen.Core\Steergen.Core.csproj" />
+  </ItemGroup>
+
+</Project>
