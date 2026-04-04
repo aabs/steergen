@@ -2,10 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
     tags:
-      - "v*.*.*"           # stable candidate: v1.2.3
-      - "v*.*.*-preview*"  # preview candidate: v1.2.3-preview1
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
   pull_request:
     branches: ["main"]
 
