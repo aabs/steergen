@@ -54,6 +54,9 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Restore CLI project
+        run: dotnet restore src/Steergen.Cli/Steergen.Cli.csproj
+
       - name: Build CLI
         run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
 
@@ -80,6 +83,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+
+      - name: Restore CLI project
+        run: dotnet restore src/Steergen.Cli/Steergen.Cli.csproj
 
       - name: Build CLI
         run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
