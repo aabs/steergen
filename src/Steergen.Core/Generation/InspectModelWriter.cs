@@ -39,7 +39,7 @@ public static partial class InspectModelWriter
                 .ToList()
         );
 
-            return JsonSerializer.Serialize(dto, InspectModelJsonContext.Default.InspectModelDto);
+        return JsonSerializer.Serialize(dto, InspectModelJsonContext.Default.InspectModelDto);
     }
 
     // ── Private DTOs ───────────────────────────────────────────────────────

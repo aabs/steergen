@@ -63,7 +63,7 @@ public sealed class ConstitutionProvenanceRecorder
         CancellationToken cancellationToken = default)
     {
         var existing = await LoadAsync(cancellationToken).ConfigureAwait(false);
-        var updated  = new List<ConstitutionProvenanceEntry>(existing) { entry };
+        var updated = new List<ConstitutionProvenanceEntry>(existing) { entry };
 
         var json = JsonSerializer.Serialize(updated, ConstitutionProvenanceJsonContext.Default.ListConstitutionProvenanceEntry);
         await File.WriteAllTextAsync(_filePath, json, cancellationToken).ConfigureAwait(false);
@@ -80,8 +80,8 @@ public sealed class ConstitutionProvenanceRecorder
 
         var json = await File.ReadAllTextAsync(_filePath, cancellationToken).ConfigureAwait(false);
 
-    return JsonSerializer.Deserialize(json, ConstitutionProvenanceJsonContext.Default.ListConstitutionProvenanceEntry)
-               ?? [];
+        return JsonSerializer.Deserialize(json, ConstitutionProvenanceJsonContext.Default.ListConstitutionProvenanceEntry)
+                   ?? [];
     }
 
     /// <summary>Absolute path of the provenance log file managed by this recorder.</summary>
