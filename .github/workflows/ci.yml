@@ -98,18 +98,26 @@ jobs:
       - name: Run generation and verify deterministic manifest
         run: |
           OUT=$(mktemp -d)
+          MANIFEST="$OUT/generation-manifest.json"
+          SPEC_FILE=$(find specs -type f -name '*.md' | head -n 1)
+          if [ -z "$SPEC_FILE" ]; then
+            echo "ERROR: No markdown specs found under specs/"
+            exit 1
+          fi
+          SPEC_ROOT=$(dirname "$SPEC_FILE")
           dotnet run --project src/Steergen.Cli --no-build -c Release -- \
             run \
-            --global specs/ \
+            --global "$SPEC_ROOT" \
             --output "$OUT" \
+            --manifest-output-path "$MANIFEST" \
             --target speckit
-          if [ ! -f "$OUT/generation-manifest.json" ]; then
+          if [ ! -f "$MANIFEST" ]; then
             echo "ERROR: generation-manifest.json not produced"
             exit 1
           fi
           echo "Manifest produced:"
-          cat "$OUT/generation-manifest.json"
-          SUCCESS=$(jq -r '.success' "$OUT/generation-manifest.json")
+          cat "$MANIFEST"
+          SUCCESS=$(jq -r '.success' "$MANIFEST")
           if [ "$SUCCESS" != "true" ]; then
             echo "ERROR: generation manifest reports failure"
             exit 1
