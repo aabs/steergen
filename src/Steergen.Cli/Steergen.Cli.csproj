@@ -2,6 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>steergen</ToolCommandName>
+    <PackageId>aabs.steergen</PackageId>
+    <Description>CLI for validating and transforming steering specification documents.</Description>
+    <PackageTags>cli;dotnet-tool;specification;governance</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/aabs/specgen</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aabs/specgen</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>NUGET-README.md</PackageReadmeFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
   </PropertyGroup>
 
   <!-- Single portable executable publish profile (used by CI release-gate) -->
@@ -21,6 +33,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Steergen.Core\Steergen.Core.csproj" />
     <ProjectReference Include="..\Steergen.Templates\Steergen.Templates.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="NUGET-README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
