@@ -17,8 +17,9 @@ public static class InitCommand
             DefaultValueFactory = _ => ".",
         };
 
-        var targetOption = new Option<string[]>("--target", "Target(s) to bootstrap (e.g. speckit, kiro, copilot-agent, kiro-agent)")
+        var targetOption = new Option<string[]>("--target")
         {
+            Description = "Target(s) to bootstrap (e.g. speckit, kiro, copilot-agent, kiro-agent)",
             AllowMultipleArgumentsPerToken = false,
             Arity = ArgumentArity.ZeroOrMore,
         };

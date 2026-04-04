@@ -137,7 +137,10 @@ public static class TargetCommand
     }
 
     private static Option<string?> BuildConfigOption() =>
-        new("--config", "Path to the steergen config file (default: steergen.config.yaml)");
+        new("--config")
+        {
+            Description = "Path to the steergen config file (default: steergen.config.yaml)",
+        };
 
     private static string DefaultConfigPath() =>
         Path.Combine(Directory.GetCurrentDirectory(), "steergen.config.yaml");

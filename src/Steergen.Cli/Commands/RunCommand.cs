@@ -21,18 +21,40 @@ public static class RunCommand
 {
     public static Command Create()
     {
-        var configOption = new Option<string?>("--config", "Path to steergen config file (default: steergen.config.yaml)");
-        var globalOption = new Option<string?>("--global", "Path to global steering documents directory");
-        var projectOption = new Option<string?>("--project", "Path to project steering documents directory");
-        var outputOption = new Option<string?>("--output", "Base output directory (overrides config)");
-        var targetOption = new Option<string[]>("--target", "Explicit target(s) to run (e.g. speckit, kiro, copilot-agent)")
+        var configOption = new Option<string?>("--config")
         {
+            Description = "Path to steergen config file (default: steergen.config.yaml)",
+        };
+        var globalOption = new Option<string?>("--global")
+        {
+            Description = "Path to global steering documents directory",
+        };
+        var projectOption = new Option<string?>("--project")
+        {
+            Description = "Path to project steering documents directory",
+        };
+        var outputOption = new Option<string?>("--output")
+        {
+            Description = "Base output directory (overrides config)",
+        };
+        var targetOption = new Option<string[]>("--target")
+        {
+            Description = "Explicit target(s) to run (e.g. speckit, kiro, copilot-agent)",
             AllowMultipleArgumentsPerToken = false,
             Arity = ArgumentArity.ZeroOrMore,
         };
-        var quietOption = new Option<bool>("--quiet", "Suppress informational output");
-        var verboseOption = new Option<bool>("--verbose", "Enable verbose diagnostics including opt-in measurement output (SC-001/SC-005)");
-        var debugOption = new Option<bool>("--debug", "Enable debug-level diagnostics including opt-in measurement output");
+        var quietOption = new Option<bool>("--quiet")
+        {
+            Description = "Suppress informational output",
+        };
+        var verboseOption = new Option<bool>("--verbose")
+        {
+            Description = "Enable verbose diagnostics including opt-in measurement output (SC-001/SC-005)",
+        };
+        var debugOption = new Option<bool>("--debug")
+        {
+            Description = "Enable debug-level diagnostics including opt-in measurement output",
+        };
 
         var cmd = new Command("run", "Generate outputs from steering documents")
         {

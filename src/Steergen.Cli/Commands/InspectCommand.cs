@@ -12,10 +12,17 @@ public static class InspectCommand
 {
     public static Command Create()
     {
-        var globalOption = new Option<string?>("--global", "Path to the global steering documents directory");
-        var projectOption = new Option<string?>("--project", "Path to the project steering documents directory");
-        var profileOption = new Option<string[]>("--profile", "Active profiles to apply during resolution")
+        var globalOption = new Option<string?>("--global")
         {
+            Description = "Path to the global steering documents directory",
+        };
+        var projectOption = new Option<string?>("--project")
+        {
+            Description = "Path to the project steering documents directory",
+        };
+        var profileOption = new Option<string[]>("--profile")
+        {
+            Description = "Active profiles to apply during resolution",
             AllowMultipleArgumentsPerToken = false,
         };
         profileOption.Arity = ArgumentArity.ZeroOrMore;

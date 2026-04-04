@@ -12,9 +12,18 @@ public static class ValidateCommand
 {
     public static Command Create()
     {
-        var globalOption = new Option<string?>("--global", "Path to the global steering documents directory");
-        var projectOption = new Option<string?>("--project", "Path to the project steering documents directory");
-        var quietOption = new Option<bool>("--quiet", "Suppress informational output; only emit errors");
+        var globalOption = new Option<string?>("--global")
+        {
+            Description = "Path to the global steering documents directory",
+        };
+        var projectOption = new Option<string?>("--project")
+        {
+            Description = "Path to the project steering documents directory",
+        };
+        var quietOption = new Option<bool>("--quiet")
+        {
+            Description = "Suppress informational output; only emit errors",
+        };
 
         var cmd = new Command("validate", "Validate steering documents")
         {

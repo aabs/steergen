@@ -11,14 +11,21 @@ public static class UpdateCommand
 {
     public static Command Create()
     {
-        var configOption = new Option<string>("--config", "Path to steergen.config.yaml")
+        var configOption = new Option<string>("--config")
         {
+            Description = "Path to steergen.config.yaml",
             DefaultValueFactory = _ => "steergen.config.yaml",
         };
 
-        var versionOption = new Option<string?>("--version", "Exact version to pin (e.g. 1.2.0 or 1.2.0-preview1)");
+        var versionOption = new Option<string?>("--version")
+        {
+            Description = "Exact version to pin (e.g. 1.2.0 or 1.2.0-preview1)",
+        };
 
-        var previewOption = new Option<bool>("--preview", "Include preview versions when resolving latest");
+        var previewOption = new Option<bool>("--preview")
+        {
+            Description = "Include preview versions when resolving latest",
+        };
 
         var cmd = new Command("update", "Update template-pack version in the project configuration")
         {
@@ -30,8 +37,8 @@ public static class UpdateCommand
         cmd.SetAction(async (parseResult, ct) =>
         {
             var configPath = parseResult.GetValue(configOption)!;
-            var version    = parseResult.GetValue(versionOption);
-            var preview    = parseResult.GetValue(previewOption);
+            var version = parseResult.GetValue(versionOption);
+            var preview = parseResult.GetValue(previewOption);
 
             return await RunAsync(configPath, version, preview, ct).ConfigureAwait(false);
         });
@@ -48,7 +55,7 @@ public static class UpdateCommand
         try
         {
             var updater = new TemplatePackUpdater();
-            var result  = await updater.UpdateAsync(configPath, version, preview, cancellationToken: cancellationToken)
+            var result = await updater.UpdateAsync(configPath, version, preview, cancellationToken: cancellationToken)
                                        .ConfigureAwait(false);
 
             if (!result.Success)
