@@ -17,13 +17,6 @@ public sealed record DeterministicOutputManifest(
     IReadOnlyList<string> Errors,
     IReadOnlyList<ManifestEntry> Entries)
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
     public const string ManifestFileName = "generation-manifest.json";
 
     /// <summary>
@@ -80,7 +73,7 @@ public sealed record DeterministicOutputManifest(
     {
         Directory.CreateDirectory(outputDirectory);
         var manifestPath = Path.Combine(outputDirectory, ManifestFileName);
-        var json = JsonSerializer.Serialize(this, SerializerOptions);
+        var json = JsonSerializer.Serialize(this, DeterministicOutputManifestJsonContext.Default.DeterministicOutputManifest);
         await File.WriteAllTextAsync(manifestPath, json, cancellationToken);
     }
 
@@ -112,3 +105,10 @@ public sealed record DeterministicOutputManifest(
 /// A single file entry in a <see cref="DeterministicOutputManifest"/>.
 /// </summary>
 public sealed record ManifestEntry(string RelativePath, string Sha256, long SizeBytes);
+
+[JsonSourceGenerationOptions(
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(DeterministicOutputManifest))]
+internal sealed partial class DeterministicOutputManifestJsonContext : JsonSerializerContext;

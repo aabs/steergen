@@ -7,15 +7,8 @@ namespace Steergen.Core.Generation;
 /// <summary>
 /// Serializes a <see cref="ResolvedSteeringModel"/> to stable, deterministic JSON for inspection.
 /// </summary>
-public static class InspectModelWriter
+public static partial class InspectModelWriter
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
-
     public static string Write(ResolvedSteeringModel model)
     {
         var dto = new InspectModelDto(
@@ -46,7 +39,7 @@ public static class InspectModelWriter
                 .ToList()
         );
 
-        return JsonSerializer.Serialize(dto, SerializerOptions);
+            return JsonSerializer.Serialize(dto, InspectModelJsonContext.Default.InspectModelDto);
     }
 
     // ── Private DTOs ───────────────────────────────────────────────────────
@@ -75,4 +68,11 @@ public static class InspectModelWriter
         IReadOnlyList<string> AppliesTo,
         IReadOnlyList<string> Tags,
         string? PrimaryText);
+
+    [JsonSourceGenerationOptions(
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSerializable(typeof(InspectModelDto))]
+    private sealed partial class InspectModelJsonContext : JsonSerializerContext;
 }

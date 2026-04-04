@@ -32,12 +32,6 @@ public sealed record ConstitutionProvenanceEntry
 /// </summary>
 public sealed class ConstitutionProvenanceRecorder
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
     /// <summary>
     /// Default file name written alongside <c>steergen.config.yaml</c>.
     /// </summary>
@@ -71,7 +65,7 @@ public sealed class ConstitutionProvenanceRecorder
         var existing = await LoadAsync(cancellationToken).ConfigureAwait(false);
         var updated  = new List<ConstitutionProvenanceEntry>(existing) { entry };
 
-        var json = JsonSerializer.Serialize(updated, JsonOptions);
+        var json = JsonSerializer.Serialize(updated, ConstitutionProvenanceJsonContext.Default.ListConstitutionProvenanceEntry);
         await File.WriteAllTextAsync(_filePath, json, cancellationToken).ConfigureAwait(false);
     }
 
@@ -86,10 +80,17 @@ public sealed class ConstitutionProvenanceRecorder
 
         var json = await File.ReadAllTextAsync(_filePath, cancellationToken).ConfigureAwait(false);
 
-        return JsonSerializer.Deserialize<List<ConstitutionProvenanceEntry>>(json, JsonOptions)
+    return JsonSerializer.Deserialize(json, ConstitutionProvenanceJsonContext.Default.ListConstitutionProvenanceEntry)
                ?? [];
     }
 
     /// <summary>Absolute path of the provenance log file managed by this recorder.</summary>
     public string FilePath => _filePath;
 }
+
+[JsonSourceGenerationOptions(
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(List<ConstitutionProvenanceEntry>))]
+internal sealed partial class ConstitutionProvenanceJsonContext : JsonSerializerContext;
