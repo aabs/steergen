@@ -48,6 +48,30 @@ public static class TargetRegistry
         }
     }
 
+    /// <summary>
+    /// Returns the embedded resource name of the default layout YAML for a built-in target.
+    /// Delegates to <see cref="Configuration.LayoutOverrideLoader.GetEmbeddedResourceName"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">Thrown for unknown target IDs.</exception>
+    public static string GetDefaultLayoutResourceName(string targetId) =>
+        Configuration.LayoutOverrideLoader.GetEmbeddedResourceName(targetId);
+
+    /// <summary>
+    /// Returns true if <paramref name="targetId"/> has a built-in default layout YAML.
+    /// </summary>
+    public static bool HasDefaultLayout(string targetId)
+    {
+        try
+        {
+            Configuration.LayoutOverrideLoader.GetEmbeddedResourceName(targetId);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
     internal static void Clear()
     {
         lock (Lock)

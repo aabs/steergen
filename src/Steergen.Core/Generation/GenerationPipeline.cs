@@ -1,3 +1,4 @@
+using Steergen.Core.Configuration;
 using Steergen.Core.Model;
 using Steergen.Core.Merge;
 using Steergen.Core.Validation;
@@ -12,7 +13,8 @@ public sealed record GenerationResult(
     bool Success,
     IReadOnlyList<Diagnostic> Diagnostics,
     int TargetsExecuted,
-    DeterministicOutputManifest? Manifest = null)
+    DeterministicOutputManifest? Manifest = null,
+    IReadOnlyDictionary<string, WritePlan>? WritePlans = null)
 {
     /// <summary>
     /// Formats diagnostics as CI-parseable lines suitable for stderr.
@@ -40,6 +42,9 @@ public sealed class GenerationPipeline
 {
     private readonly SteeringResolver _resolver = new();
     private readonly SteeringValidator _validator = new();
+    private readonly LayoutOverrideLoader _layoutLoader = new();
+    private readonly RoutePlanner _routePlanner = new();
+    private readonly WritePlanBuilder _writePlanBuilder = new();
 
     /// <param name="manifestOutputPath">
     /// When set, a <see cref="DeterministicOutputManifest"/> is written to this directory
@@ -79,6 +84,36 @@ public sealed class GenerationPipeline
             .Where(t => t.Id is not null)
             .ToDictionary(t => t.Id!, StringComparer.Ordinal);
 
+        // Build write plans for each enabled target using the layout engine.
+        var writePlans = new Dictionary<string, WritePlan>(StringComparer.Ordinal);
+        foreach (var target in targets)
+        {
+            if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
+                continue;
+
+            if (!Targets.TargetRegistry.HasDefaultLayout(target.TargetId))
+                continue;
+
+            try
+            {
+                var layout = await _layoutLoader.LoadAsync(
+                    target.TargetId,
+                    config.LayoutOverridePath,
+                    cancellationToken);
+
+                var resolutions = _routePlanner.Plan(model.Rules, layout);
+                var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
+                writePlans[target.TargetId] = plan;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                allDiagnostics.Add(new Diagnostic(
+                    Code: "LAYOUT-001",
+                    Message: $"Failed to build write plan for target '{target.TargetId}': {ex.Message}",
+                    Severity: DiagnosticSeverity.Warning));
+            }
+        }
+
         int targetsExecuted = 0;
         foreach (var target in targets)
         {
@@ -99,6 +134,11 @@ public sealed class GenerationPipeline
             await manifest.WriteAsync(manifestOutputPath, cancellationToken);
         }
 
-        return new GenerationResult(true, allDiagnostics, targetsExecuted, manifest);
+        return new GenerationResult(
+            true,
+            allDiagnostics,
+            targetsExecuted,
+            manifest,
+            writePlans.Count > 0 ? writePlans : null);
     }
 }

@@ -64,6 +64,7 @@ public sealed class SteergenConfigWriter
                 Id = t.Id,
                 Enabled = t.Enabled,
                 OutputPath = t.OutputPath,
+                LayoutOverridePath = t.LayoutOverridePath,
                 FormatOptions = t.FormatOptions,
                 RequiredMetadata = t.RequiredMetadata,
             }).ToList(),
@@ -87,6 +88,7 @@ public sealed class SteergenConfigWriter
         public string? Id { get; set; }
         public bool Enabled { get; set; }
         public string? OutputPath { get; set; }
+        public string? LayoutOverridePath { get; set; }
         public Dictionary<string, string>? FormatOptions { get; set; }
         public List<string>? RequiredMetadata { get; set; }
     }
