@@ -33,20 +33,20 @@
 
 - [ ] T004 [P] Add property tests for deterministic single-destination route resolution in `tests/Steergen.Core.PropertyTests/Generation/RouteResolverProperties.cs`
 - [ ] T005 [P] Add property tests for wildcard catch-all precedence and fallback ordering in `tests/Steergen.Core.PropertyTests/Generation/CatchAllRoutingProperties.cs`
-- [ ] T006 [P] Add unit tests for deep-merge semantics (recursive map merge + list replacement) in `tests/Steergen.Core.UnitTests/Configuration/LayoutOverrideLoaderTests.cs`
+- [x] T006 [P] Add unit tests for deep-merge semantics (recursive map merge + list replacement) in `tests/Steergen.Core.UnitTests/Configuration/LayoutOverrideLoaderTests.cs`
 - [ ] T007 [P] Add unit tests for unsafe path rejection and root-bounded normalization in `tests/Steergen.Core.UnitTests/Generation/RoutePathSafetyTests.cs`
 - [ ] T038 [P] Add security property tests that prove instruction-like and prompt-injection-style rule content is treated as inert data during routing in `tests/Steergen.Core.PropertyTests/Security/InertContentRoutingProperties.cs`
 - [ ] T039 [P] Add CLI integration tests with malicious instruction-like fixture content to verify no behavioral influence on route selection or output in `tests/Steergen.Cli.IntegrationTests/Security/InertContentRoutingTests.cs`
 
 ### Implementation for Foundational
 
-- [ ] T008 [P] Implement routing/layout domain models in `src/Steergen.Core/Model/TargetLayoutDefinition.cs`, `src/Steergen.Core/Model/RouteRuleDefinition.cs`, `src/Steergen.Core/Model/FallbackRuleDefinition.cs`, and `src/Steergen.Core/Model/PurgePolicyDefinition.cs`
-- [ ] T009 [P] Implement default-layout and override loaders with deep-merge semantics in `src/Steergen.Core/Configuration/LayoutOverrideLoader.cs`
+- [x] T008 [P] Implement routing/layout domain models in `src/Steergen.Core/Model/TargetLayoutDefinition.cs`, `src/Steergen.Core/Model/RouteRuleDefinition.cs`, `src/Steergen.Core/Model/FallbackRuleDefinition.cs`, and `src/Steergen.Core/Model/PurgePolicyDefinition.cs`
+- [x] T009 [P] Implement default-layout and override loaders with deep-merge semantics in `src/Steergen.Core/Configuration/LayoutOverrideLoader.cs`
 - [ ] T010 [P] Implement routing schema validation (unknown fields, core anchor requirement, wildcard handling) in `src/Steergen.Core/Configuration/RoutingSchemaValidator.cs`
 - [ ] T011 [P] Implement deterministic route resolution and write-plan building in `src/Steergen.Core/Generation/RouteResolver.cs`, `src/Steergen.Core/Generation/RoutePlanner.cs`, and `src/Steergen.Core/Generation/WritePlanBuilder.cs`
 - [ ] T012 Integrate layout-driven route planning into generation pipeline in `src/Steergen.Core/Generation/GenerationPipeline.cs`
 - [ ] T013 Register per-target default-layout asset lookup in `src/Steergen.Core/Targets/TargetRegistry.cs`
-- [ ] T047 [P] Add unit tests that validate each target default YAML contains required routing-rule and layout sections in `tests/Steergen.Core.UnitTests/Targets/DefaultLayoutYamlContractTests.cs`
+- [x] T047 [P] Add unit tests that validate each target default YAML contains required routing-rule and layout sections in `tests/Steergen.Core.UnitTests/Targets/DefaultLayoutYamlContractTests.cs`
 - [ ] T014 Extend target config model and load/write behavior for `layoutOverridePath` in `src/Steergen.Core/Model/SteeringConfiguration.cs`, `src/Steergen.Core/Configuration/SteergenConfigLoader.cs`, and `src/Steergen.Core/Configuration/SteergenConfigWriter.cs`
 
 **Checkpoint**: Core routing/layout engine is ready for independent story delivery.
