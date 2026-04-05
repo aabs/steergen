@@ -71,6 +71,7 @@ As an operator, I can trust that generation truncates only files selected for cu
 
 - A rule matches no route after evaluating explicit and fallback routing rules.
 - A rule matches more than one route due to overlapping conditions.
+- A catch-all route and one or more specific routes overlap; precedence must still produce one deterministic destination.
 - Two routes resolve to the same destination path and the collision policy is inconsistent.
 - Path variable expansion produces an empty, invalid, or non-normalized path.
 - User-defined domain and tag names contain characters requiring path sanitization.
@@ -101,7 +102,7 @@ As an operator, I can trust that generation truncates only files selected for cu
 - **FR-005**: System MUST route every generated rule to exactly one destination file for a given target and MUST reject any routing result of multiple destinations.
 - **FR-006**: System MUST support deterministic route precedence so the same inputs and configuration always produce the same selected destination per rule.
 - **FR-007**: System MUST support user-provided target layout override files linked from the main configuration, with per-target scope.
-- **FR-008**: System MUST apply user override files using deep-merge semantics where override values take precedence over target defaults.
+- **FR-008**: System MUST apply user override files using deep-merge semantics where override values take precedence over target defaults, with recursive map/object merging and full override replacement for lists/arrays.
 - **FR-009**: System MUST validate override files and routing rules before generation writes files and MUST return actionable diagnostics for invalid configuration.
 - **FR-010**: System MUST truncate each destination file selected for write once at generation start, then append routed content for that file in deterministic order.
 - **FR-011**: System MUST leave files not selected by the current route plan unchanged.
@@ -118,6 +119,8 @@ As an operator, I can trust that generation truncates only files selected for cu
 - **FR-022**: Purge eligibility MUST be determined from target-configured file globs under that target's configured root paths; only files matching those configured globs are eligible for deletion.
 - **FR-023**: If a target has no purge glob configured, purge MUST perform no deletions for that target and report a no-op outcome.
 - **FR-024**: Purge MUST operate from configured patterns even when no prior manifest exists.
+- **FR-025**: Routing rules MUST support wildcard match expressions (for example `category: "*"`) so users can define catch-all routes that match any value for that field.
+- **FR-026**: When a catch-all route is defined, rules not matched by more specific routes MUST resolve to that catch-all route before `other.*` fallback is applied.
 
 ### Non-Functional Requirements *(mandatory)*
 
@@ -154,15 +157,15 @@ As an operator, I can trust that generation truncates only files selected for cu
 - **SC-004**: At least 3 distinct target layout conventions (for example workspace-local, user-home global, and mixed-scope layouts) are supported in acceptance fixtures without custom code changes.
 - **SC-005**: A routing syntax reference document under `docs` is published for the release and reviewed to confirm that all routing examples are understandable without target-specific implementation knowledge.
 - **SC-006**: In acceptance fixtures that include unmatched rules, 100% of unmatched rules are routed to the target-appropriate `other` file in the same location as `core` routing, with no unmapped rules remaining.
-- **SC-007**: 100% of supported targets have a checked-in default YAML configuration artifact that can be copied and adapted by users, and release documentation links to each artifact.
+- **SC-007**: 100% of supported targets publish checked-in, human-readable default YAML routing and layout artifacts under their source folders, and release documentation links to each artifact.
 - **SC-008**: In acceptance scenarios where routing definitions change, running the purge command removes 100% of stale generated files for selected targets before regeneration, with zero unintended deletions of non-generated files.
-- **SC-009**: 100% of supported targets publish default YAML routing/layout artifacts under their source folders, and documentation links to those files.
 - **SC-010**: In purge acceptance fixtures without prior manifests, configured purge globs still remove matching stale files while targets without configured globs report no-op and remove zero files.
+- **SC-011**: In acceptance fixtures with a configured catch-all route, 100% of rules not matched by specific routes are written to the catch-all destination and do not flow to `other.*` fallback.
 
 ### Test Strategy Expectations *(mandatory)*
 
 - Property-based tests must validate single-destination routing invariants, deterministic precedence, and route-plan stability under permuted rule order.
-- Example-based tests must cover explicit-route precedence, fallback routing, override-link behavior, and conflict diagnostics where properties alone are insufficient for readability and expected-path assertions.
+- Example-based tests must cover explicit-route precedence, wildcard catch-all routing before fallback, override-link behavior, and conflict diagnostics where properties alone are insufficient for readability and expected-path assertions.
 - Golden and integration fixtures must use plausible real steering corpora with user-defined domains/tags (not toy-only fixtures), including mixed global/project scope layouts.
 - Security tests must include path traversal payloads, invalid variable injection, malformed override YAML, and instruction-like rule content treated strictly as inert text.
 
