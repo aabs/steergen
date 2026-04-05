@@ -51,12 +51,27 @@ purge:
 ## 3. Link override in config
 Add per-target override path in `steergen.config.yaml`.
 
-Example:
+The `layoutOverridePath` may be a relative path (resolved from the config file's directory) or
+an absolute path. Each target has its own independent override; targets without a
+`layoutOverridePath` continue to use their built-in default layout.
+
+Example (workspace-local convention):
 ```yaml
 targets:
   - id: speckit
     enabled: true
-    layoutOverridePath: config/layout-overrides/speckit.yaml
+    layoutOverridePath: config/layout-overrides/speckit.yaml   # relative to steergen.config.yaml
+  - id: kiro
+    enabled: true
+    # no layoutOverridePath — uses built-in default
+```
+
+Example (user-home global convention):
+```yaml
+targets:
+  - id: speckit
+    enabled: true
+    layoutOverridePath: /home/user/.config/steergen/speckit-layout.yaml   # absolute path
 ```
 
 ## 4. Validate before generation

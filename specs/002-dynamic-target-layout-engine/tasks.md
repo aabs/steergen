@@ -86,14 +86,14 @@
 
 ### Tests for User Story 2 (MANDATORY) ✅
 
-- [ ] T022 [P] [US2] Add integration tests for per-target override linkage and isolation in `tests/Steergen.Cli.IntegrationTests/RunLayoutOverrideTests.cs`
-- [ ] T023 [P] [US2] Add unit tests for override validation diagnostics (unknown variable/field, invalid route) in `tests/Steergen.Core.UnitTests/Configuration/RoutingSchemaValidatorTests.cs`
+- [x] T022 [P] [US2] Add integration tests for per-target override linkage and isolation in `tests/Steergen.Cli.IntegrationTests/RunLayoutOverrideTests.cs`
+- [x] T023 [P] [US2] Add unit tests for override validation diagnostics (unknown variable/field, invalid route) in `tests/Steergen.Core.UnitTests/Configuration/RoutingSchemaValidatorTests.cs`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Wire `layoutOverridePath` into run-time target config resolution in `src/Steergen.Cli/Commands/RunCommand.cs`
-- [ ] T025 [P] [US2] Implement merged-layout provenance tracking (`default`/`override`/`merged`) in `src/Steergen.Core/Generation/RouteResolutionResult.cs`
-- [ ] T026 [US2] Add docs for override linkage and merge semantics in `specs/002-dynamic-target-layout-engine/quickstart.md` and `docs/routing-syntax.md`
+- [x] T024 [P] [US2] Wire `layoutOverridePath` into run-time target config resolution in `src/Steergen.Cli/Commands/RunCommand.cs`
+- [x] T025 [P] [US2] Implement merged-layout provenance tracking (`default`/`override`/`merged`) in `src/Steergen.Core/Generation/RouteResolutionResult.cs`
+- [x] T026 [US2] Add docs for override linkage and merge semantics in `specs/002-dynamic-target-layout-engine/quickstart.md` and `docs/routing-syntax.md`
 
 **Checkpoint**: US2 is fully functional and independently testable.
 

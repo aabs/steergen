@@ -107,7 +107,12 @@ public sealed class GenerationPipeline
                     config.LayoutOverridePath,
                     cancellationToken);
 
-                var resolutions = _routePlanner.Plan(model.Rules, layout);
+                var provenanceSource = config.LayoutOverridePath is not null
+                    ? RouteProvenance.Merged
+                    : RouteProvenance.Default;
+                var resolutions = _routePlanner.Plan(model.Rules, layout)
+                    .Select(r => r with { Source = provenanceSource })
+                    .ToList();
                 allResolutions[target.TargetId] = resolutions;
                 var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
                 var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);

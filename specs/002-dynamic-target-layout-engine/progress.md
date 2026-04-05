@@ -141,3 +141,30 @@ Started: 2026-04-05 11:17:23
 - GenerationPipeline: WritePlan computation is guarded with HasDefaultLayout check and try/catch (emits LAYOUT-001 warning diagnostic on failure) to preserve backward compat for targets without default layouts
 - All 376 tests pass (56 property + 182 unit + 138 integration) after iteration
 ---
+
+---
+## Iteration 7 - 2026-04-05
+**User Story**: US1 Route Rules to Target-Specific Layouts — COMPLETE (T015, T016, T021, T042, T044)
+**Tasks Completed**:
+- [x] T015: RunTargetLayoutRoutingTests — 6 tests: exit code, core rules to constitution.md, non-core to domain modules, catch-all for unknown domains, determinism, no duplicate placement
+- [x] T016: RunCatchAllRoutingTests — 5 tests: specific beats catch-all, unrecognized domains via catch-all, no-catch-all layout falls back to other.md, catch-all prevents fallback, WritePlan all-resolved property
+- [x] T042: RunCompatibilityBaselineTests — 7 regression tests verifying existing speckit+kiro output behavior preserved with no layout override
+- [x] T044: RunLayoutConventionsAcceptanceTests — 4 acceptance tests: workspace-local override, user-home global override, mixed per-target overrides, default without override
+- [x] T021: GenerationResult gains RouteResolutions dict; RunCommand --verbose emits route diagnostics (destination, route ID, source, failure traces)
+**Tasks Remaining in Story**: None — US1 complete
+**Commit**: 95fbb8f
+**Files Changed**:
+- tests/Steergen.Cli.IntegrationTests/RunTargetLayoutRoutingTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/RunCatchAllRoutingTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/RunCompatibilityBaselineTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/RunLayoutConventionsAcceptanceTests.cs (new)
+- src/Steergen.Core/Generation/GenerationPipeline.cs (RouteResolutions in GenerationResult)
+- src/Steergen.Cli/Commands/RunCommand.cs (EmitRoutingDiagnostics, verbose routing output)
+- specs/002-dynamic-target-layout-engine/tasks.md (T015, T016, T021, T042, T044 marked done)
+**Learnings**:
+- xUnit1031: test methods must not use .GetAwaiter().GetResult() — make the test async instead
+- SpeckitTargetComponent.ResolveOutputPath uses Path.GetFileName only — all output files land in the flat outputPath dir regardless of planned directory structure
+- RouteResolutionResult is in Steergen.Core.Model, not Steergen.Core.Generation
+- For integration tests using custom layout overrides, write the YAML to a temp dir and reference it via TargetConfiguration.LayoutOverridePath
+- 406 total tests (56 property + 190 unit + 160 integration) all pass after this iteration
+---

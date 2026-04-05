@@ -214,6 +214,49 @@ targets:
 
 Override YAML is validated with fail-closed semantics. Unknown fields, unknown variables, and missing core anchors are all validation errors.
 
+### Path resolution
+
+The `layoutOverridePath` value may be either an absolute path or a path relative to the
+`steergen.config.yaml` file's directory. Both conventions are equivalent:
+
+```yaml
+# Relative to config file directory (workspace-local convention):
+layoutOverridePath: layouts/my-speckit-layout.yaml
+
+# Absolute path (user-home global convention):
+layoutOverridePath: /home/user/.config/steergen/speckit-layout.yaml
+```
+
+### Per-target isolation
+
+Each target's `layoutOverridePath` is independent. Overriding one target does not affect any
+other target's layout. Targets with no `layoutOverridePath` use the built-in default layout:
+
+```yaml
+targets:
+  - id: speckit
+    layoutOverridePath: layouts/speckit-override.yaml   # custom layout
+  - id: kiro
+    # no layoutOverridePath — uses built-in default
+```
+
+### Provenance tracking
+
+When running with `--verbose`, the route diagnostics line for each resolved rule includes a
+`source` field:
+
+- `Default` — the rule was routed using the built-in default layout only.
+- `Merged` — the rule was routed using a layout produced by deep-merging the default with a
+  user-provided override YAML.
+
+Example verbose output:
+
+```
+[routing] speckit: 12/12 rules routed
+  [routing] CORE-001 → constitution.md (route: core-anchor, source: Merged)
+  [routing] SEC-001 → security.md (route: security-module, source: Merged)
+```
+
 ---
 
 ## Example: Complete Layout

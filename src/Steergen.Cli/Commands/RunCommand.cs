@@ -188,6 +188,21 @@ public static class RunCommand
                     .ToList();
             }
 
+            // Resolve relative layoutOverridePath values relative to the config file directory.
+            if (configPath is not null)
+            {
+                var configDir = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
+                targetConfigs = targetConfigs
+                    .Select(t => t with
+                    {
+                        LayoutOverridePath =
+                            t.LayoutOverridePath is not null && !Path.IsPathRooted(t.LayoutOverridePath)
+                                ? Path.GetFullPath(Path.Combine(configDir, t.LayoutOverridePath))
+                                : t.LayoutOverridePath,
+                    })
+                    .ToList();
+            }
+
             var (globalDocs, projectDocs) = await reporter.MeasureAsync("load-documents", () =>
             {
                 var g = LoadDocuments(resolvedGlobal);
