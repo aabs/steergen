@@ -225,6 +225,9 @@ public static class RunCommand
                 }
             }
 
+            if (verbose && result.RouteResolutions is not null)
+                EmitRoutingDiagnostics(result.RouteResolutions);
+
             if (!result.Success)
                 return Composition.ExitCodeMapper.ValidationError;
 
@@ -260,5 +263,33 @@ public static class RunCommand
             .OrderBy(p => p, StringComparer.Ordinal)
             .Select(path => SteeringMarkdownParser.Parse(File.ReadAllText(path), path))
             .ToList();
+    }
+
+    private static void EmitRoutingDiagnostics(
+        IReadOnlyDictionary<string, IReadOnlyList<Core.Model.RouteResolutionResult>> routeResolutions)
+    {
+        foreach (var (targetId, resolutions) in routeResolutions.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var resolved = resolutions.Where(r => r.IsResolved).ToList();
+            var failed = resolutions.Where(r => !r.IsResolved).ToList();
+
+            Console.Error.WriteLine(
+                $"[routing] {targetId}: {resolved.Count}/{resolutions.Count} rules routed" +
+                (failed.Count > 0 ? $", {failed.Count} unresolved (see below)" : ""));
+
+            foreach (var r in resolved.OrderBy(r => r.RuleId, StringComparer.Ordinal))
+            {
+                var dest = Path.GetFileName(r.SelectedDestinationPath) ?? r.SelectedDestinationPath;
+                Console.Error.WriteLine(
+                    $"  [routing] {r.RuleId} → {dest}" +
+                    $" (route: {r.SelectedRouteId}, source: {r.Source})");
+            }
+
+            foreach (var r in failed.OrderBy(r => r.RuleId, StringComparer.Ordinal))
+            {
+                Console.Error.WriteLine(
+                    $"  [routing:fail] {r.RuleId}: {r.SelectionReason}");
+            }
+        }
     }
 }

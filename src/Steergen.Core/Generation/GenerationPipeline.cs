@@ -14,7 +14,8 @@ public sealed record GenerationResult(
     IReadOnlyList<Diagnostic> Diagnostics,
     int TargetsExecuted,
     DeterministicOutputManifest? Manifest = null,
-    IReadOnlyDictionary<string, WritePlan>? WritePlans = null)
+    IReadOnlyDictionary<string, WritePlan>? WritePlans = null,
+    IReadOnlyDictionary<string, IReadOnlyList<RouteResolutionResult>>? RouteResolutions = null)
 {
     /// <summary>
     /// Formats diagnostics as CI-parseable lines suitable for stderr.
@@ -90,6 +91,7 @@ public sealed class GenerationPipeline
 
         // Build write plans for each enabled target using the layout engine.
         var writePlans = new Dictionary<string, WritePlan>(StringComparer.Ordinal);
+        var allResolutions = new Dictionary<string, IReadOnlyList<RouteResolutionResult>>(StringComparer.Ordinal);
         foreach (var target in targets)
         {
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
@@ -106,6 +108,7 @@ public sealed class GenerationPipeline
                     cancellationToken);
 
                 var resolutions = _routePlanner.Plan(model.Rules, layout);
+                allResolutions[target.TargetId] = resolutions;
                 var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
                 var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);
                 writePlans[target.TargetId] = resolvedPlan;
@@ -148,7 +151,8 @@ public sealed class GenerationPipeline
             allDiagnostics,
             targetsExecuted,
             manifest,
-            writePlans.Count > 0 ? writePlans : null);
+            writePlans.Count > 0 ? writePlans : null,
+            allResolutions.Count > 0 ? allResolutions : null);
     }
 
     // ── Context variable resolution ─────────────────────────────────────────────
