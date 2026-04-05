@@ -54,6 +54,65 @@ public sealed class SpeckitTargetComponent : ITargetComponent
         }
     }
 
+    public async Task GenerateWithPlanAsync(
+        ResolvedSteeringModel model,
+        TargetConfiguration config,
+        WritePlan writePlan,
+        CancellationToken cancellationToken)
+    {
+        var outputPath = config.OutputPath
+            ?? throw new InvalidOperationException("Speckit target requires OutputPath to be set.");
+
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
+
+        foreach (var file in writePlan.Files)
+        {
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
+
+            if (rules.Count == 0) continue;
+
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+
+            var fileName = Path.GetFileNameWithoutExtension(resolvedPath);
+            string rendered;
+
+            if (string.Equals(fileName, "constitution", StringComparison.OrdinalIgnoreCase)
+                || rules.All(r => r.Domain == "core"))
+            {
+                var constitutionModel = new SpeckitConstitutionModel
+                {
+                    Rules = ToRuleModels(rules),
+                };
+                rendered = await RenderConstitutionAsync(constitutionModel, cancellationToken);
+            }
+            else
+            {
+                var domain = rules[0].Domain ?? fileName;
+                var moduleModel = new SpeckitModuleModel
+                {
+                    Domain = domain,
+                    Rules = ToRuleModels(rules),
+                };
+                rendered = await RenderModuleAsync(moduleModel, cancellationToken);
+            }
+
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Resolves a plan path: if fully resolved (no template vars), use as-is;
+    /// otherwise fall back to outputPath combined with the plan path's filename.
+    /// </summary>
+    private static string ResolveOutputPath(string planPath, string outputPath) =>
+        Path.Combine(outputPath, Path.GetFileName(planPath));
+
     public async Task<string> RenderConstitutionAsync(
         SpeckitConstitutionModel model,
         CancellationToken cancellationToken = default)

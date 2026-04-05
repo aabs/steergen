@@ -54,6 +54,54 @@ public sealed class KiroTargetComponent : ITargetComponent
         }
     }
 
+    public async Task GenerateWithPlanAsync(
+        ResolvedSteeringModel model,
+        TargetConfiguration config,
+        WritePlan writePlan,
+        CancellationToken cancellationToken)
+    {
+        var outputPath = config.OutputPath
+            ?? throw new InvalidOperationException("Kiro target requires OutputPath to be set.");
+
+        var options = KiroTargetOptions.FromFormatOptions(config.FormatOptions);
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
+
+        foreach (var file in writePlan.Files)
+        {
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
+
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
+
+            var (inclusion, fileMatchPattern) = KiroInclusionMapper.Map(activeRules, options);
+
+            var description = activeRules[0].InputFileStem
+                ?? Path.GetFileNameWithoutExtension(file.Path);
+            var kiroModel = new KiroDocumentModel
+            {
+                Description = description,
+                Inclusion = inclusion,
+                FileMatchPattern = fileMatchPattern,
+                Rules = ToProseModels(activeRules),
+            };
+
+            var rendered = await RenderDocumentAsync(kiroModel, cancellationToken);
+
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
+        }
+    }
+
+    private static string ResolveOutputPath(string planPath, string outputPath) =>
+        Path.Combine(outputPath, Path.GetFileName(planPath));
+
+
     public async Task<string> RenderDocumentAsync(
         KiroDocumentModel model,
         CancellationToken cancellationToken = default)

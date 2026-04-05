@@ -13,4 +13,9 @@ public record SteeringRule
     public string? Supersedes { get; init; }
     public string? PrimaryText { get; init; }
     public string? ExplanatoryText { get; init; }
+    /// <summary>
+    /// The file stem of the source document from which this rule originated.
+    /// Set during model resolution; used for <c>${inputFileStem}</c> route substitution.
+    /// </summary>
+    public string? InputFileStem { get; init; }
 }

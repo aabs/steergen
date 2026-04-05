@@ -63,15 +63,15 @@
 
 - [ ] T015 [P] [US1] Add integration tests for target-native route mapping and deterministic ordering in `tests/Steergen.Cli.IntegrationTests/RunTargetLayoutRoutingTests.cs`
 - [ ] T016 [P] [US1] Add integration tests for catch-all-before-fallback behavior in `tests/Steergen.Cli.IntegrationTests/RunCatchAllRoutingTests.cs`
-- [ ] T017 [P] [US1] Add unit tests for core-anchor fallback-to-`other.*` behavior in `tests/Steergen.Core.UnitTests/Generation/FallbackRoutingTests.cs`
+- [x] T017 [P] [US1] Add unit tests for core-anchor fallback-to-`other.*` behavior in `tests/Steergen.Core.UnitTests/Generation/FallbackRoutingTests.cs`
 - [ ] T042 [P] [US1] Add compatibility regression tests proving existing targets preserve current output behavior when no layout override is configured in `tests/Steergen.Cli.IntegrationTests/RunCompatibilityBaselineTests.cs`
 - [ ] T044 [P] [US1] Add integration tests that validate three layout conventions (workspace-local, user-home global, mixed-scope) without code changes in `tests/Steergen.Cli.IntegrationTests/RunLayoutConventionsAcceptanceTests.cs`
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement wildcard route matching (`*`) and specificity ordering in `src/Steergen.Core/Generation/RouteResolver.cs`
-- [ ] T019 [P] [US1] Implement `other.*` fallback colocation with core anchor in `src/Steergen.Core/Generation/RoutePlanner.cs`
-- [ ] T020 [US1] Update target generation path to consume write plans instead of ad hoc file naming in `src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs`, `src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs`, `src/Steergen.Core/Targets/Agents/CopilotAgentTargetComponent.cs`, and `src/Steergen.Core/Targets/Agents/KiroAgentTargetComponent.cs`
+- [x] T018 [P] [US1] Implement wildcard route matching (`*`) and specificity ordering in `src/Steergen.Core/Generation/RouteResolver.cs`
+- [x] T019 [P] [US1] Implement `other.*` fallback colocation with core anchor in `src/Steergen.Core/Generation/RoutePlanner.cs`
+- [x] T020 [US1] Update target generation path to consume write plans instead of ad hoc file naming in `src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs`, `src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs`, `src/Steergen.Core/Targets/Agents/CopilotAgentTargetComponent.cs`, and `src/Steergen.Core/Targets/Agents/KiroAgentTargetComponent.cs`
 - [ ] T021 [US1] Update run-command diagnostics to include route source, selected destination for successful matches, and reason traces for routing failures in `src/Steergen.Cli/Commands/RunCommand.cs`
 
 **Checkpoint**: US1 is fully functional and independently testable.

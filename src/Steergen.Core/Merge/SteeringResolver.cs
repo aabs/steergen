@@ -30,10 +30,14 @@ public sealed class SteeringResolver
         var ruleMap = new Dictionary<string, SteeringRule>(StringComparer.Ordinal);
         foreach (var doc in sortedDocs)
         {
+            var stem = doc.SourcePath is not null
+                ? Path.GetFileNameWithoutExtension(doc.SourcePath)
+                : doc.Id;
+
             foreach (var rule in doc.Rules)
             {
                 if (rule.Id is not null)
-                    ruleMap[rule.Id] = rule;
+                    ruleMap[rule.Id] = rule with { InputFileStem = stem };
             }
         }
 

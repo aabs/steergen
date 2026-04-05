@@ -69,6 +69,58 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
         return await template.RenderAsync(model);
     }
 
+    public async Task GenerateWithPlanAsync(
+        ResolvedSteeringModel model,
+        TargetConfiguration config,
+        WritePlan writePlan,
+        CancellationToken cancellationToken)
+    {
+        var outputPath = config.OutputPath
+            ?? throw new InvalidOperationException("Kiro agent target requires OutputPath to be set.");
+
+        foreach (var key in config.RequiredMetadata)
+        {
+            if (!config.FormatOptions.ContainsKey(key))
+                throw new TargetGenerationException(key);
+        }
+
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
+
+        foreach (var file in writePlan.Files)
+        {
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
+
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
+
+            var stem = activeRules[0].InputFileStem ?? Path.GetFileNameWithoutExtension(file.Path);
+            var description = config.FormatOptions.TryGetValue("description", out var desc)
+                ? desc
+                : stem;
+
+            var documentModel = new KiroAgentDocumentModel
+            {
+                Name = stem,
+                Description = description,
+                Rules = ToProseModels(activeRules),
+            };
+
+            var rendered = await RenderDocumentAsync(documentModel, cancellationToken);
+
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
+        }
+    }
+
+    private static string ResolveOutputPath(string planPath, string outputPath) =>
+        Path.Combine(outputPath, Path.GetFileName(planPath));
+
     private static IReadOnlyList<SteeringRule> FilterRules(
         IReadOnlyList<SteeringRule> rules,
         IReadOnlyList<string> activeProfiles)

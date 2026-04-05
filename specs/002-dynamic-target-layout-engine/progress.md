@@ -114,3 +114,30 @@ Started: 2026-04-05 11:17:23
 - FallbackMode.OtherAtCoreAnchor: uses the FIRST route with anchor=Core for its Directory; fallback path = "{coreAnchorDir}/other{coreAnchorExtension}"
 - 364 total tests (51 property + 182 unit + 131 integration) all pass after this iteration
 ---
+
+---
+## Iteration 5 - 2026-04-05
+**User Story**: Phase 2 Foundational complete (T038, T039, T013, T014, T012)
+**Tasks Completed**: 
+- [x] T038: InertContentRoutingProperties — 5 property tests proving injection-like body/title content never affects route selection
+- [x] T039: InertContentRoutingTests — 5 CLI integration tests verifying no behavioral influence from malicious fixture content on route selection or write plans; also verifies parser doesn't create phantom rules from injection-in-body
+- [x] T013: TargetRegistry.GetDefaultLayoutResourceName + HasDefaultLayout for per-target default-layout asset lookup (delegates to LayoutOverrideLoader)
+- [x] T014: LayoutOverridePath added to TargetConfiguration model, SteergenConfigLoader (YAML deserialization), and SteergenConfigWriter (YAML serialization)
+- [x] T012: GenerationPipeline computes WritePlans per enabled target (LayoutOverrideLoader → RoutePlanner → WritePlanBuilder); WritePlans returned in GenerationResult; LAYOUT-001 warning diagnostic on layout load failure; existing target.GenerateAsync flow preserved for backward compat pending T020
+**Tasks Remaining in Story**: None — Phase 2 complete; Phase 3 (US1) is next
+**Commit**: 4f2c819
+**Files Changed**: 
+- tests/Steergen.Core.PropertyTests/Security/InertContentRoutingProperties.cs (new)
+- tests/Steergen.Cli.IntegrationTests/Security/InertContentRoutingTests.cs (new)
+- src/Steergen.Core/Targets/TargetRegistry.cs (GetDefaultLayoutResourceName, HasDefaultLayout)
+- src/Steergen.Core/Model/SteeringConfiguration.cs (LayoutOverridePath on TargetConfiguration)
+- src/Steergen.Core/Configuration/SteergenConfigLoader.cs (LayoutOverridePath)
+- src/Steergen.Core/Configuration/SteergenConfigWriter.cs (LayoutOverridePath)
+- src/Steergen.Core/Generation/GenerationPipeline.cs (WritePlans, LayoutOverrideLoader, RoutePlanner, WritePlanBuilder)
+- specs/002-dynamic-target-layout-engine/tasks.md (T038, T039, T013, T014, T012 marked done)
+**Learnings**:
+- xUnit Assert.Equal does NOT have a `userMessage` parameter — use Assert.True(a == b, message) instead
+- SteeringMarkdownParser is a static class — use SteeringMarkdownParser.Parse(...) not new SteeringMarkdownParser()
+- GenerationPipeline: WritePlan computation is guarded with HasDefaultLayout check and try/catch (emits LAYOUT-001 warning diagnostic on failure) to preserve backward compat for targets without default layouts
+- All 376 tests pass (56 property + 182 unit + 138 integration) after iteration
+---

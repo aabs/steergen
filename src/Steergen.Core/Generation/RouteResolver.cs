@@ -115,6 +115,7 @@ public sealed class RouteResolver
             ["severity"] = rule.Severity ?? "info",
             ["profile"] = rule.Profile ?? "",
             ["ruleId"] = rule.Id ?? "",
+            ["inputFileStem"] = rule.InputFileStem ?? rule.Id ?? "",
         };
 
         var dir = SubstituteVariables(dest.Directory, vars);

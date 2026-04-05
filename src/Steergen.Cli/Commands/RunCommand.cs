@@ -204,7 +204,9 @@ public static class RunCommand
                     selectedComponents,
                     targetConfigs,
                     cancellationToken,
-                    manifestOutputPath: outputBase));
+                    manifestOutputPath: outputBase,
+                    globalRoot: resolvedGlobal,
+                    projectRoot: resolvedProject));
 
             reporter.EmitTotal();
 

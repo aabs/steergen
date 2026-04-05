@@ -51,6 +51,8 @@ public sealed class GenerationPipeline
     /// after generation completes. The manifest captures SHA-256 hashes of all generated
     /// files and is included in the returned <see cref="GenerationResult"/>.
     /// </param>
+    /// <param name="globalRoot">Optional resolved global root path for context variable substitution in layout paths.</param>
+    /// <param name="projectRoot">Optional resolved project root path for context variable substitution in layout paths.</param>
     public async Task<GenerationResult> RunAsync(
         IEnumerable<SteeringDocument> globalDocuments,
         IEnumerable<SteeringDocument> projectDocuments,
@@ -58,7 +60,9 @@ public sealed class GenerationPipeline
         IReadOnlyList<Targets.ITargetComponent> targets,
         IReadOnlyList<TargetConfiguration> targetConfigs,
         CancellationToken cancellationToken = default,
-        string? manifestOutputPath = null)
+        string? manifestOutputPath = null,
+        string? globalRoot = null,
+        string? projectRoot = null)
     {
         var allDiagnostics = new List<Diagnostic>();
         var globalList = globalDocuments.ToList();
@@ -103,7 +107,8 @@ public sealed class GenerationPipeline
 
                 var resolutions = _routePlanner.Plan(model.Rules, layout);
                 var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
-                writePlans[target.TargetId] = plan;
+                var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);
+                writePlans[target.TargetId] = resolvedPlan;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -120,7 +125,11 @@ public sealed class GenerationPipeline
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
-            await target.GenerateAsync(model, config, cancellationToken);
+            if (writePlans.TryGetValue(target.TargetId, out var writePlan))
+                await target.GenerateWithPlanAsync(model, config, writePlan, cancellationToken);
+            else
+                await target.GenerateAsync(model, config, cancellationToken);
+
             targetsExecuted++;
         }
 
@@ -140,5 +149,34 @@ public sealed class GenerationPipeline
             targetsExecuted,
             manifest,
             writePlans.Count > 0 ? writePlans : null);
+    }
+
+    // ── Context variable resolution ─────────────────────────────────────────────
+
+    private static WritePlan ResolveContextVariables(
+        WritePlan plan,
+        string? globalRoot,
+        string? projectRoot)
+    {
+        if (globalRoot is null && projectRoot is null)
+            return plan;
+
+        var resolvedFiles = plan.Files
+            .Select(f => f with { Path = ResolveContextVarsInPath(f.Path, globalRoot, projectRoot) })
+            .ToList();
+
+        return plan with { Files = resolvedFiles };
+    }
+
+    private static string ResolveContextVarsInPath(
+        string path,
+        string? globalRoot,
+        string? projectRoot)
+    {
+        if (globalRoot is not null)
+            path = path.Replace("${globalRoot}", globalRoot, StringComparison.OrdinalIgnoreCase);
+        if (projectRoot is not null)
+            path = path.Replace("${projectRoot}", projectRoot, StringComparison.OrdinalIgnoreCase);
+        return path;
     }
 }

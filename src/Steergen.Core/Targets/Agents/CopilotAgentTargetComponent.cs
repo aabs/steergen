@@ -54,6 +54,52 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
         await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
     }
 
+    public async Task GenerateWithPlanAsync(
+        ResolvedSteeringModel model,
+        TargetConfiguration config,
+        WritePlan writePlan,
+        CancellationToken cancellationToken)
+    {
+        var outputPath = config.OutputPath
+            ?? throw new InvalidOperationException("Copilot agent target requires OutputPath to be set.");
+
+        foreach (var key in config.RequiredMetadata)
+        {
+            if (!config.FormatOptions.ContainsKey(key))
+                throw new TargetGenerationException(key);
+        }
+
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
+
+        foreach (var file in writePlan.Files)
+        {
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
+
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
+
+            var documentModel = new CopilotAgentDocumentModel
+            {
+                Rules = ToProseModels(activeRules),
+            };
+
+            var rendered = await RenderAsync(documentModel, cancellationToken);
+
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
+        }
+    }
+
+    private static string ResolveOutputPath(string planPath, string outputPath) =>
+        Path.Combine(outputPath, Path.GetFileName(planPath));
+
+
     public async Task<string> RenderAsync(
         CopilotAgentDocumentModel model,
         CancellationToken cancellationToken = default)
