@@ -17,9 +17,9 @@
 
 **Purpose**: Add baseline scaffolding and assets used by all stories.
 
-- [ ] T001 [P] Create feature-level docs placeholder for framework-agnostic routing syntax in `docs/routing-syntax.md`
-- [ ] T002 [P] Add default layout YAML assets under target source folders, each including both default routing rules and layout configuration, in `src/Steergen.Core/Targets/Speckit/default-layout.yaml`, `src/Steergen.Core/Targets/Kiro/default-layout.yaml`, `src/Steergen.Core/Targets/Agents/Copilot/default-layout.yaml`, and `src/Steergen.Core/Targets/Agents/Kiro/default-layout.yaml`
-- [ ] T003 [P] Add realistic routing fixture corpus for catch-all and fallback behavior in `tests/Fixtures/RealisticGovernance/RoutingLayouts/`
+- [x] T001 [P] Create feature-level docs placeholder for framework-agnostic routing syntax in `docs/routing-syntax.md`
+- [x] T002 [P] Add default layout YAML assets under target source folders, each including both default routing rules and layout configuration, in `src/Steergen.Core/Targets/Speckit/default-layout.yaml`, `src/Steergen.Core/Targets/Kiro/default-layout.yaml`, `src/Steergen.Core/Targets/Agents/Copilot/default-layout.yaml`, and `src/Steergen.Core/Targets/Agents/Kiro/default-layout.yaml`
+- [x] T003 [P] Add realistic routing fixture corpus for catch-all and fallback behavior in `tests/Fixtures/RealisticGovernance/RoutingLayouts/`
 
 ---
 

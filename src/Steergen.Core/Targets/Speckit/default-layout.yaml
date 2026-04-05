@@ -1,0 +1,77 @@
+# Default Layout: Speckit Target
+# This file is the built-in routing and layout profile for the Speckit target.
+# Copy and modify this file to create a per-target override (layoutOverridePath in steergen.config.yaml).
+# See docs/routing-syntax.md for full syntax reference.
+
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.speckit"
+
+routes:
+  # --- Global scope routes ---
+
+  # Core anchor: global constitution (domain=core, global scope)
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  # Global domain module: one file per domain for non-core global rules
+  - id: domain-module-global
+    scope: global
+    explicit: false
+    order: 20
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "${domain}"
+      extension: ".md"
+
+  # --- Project scope routes ---
+
+  # Core anchor: project constitution (domain=core, project scope)
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  # Project domain module: one file per domain for non-core project rules
+  - id: domain-module-project
+    scope: project
+    explicit: false
+    order: 20
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "${domain}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.speckit"
+    - "${projectRoot}/.speckit"
+  globs:
+    - "**/*.md"
