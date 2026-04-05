@@ -168,3 +168,62 @@ Started: 2026-04-05 11:17:23
 - For integration tests using custom layout overrides, write the YAML to a temp dir and reference it via TargetConfiguration.LayoutOverridePath
 - 406 total tests (56 property + 190 unit + 160 integration) all pass after this iteration
 ---
+
+---
+## Iteration 8 - 2026-04-05
+**User Story**: US2 Override Standard Layout with User YAML — COMPLETE (T022, T023, T024, T025, T026)
+**Tasks Completed**:
+- [x] T022: RunLayoutOverrideTests — 5 integration tests: single-target override applied, per-target isolation (speckit override does not affect kiro), relative path resolution from config dir, Merged provenance when override active, Default provenance when no override
+- [x] T023: RoutingSchemaValidatorTests — 16 unit tests: RS001 (empty routes), RS002 (duplicate IDs with count), RS003 (no core anchor), RS003 interaction with RS001, RS004/RS005/RS006 path safety, valid override layout, variable template, multi-error sort order
+- [x] T024: RunCommand — resolve relative layoutOverridePath relative to config file directory (fixes CWD-relative bug)
+- [x] T025: GenerationPipeline — set RouteResolutionResult.Source = Merged when override YAML is active, Default when using built-in default only
+- [x] T026: Updated docs/routing-syntax.md (path resolution, per-target isolation, provenance tracking) and quickstart.md (workspace-local and home-global conventions)
+**Tasks Remaining in Story**: None — US2 complete
+**Commit**: 8ca9a78
+**Files Changed**:
+- tests/Steergen.Cli.IntegrationTests/RunLayoutOverrideTests.cs (new)
+- tests/Steergen.Core.UnitTests/Configuration/RoutingSchemaValidatorTests.cs (new)
+- src/Steergen.Cli/Commands/RunCommand.cs (relative path resolution for layoutOverridePath)
+- src/Steergen.Core/Generation/GenerationPipeline.cs (provenance: Merged/Default based on override)
+- docs/routing-syntax.md (path resolution, isolation, provenance tracking docs)
+- specs/002-dynamic-target-layout-engine/quickstart.md (workspace-local and home-global conventions)
+- specs/002-dynamic-target-layout-engine/tasks.md (T022-T026 marked done)
+**Learnings**:
+- RouteMatchExpression.Domain is IReadOnlyList<string>, not string — use ["core"] syntax in tests
+- GenerationPipeline.RunAsync parameter names are globalDocuments/projectDocuments (not globalDocs/projectDocs)
+- Provenance tracking: set Source on all resolutions after _routePlanner.Plan() using LINQ .Select(r => r with { Source = ... }) — clean one-liner that preserves all other fields
+- Relative layoutOverridePath resolution: RunCommand resolves relative paths after building targetConfigs (after outputBase override), using configDir = Path.GetDirectoryName(Path.GetFullPath(configPath))
+- 427 total tests (56 property + 206 unit + 165 integration) all pass after this iteration
+---
+
+---
+## Iteration 9 - 2026-04-05
+**User Story**: US3 Safe and Predictable File Lifecycle — COMPLETE (T027, T028, T029, T030, T031, T032, T033)
+**Tasks Completed**: 
+- [x] T027: PurgeEligibilityProperties — 5 property tests: files under root matching globs removed, files outside root never eligible, empty globs always no-op, disabled policy always no-op, dry-run never deletes
+- [x] T028: GeneratedFilePurgerTests — 11 unit tests: no-glob no-op, empty roots no-op, disabled no-op, non-existent root, matching files removed, recursive glob, deterministic order, dry-run, non-matching not removed, ResolvePolicy template resolution, null context
+- [x] T029: PurgeCommandTests — 5 integration tests: removes matching files, dry-run does not delete, no-globs reports no-op exit 0, no-manifest operation, target scoping isolation
+- [x] T030: GeneratedFilePurger — root-bounded purge service with glob expansion (**, *.ext), dry-run support, ResolvePolicy for context variable substitution (${globalRoot}, ${projectRoot})
+- [x] T031: PurgeCommand — CLI command with --config, --target, --dry-run, --quiet options; loads layout via LayoutOverrideLoader; resolves purge policy templates; reports per-target results
+- [x] T032: CommandFactory — registered PurgeCommand in root command
+- [x] T033: WritePlanExecutor — async executor that truncates+writes WritePlan files in deterministic alphabetical order, returns WritePlanReport with writtenFiles, truncatedFiles, success/failureReason
+**Tasks Remaining in Story**: None — US3 complete
+**Commit**: 30229d0
+**Files Changed**: 
+- src/Steergen.Core/Model/PurgeResult.cs (new)
+- src/Steergen.Core/Model/WritePlanReport.cs (new)
+- src/Steergen.Core/Generation/GeneratedFilePurger.cs (new)
+- src/Steergen.Core/Generation/WritePlanExecutor.cs (new)
+- src/Steergen.Cli/Commands/PurgeCommand.cs (new)
+- src/Steergen.Cli/Composition/CommandFactory.cs (registered PurgeCommand)
+- tests/Steergen.Core.PropertyTests/Generation/PurgeEligibilityProperties.cs (new)
+- tests/Steergen.Core.UnitTests/Generation/GeneratedFilePurgerTests.cs (new)
+- tests/Steergen.Cli.IntegrationTests/PurgeCommandTests.cs (new)
+- specs/002-dynamic-target-layout-engine/tasks.md (T027-T033 marked done)
+**Learnings**:
+- xUnit Assert.Equal/DoesNotContain do NOT have a userMessage parameter — use Assert.True(condition, message) pattern
+- GeneratedFilePurger uses Directory.EnumerateFiles with ** glob support: strip leading **/ and use SearchOption.AllDirectories with remaining pattern
+- PurgePolicyDefinition.Roots contains template strings (${globalRoot}, etc.) that must be resolved before calling Purge
+- Root-bounded safety check uses Path.GetFullPath to normalize both root and candidate, then checks StartsWith(root + separator)
+- 448 total tests (61 property + 217 unit + 170 integration) all pass after this iteration
+---

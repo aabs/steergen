@@ -107,16 +107,16 @@
 
 ### Tests for User Story 3 (MANDATORY) ✅
 
-- [ ] T027 [P] [US3] Add property tests for purge eligibility invariants (glob-root bounded) in `tests/Steergen.Core.PropertyTests/Generation/PurgeEligibilityProperties.cs`
-- [ ] T028 [P] [US3] Add unit tests for no-glob no-op and unsafe purge blocking in `tests/Steergen.Core.UnitTests/Generation/GeneratedFilePurgerTests.cs`
-- [ ] T029 [P] [US3] Add CLI integration tests for purge command including no-manifest operation in `tests/Steergen.Cli.IntegrationTests/PurgeCommandTests.cs`
+- [x] T027 [P] [US3] Add property tests for purge eligibility invariants (glob-root bounded) in `tests/Steergen.Core.PropertyTests/Generation/PurgeEligibilityProperties.cs`
+- [x] T028 [P] [US3] Add unit tests for no-glob no-op and unsafe purge blocking in `tests/Steergen.Core.UnitTests/Generation/GeneratedFilePurgerTests.cs`
+- [x] T029 [P] [US3] Add CLI integration tests for purge command including no-manifest operation in `tests/Steergen.Cli.IntegrationTests/PurgeCommandTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T030 [P] [US3] Implement generated file purger service in `src/Steergen.Core/Generation/GeneratedFilePurger.cs`
-- [ ] T031 [P] [US3] Implement `purge` CLI command with target scoping and dry-run/reporting in `src/Steergen.Cli/Commands/PurgeCommand.cs`
-- [ ] T032 [US3] Register `purge` command in CLI composition in `src/Steergen.Cli/Composition/CommandFactory.cs`
-- [ ] T033 [US3] Implement deterministic file truncation/write lifecycle reporting in `src/Steergen.Core/Generation/WritePlanExecutor.cs`
+- [x] T030 [P] [US3] Implement generated file purger service in `src/Steergen.Core/Generation/GeneratedFilePurger.cs`
+- [x] T031 [P] [US3] Implement `purge` CLI command with target scoping and dry-run/reporting in `src/Steergen.Cli/Commands/PurgeCommand.cs`
+- [x] T032 [US3] Register `purge` command in CLI composition in `src/Steergen.Cli/Composition/CommandFactory.cs`
+- [x] T033 [US3] Implement deterministic file truncation/write lifecycle reporting in `src/Steergen.Core/Generation/WritePlanExecutor.cs`
 
 **Checkpoint**: US3 is fully functional and independently testable.
 

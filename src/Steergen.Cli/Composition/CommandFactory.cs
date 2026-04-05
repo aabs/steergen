@@ -15,12 +15,15 @@ public static class CommandFactory
         var updateCommand = Commands.UpdateCommand.Create();
         var targetCommand = Commands.TargetCommand.Create();
 
+        var purgeCommand = Commands.PurgeCommand.Create();
+
         rootCommand.Add(runCommand);
         rootCommand.Add(validateCommand);
         rootCommand.Add(inspectCommand);
         rootCommand.Add(initCommand);
         rootCommand.Add(updateCommand);
         rootCommand.Add(targetCommand);
+        rootCommand.Add(purgeCommand);
 
         return rootCommand;
     }
