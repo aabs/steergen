@@ -126,15 +126,15 @@
 
 **Purpose**: Finish docs/contracts, validate end-to-end behavior, and lock release readiness.
 
-- [ ] T034 [P] Publish framework-agnostic routing syntax reference including catch-all examples in `docs/routing-syntax.md`
-- [ ] T035 [P] Align contract docs with final command behavior in `specs/002-dynamic-target-layout-engine/contracts/cli-contract.md` and `specs/002-dynamic-target-layout-engine/contracts/config-schema.md`
-- [ ] T036 [P] Add release-readiness checklist items for default YAML discoverability and purge safety in `docs/release/release-checklist.md`
-- [ ] T037 Run full validation sequence from quickstart in `specs/002-dynamic-target-layout-engine/quickstart.md`
-- [ ] T040 [P] Add BenchmarkDotNet scenario for 1,000 rules across 4 targets and publish baseline results in `tests/Steergen.Benchmarks/LayoutRoutingBenchmarks.cs`
-- [ ] T041 [P] Add CI performance gate/report wiring for NFR-003 budget tracking in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
-- [ ] T043 [P] Add three acceptance fixture sets (workspace-local, user-home global, mixed-scope) for route/layout validation in `tests/Fixtures/RealisticGovernance/RoutingLayouts/`
-- [ ] T045 [P] Add repeat-run determinism regression harness (multi-run artifact diff plus flake threshold) in `tests/Steergen.Cli.IntegrationTests/DeterministicRepeatRunRegressionTests.cs`
-- [ ] T046 [P] Add CI step and reporting for repeat-run reliability target (99.9%) in `.github/workflows/ci.yml`
+- [x] T034 [P] Publish framework-agnostic routing syntax reference including catch-all examples in `docs/routing-syntax.md`
+- [x] T035 [P] Align contract docs with final command behavior in `specs/002-dynamic-target-layout-engine/contracts/cli-contract.md` and `specs/002-dynamic-target-layout-engine/contracts/config-schema.md`
+- [x] T036 [P] Add release-readiness checklist items for default YAML discoverability and purge safety in `docs/release/release-checklist.md`
+- [x] T037 Run full validation sequence from quickstart in `specs/002-dynamic-target-layout-engine/quickstart.md`
+- [x] T040 [P] Add BenchmarkDotNet scenario for 1,000 rules across 4 targets and publish baseline results in `tests/Steergen.Benchmarks/LayoutRoutingBenchmarks.cs`
+- [x] T041 [P] Add CI performance gate/report wiring for NFR-003 budget tracking in `.github/workflows/ci.yml` and `tests/Steergen.Benchmarks/README.md`
+- [x] T043 [P] Add three acceptance fixture sets (workspace-local, user-home global, mixed-scope) for route/layout validation in `tests/Fixtures/RealisticGovernance/RoutingLayouts/`
+- [x] T045 [P] Add repeat-run determinism regression harness (multi-run artifact diff plus flake threshold) in `tests/Steergen.Cli.IntegrationTests/DeterministicRepeatRunRegressionTests.cs`
+- [x] T046 [P] Add CI step and reporting for repeat-run reliability target (99.9%) in `.github/workflows/ci.yml`
 
 ---
 

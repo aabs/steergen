@@ -1,0 +1,107 @@
+# Mixed-Scope Layout Override — Acceptance Fixture
+#
+# Convention: different targets use different layout conventions within the same project.
+# One target (e.g. speckit) uses a workspace-local relative path; another (e.g. kiro)
+# uses an absolute home-directory path; a third uses no override and falls back to defaults.
+#
+# Example config linkage:
+#   targets:
+#     - id: speckit
+#       enabled: true
+#       layoutOverridePath: layouts/mixed-scope-layout.yaml  # workspace-local for speckit
+#     - id: kiro
+#       enabled: true
+#       layoutOverridePath: /home/user/.config/steergen/kiro-layout.yaml  # home-global for kiro
+#     - id: copilot-agent
+#       enabled: true
+#       # no layoutOverridePath — uses built-in default
+#
+# This fixture (used for the speckit target in mixed-scope scenarios) routes
+# domain=core to constitution.md, domain=security to security.md, and catches
+# all other domains via a category-bucketed catch-all.
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.speckit"
+
+routes:
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: security-global
+    scope: global
+    explicit: true
+    order: 20
+    match:
+      domain: security
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "security"
+      extension: ".md"
+
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: security-project
+    scope: project
+    explicit: true
+    order: 20
+    match:
+      domain: security
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "security"
+      extension: ".md"
+
+  - id: category-bucket-project
+    scope: project
+    explicit: false
+    order: 80
+    match:
+      category: "*"
+    destination:
+      directory: "${projectRoot}/.speckit/${category}"
+      fileName: "${category}-rules"
+      extension: ".md"
+
+  - id: domain-catch-all-project
+    scope: project
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "${domain}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.speckit"
+    - "${projectRoot}/.speckit"
+  globs:
+    - "**/*.md"

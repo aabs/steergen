@@ -259,6 +259,96 @@ Example verbose output:
 
 ---
 
+## Catch-All vs Fallback: Worked Examples
+
+The following examples show the distinction between **catch-all** routing (a wildcard route) and
+**fallback** routing (the `other-at-core-anchor` fallback when no route matches at all).
+
+### Example 1: Domain-specific + catch-all
+
+```yaml
+routes:
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: security-module
+    scope: global
+    explicit: true
+    order: 20
+    match:
+      domain: security
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "security"
+      extension: ".md"
+
+  - id: catch-all-global
+    scope: global
+    explicit: false
+    order: 100
+    match:
+      domain: "*"           # matches any domain not already matched above
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "${domain}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+```
+
+**Routing outcome**:
+- `domain: core` → `constitution.md` (matched by `core-global`, explicit = higher priority).
+- `domain: security` → `security.md` (matched by `security-module`, explicit = higher priority).
+- `domain: performance` → `performance.md` (matched by `catch-all-global` via `domain: "*"`).
+- A rule with no matching route at all → `other.md` in `.speckit/` (fallback, colocated with `core-global`).
+
+### Example 2: Fallback only (no catch-all)
+
+If the layout has no wildcard catch-all route, all rules that do not match a specific route fall back
+to `other.*` at the core anchor location:
+
+```yaml
+routes:
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+```
+
+**Routing outcome**:
+- `domain: core` → `constitution.md`.
+- Any other rule (e.g., `domain: security`, `domain: frontend`) → `other.md` in `${projectRoot}/.speckit/`
+  (fallback; same directory and extension as the `core-project` anchor).
+
+### Catch-all prevents fallback
+
+The fallback only fires when *no route* (including catch-all routes) matches. A `domain: "*"` catch-all
+consumes all otherwise-unmatched rules and prevents the fallback from applying.
+
+---
+
 ## Example: Complete Layout
 
 ```yaml

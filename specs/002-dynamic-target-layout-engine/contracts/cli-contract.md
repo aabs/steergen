@@ -1,8 +1,9 @@
 # CLI Contract
 
 ## Command Surface Updates
-- `steergen run [--config <path>] [--global <dir>] [--project <dir>] [--target <target>...] [--quiet]`
+- `steergen run [--config <path>] [--global <dir>] [--project <dir>] [--target <target>...] [--quiet] [--verbose]`
   - Uses target layout engine for destination paths.
+  - When `--verbose` is passed, emits per-rule routing diagnostics (destination, route ID, source provenance, and failure traces for unresolved rules).
   - Ignores legacy shared output folder as routing destination authority.
 - `steergen purge [--config <path>] [--target <target>...] [--dry-run] [--quiet]`
   - Deletes generated steering artifacts for selected targets based on configured purge roots and globs.

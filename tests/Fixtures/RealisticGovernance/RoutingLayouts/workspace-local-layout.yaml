@@ -1,0 +1,99 @@
+# Workspace-Local Layout Override — Acceptance Fixture
+#
+# Convention: layout YAML is stored alongside steergen.config.yaml in the project
+# working directory. The `layoutOverridePath` in the config file uses a relative path.
+#
+# Example config linkage:
+#   targets:
+#     - id: speckit
+#       enabled: true
+#       layoutOverridePath: layouts/workspace-local-layout.yaml  # relative to config file
+#
+# This fixture routes domain=core rules to constitution.md (global and project), routes
+# known domain-specific rules to domain modules, and catches unknown domains via catch-all.
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.speckit"
+
+routes:
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: security-global
+    scope: global
+    explicit: true
+    order: 20
+    match:
+      domain: security
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "security"
+      extension: ".md"
+
+  - id: catch-all-global
+    scope: global
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "${domain}"
+      extension: ".md"
+
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: security-project
+    scope: project
+    explicit: true
+    order: 20
+    match:
+      domain: security
+    destination:
+      directory: "${projectRoot}/.speckit"
+      fileName: "security"
+      extension: ".md"
+
+  - id: catch-all-project
+    scope: project
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.speckit/${domain}"
+      fileName: "${domain}-rules"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.speckit"
+    - "${projectRoot}/.speckit"
+  globs:
+    - "**/*.md"

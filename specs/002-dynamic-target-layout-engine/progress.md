@@ -227,3 +227,39 @@ Started: 2026-04-05 11:17:23
 - Root-bounded safety check uses Path.GetFullPath to normalize both root and candidate, then checks StartsWith(root + separator)
 - 448 total tests (61 property + 217 unit + 170 integration) all pass after this iteration
 ---
+
+---
+## Iteration 10 - 2026-04-05
+**User Story**: Final Phase — Polish & Cross-Cutting Concerns (ALL TASKS COMPLETE)
+**Tasks Completed**: 
+- [x] T034: docs/routing-syntax.md — added "Catch-All vs Fallback: Worked Examples" section with two concrete scenarios showing specific+catch-all routing and fallback-only routing
+- [x] T035: cli-contract.md — added --verbose flag to run command signature and documented routing diagnostics emitted when verbose is active
+- [x] T036: docs/release/release-checklist.md — added Default YAML Discoverability, Purge Safety, and Routing Regression Guard sections with actionable checklists
+- [x] T037: Full validation sequence complete — 451 tests pass, routing syntax docs verified, quickstart steps validated
+- [x] T040: tests/Steergen.Benchmarks/LayoutRoutingBenchmarks.cs — 4 benchmarks: ResolveSingleRule, PlanThousandRules, BuildWritePlan, RouteThroughAllTargets (NFR-003 scenario: 1,000 rules × 4 targets)
+- [x] T041: CI workflow updated with performance-gate job (runs routing integration tests); Benchmarks README updated with LayoutRoutingBenchmarks table
+- [x] T043: Three acceptance fixture YAMLs added: workspace-local-layout.yaml, user-home-global-layout.yaml, mixed-scope-layout.yaml
+- [x] T045: tests/Steergen.Cli.IntegrationTests/DeterministicRepeatRunRegressionTests.cs — 3 tests running speckit, kiro, and both targets through 3 repeat runs each, verifying byte-identical output
+- [x] T046: CI workflow updated with repeat-run-reliability job running DeterministicRepeatRunRegressionTests
+**Tasks Remaining in Story**: None — ALL Final Phase tasks complete; feature 002 fully done
+**Commit**: f1e2a85
+**Files Changed**: 
+- docs/routing-syntax.md (catch-all vs fallback worked examples section)
+- specs/002-dynamic-target-layout-engine/contracts/cli-contract.md (--verbose flag + diagnostics doc)
+- docs/release/release-checklist.md (discoverability + purge safety + regression guard sections)
+- tests/Fixtures/RealisticGovernance/RoutingLayouts/workspace-local-layout.yaml (new)
+- tests/Fixtures/RealisticGovernance/RoutingLayouts/user-home-global-layout.yaml (new)
+- tests/Fixtures/RealisticGovernance/RoutingLayouts/mixed-scope-layout.yaml (new)
+- tests/Fixtures/RealisticGovernance/RoutingLayouts/README.md (updated with 3 new fixture entries)
+- tests/Steergen.Benchmarks/LayoutRoutingBenchmarks.cs (new)
+- tests/Steergen.Benchmarks/README.md (LayoutRoutingBenchmarks table)
+- tests/Steergen.Cli.IntegrationTests/DeterministicRepeatRunRegressionTests.cs (new)
+- .github/workflows/ci.yml (repeat-run-reliability + performance-gate jobs)
+- specs/002-dynamic-target-layout-engine/tasks.md (all Final Phase tasks marked done)
+**Learnings**:
+- `dotnet test --no-build` uses previously-built binaries; always run with a fresh build (or without --no-build) when the test file itself has changed
+- RunCommand.RunAsync with explicitTargets=[] and no config returns success without running any targets — always pass explicit target IDs in tests that need output directories
+- LayoutRoutingBenchmarks uses manually-constructed TargetLayoutDefinition (not LayoutOverrideLoader) to keep benchmark setup fast and deterministic
+- BenchmarkDotNet benchmarks are not run by `dotnet test`; they require `dotnet run -c Release --project tests/Steergen.Benchmarks`
+- 451 total tests (61 property + 217 unit + 173 integration) all pass after this iteration
+---
