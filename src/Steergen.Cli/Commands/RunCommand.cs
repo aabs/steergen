@@ -181,8 +181,10 @@ public static class RunCommand
                 });
             }
 
+            // outputPath remains a legacy config field. Routed layout destinations are based on
+            // the layout plan plus the CLI-selected base directory (or current directory when omitted).
             targetConfigs = targetConfigs
-                .Select(t => t with { OutputPath = outputBase ?? t.OutputPath ?? defaultOutputPath })
+                .Select(t => t with { OutputPath = outputBase ?? defaultOutputPath })
                 .ToList();
 
             // Resolve relative layoutOverridePath values relative to the config file directory.

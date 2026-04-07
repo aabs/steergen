@@ -1,3 +1,5 @@
+using Steergen.Core.Configuration;
+
 namespace Steergen.Core.Targets;
 
 /// <summary>
@@ -20,14 +22,31 @@ public static class TargetLayoutInitializer
 
     /// <summary>
     /// Returns the canonical folder list for a given target under <paramref name="projectRoot"/>.
-    /// Always includes shared steering input folders plus a per-target output folder.
+    /// Always includes shared steering input folders plus the target-native output folders
+    /// implied by the built-in layout definition.
     /// </summary>
-    public static IReadOnlyList<string> GetLayoutFolders(string projectRoot, string targetId) =>
-    [
-        Path.Combine(projectRoot, "steering", "global"),
-        Path.Combine(projectRoot, "steering", "project"),
-        Path.Combine(projectRoot, targetId),
-    ];
+    public static IReadOnlyList<string> GetLayoutFolders(string projectRoot, string targetId)
+    {
+        var globalDocsRoot = Path.Combine(projectRoot, "steering", "global");
+        var projectDocsRoot = Path.Combine(projectRoot, "steering", "project");
+
+        var folders = new List<string>
+        {
+            globalDocsRoot,
+            projectDocsRoot,
+        };
+
+        var layout = new LayoutOverrideLoader().LoadDefault(targetId);
+        var seen = new HashSet<string>(folders, StringComparer.Ordinal);
+
+        foreach (var candidate in EnumerateBootstrapDirectories(layout, globalDocsRoot, projectDocsRoot, projectRoot))
+        {
+            if (seen.Add(candidate))
+                folders.Add(candidate);
+        }
+
+        return folders;
+    }
 
     /// <summary>
     /// Bootstraps the folder structure for all requested targets under <paramref name="projectRoot"/>.
@@ -44,28 +63,111 @@ public static class TargetLayoutInitializer
         var created = new List<string>();
         var alreadyExisted = new List<string>();
 
-        // Shared steering input folders (created once regardless of target count).
-        var sharedDirs = new[]
-        {
-            Path.Combine(projectRoot, "steering", "global"),
-            Path.Combine(projectRoot, "steering", "project"),
-        };
-
         var seen = new HashSet<string>(StringComparer.Ordinal);
-
-        foreach (var dir in sharedDirs)
-        {
-            Track(dir, seen, created, alreadyExisted);
-        }
 
         foreach (var targetId in targets)
         {
-            var outputDir = Path.Combine(projectRoot, targetId);
-            Track(outputDir, seen, created, alreadyExisted);
+            foreach (var dir in GetLayoutFolders(projectRoot, targetId))
+                Track(dir, seen, created, alreadyExisted);
+        }
+
+        if (targets.Count == 0)
+        {
+            Track(Path.Combine(projectRoot, "steering", "global"), seen, created, alreadyExisted);
+            Track(Path.Combine(projectRoot, "steering", "project"), seen, created, alreadyExisted);
         }
 
         return InitResult.Ok(created, alreadyExisted);
     }
+
+    private static IEnumerable<string> EnumerateBootstrapDirectories(
+        Model.TargetLayoutDefinition layout,
+        string globalDocsRoot,
+        string projectDocsRoot,
+        string workspaceRoot)
+    {
+        foreach (var candidate in EnumerateCandidateDirectories(layout, globalDocsRoot, projectDocsRoot))
+        {
+            var resolved = RebaseToWorkspace(candidate, globalDocsRoot, projectDocsRoot, workspaceRoot);
+            if (resolved is not null)
+                yield return resolved;
+        }
+    }
+
+    private static IEnumerable<string> EnumerateCandidateDirectories(
+        Model.TargetLayoutDefinition layout,
+        string globalDocsRoot,
+        string projectDocsRoot)
+    {
+        if (!string.IsNullOrWhiteSpace(layout.Roots.TargetRoot))
+            yield return ResolveRootVariables(layout.Roots.TargetRoot, globalDocsRoot, projectDocsRoot);
+
+        foreach (var route in layout.Routes)
+        {
+            if (string.IsNullOrWhiteSpace(route.Destination.Directory))
+                continue;
+
+            var resolved = ResolveRootVariables(route.Destination.Directory, globalDocsRoot, projectDocsRoot);
+            if (!ContainsTemplateVariables(resolved))
+                yield return resolved;
+        }
+
+        if (layout.Purge is null)
+            yield break;
+
+        foreach (var root in layout.Purge.Roots)
+        {
+            if (string.IsNullOrWhiteSpace(root))
+                continue;
+
+            var resolved = ResolveRootVariables(root, globalDocsRoot, projectDocsRoot);
+            if (!ContainsTemplateVariables(resolved))
+                yield return resolved;
+        }
+    }
+
+    private static string ResolveRootVariables(string path, string globalDocsRoot, string projectDocsRoot) =>
+        path
+            .Replace("${globalRoot}", globalDocsRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${projectRoot}", projectDocsRoot, StringComparison.OrdinalIgnoreCase);
+
+    private static string? RebaseToWorkspace(
+        string directory,
+        string globalDocsRoot,
+        string projectDocsRoot,
+        string workspaceRoot)
+    {
+        if (TryRebase(directory, globalDocsRoot, workspaceRoot, out var rebased))
+            return rebased;
+
+        if (TryRebase(directory, projectDocsRoot, workspaceRoot, out rebased))
+            return rebased;
+
+        if (Path.IsPathRooted(directory) && directory.StartsWith(workspaceRoot, GetPathComparison()))
+            return directory;
+
+        return Path.IsPathRooted(directory)
+            ? null
+            : Path.GetFullPath(Path.Combine(workspaceRoot, directory));
+    }
+
+    private static bool TryRebase(string path, string sourceRoot, string workspaceRoot, out string rebased)
+    {
+        if (Generation.PlannedOutputPathResolver.TryResolveRelativeToRoot(path, sourceRoot, out var relativePath))
+        {
+            rebased = Path.GetFullPath(Path.Combine(workspaceRoot, relativePath));
+            return true;
+        }
+
+        rebased = string.Empty;
+        return false;
+    }
+
+    private static bool ContainsTemplateVariables(string path) =>
+        path.Contains("${", StringComparison.Ordinal);
+
+    private static StringComparison GetPathComparison() =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     private static void Track(
         string dir,

@@ -214,4 +214,61 @@ public sealed class RunCatchAllRoutingTests
             if (Directory.Exists(globalRoot)) Directory.Delete(globalRoot, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task Run_KiroWithLegacyConfiguredOutputPath_IgnoresTargetIdPrefixWhenNoCliOutputIsSupplied()
+    {
+        var workspace = MakeTempDir();
+        var globalRoot = Path.Combine(workspace, "steering", "global");
+        var projectRoot = Path.Combine(workspace, "steering", "project");
+        Directory.CreateDirectory(globalRoot);
+        Directory.CreateDirectory(projectRoot);
+
+        try
+        {
+            await WriteFixtureAsync(Path.Combine(globalRoot, "accessibility-standards.md"), "catch-all-fixture.md");
+
+            var configPath = Path.Combine(workspace, "steergen.config.yaml");
+            await new Steergen.Core.Configuration.SteergenConfigWriter().WriteAsync(configPath, new Steergen.Core.Model.SteeringConfiguration
+            {
+                GlobalRoot = globalRoot,
+                ProjectRoot = projectRoot,
+                RegisteredTargets = ["kiro"],
+                Targets =
+                [
+                    new Steergen.Core.Model.TargetConfiguration
+                    {
+                        Id = "kiro",
+                        Enabled = true,
+                        OutputPath = "kiro",
+                    },
+                ],
+            });
+
+            using var scope = new CurrentDirectoryScope(workspace);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: configPath,
+                globalRoot: null,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: [],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var incorrectPrefixedPath = Path.Combine(workspace, "kiro", ".kiro", "steering", "accessibility-standards.md");
+            var incorrectFlatPath = Path.Combine(workspace, "kiro", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath));
+            Assert.False(File.Exists(incorrectPrefixedPath));
+            Assert.False(File.Exists(incorrectFlatPath));
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+        }
+    }
 }
