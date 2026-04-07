@@ -19,41 +19,6 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
     public string TargetId => "copilot-agent";
     public TargetDescriptor Descriptor => CopilotAgentDescriptor;
 
-    public async Task GenerateAsync(
-        ResolvedSteeringModel model,
-        TargetConfiguration config,
-        CancellationToken cancellationToken)
-    {
-        var outputPath = config.OutputPath
-            ?? throw new InvalidOperationException("Copilot agent target requires OutputPath to be set.");
-
-        foreach (var key in config.RequiredMetadata)
-        {
-            if (!config.FormatOptions.ContainsKey(key))
-                throw new TargetGenerationException(key);
-        }
-
-        var allRules = model.Documents
-            .SelectMany(d => d.Rules)
-            .Concat(model.Rules)
-            .ToList();
-
-        var activeRules = FilterRules(allRules, model.ActiveProfiles);
-        if (activeRules.Count == 0)
-            return;
-
-        var documentModel = new CopilotAgentDocumentModel
-        {
-            Rules = ToProseModels(activeRules),
-        };
-
-        var rendered = await RenderAsync(documentModel, cancellationToken);
-
-        Directory.CreateDirectory(outputPath);
-        var filePath = Path.Combine(outputPath, "copilot-instructions.md");
-        await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
-    }
-
     public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,

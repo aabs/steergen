@@ -26,7 +26,7 @@ public sealed class RunSpeckitCommandTests
         try
         {
             var service = new SpeckitGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -52,7 +52,7 @@ public sealed class RunSpeckitCommandTests
         try
         {
             var service = new SpeckitGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -92,7 +92,7 @@ public sealed class RunSpeckitCommandTests
                 .ToList();
 
             var service = new SpeckitGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -123,14 +123,14 @@ public sealed class RunSpeckitCommandTests
             var service = new SpeckitGenerationService();
             var provider = new EmbeddedTemplateProvider();
 
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: dir1,
                 templateProvider: provider);
 
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -179,7 +179,7 @@ public sealed class RunSpeckitCommandTests
                 """);
 
             var service = new SpeckitGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: globalDir,
                 projectRoot: globalDir + "-empty",
                 activeProfiles: ["default"],

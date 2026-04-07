@@ -31,7 +31,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Must have tests.")],
                 domainRules: []);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             var constitutionPath = Path.Combine(outputDir, "constitution.md");
             Assert.True(File.Exists(constitutionPath), $"Expected constitution.md at {constitutionPath}");
@@ -50,7 +50,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule.")],
                 domainRules: [("API-001", "api", "API rule."), ("SEC-001", "security", "Security rule.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             Assert.True(File.Exists(Path.Combine(outputDir, "api.md")), "Expected api.md domain module");
             Assert.True(File.Exists(Path.Combine(outputDir, "security.md")), "Expected security.md domain module");
@@ -69,7 +69,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [],
                 domainRules: [("DP-001", "data-platform", "Data rule.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             // Domain name matches the domain attribute of the rule verbatim
             Assert.True(File.Exists(Path.Combine(outputDir, "data-platform.md")));
@@ -90,7 +90,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule.")],
                 domainRules: [("API-001", "api", "API rule.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             var files = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.All(files, file =>
@@ -116,7 +116,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule.")],
                 domainRules: [("API-001", "api", "API rule.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             var files = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.All(files, file =>
@@ -145,9 +145,10 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule.")],
                 domainRules: [("API-001", "api", "API rule.")]);
 
-            await speckitTarget.GenerateAsync(
+            await speckitTarget.GenerateWithPlanAsync(
                 model,
                 new TargetConfiguration { Id = "speckit", OutputPath = speckitDir, Enabled = true },
+                BuildWritePlan(model),
                 default);
 
             var speckitFiles = Directory.GetFiles(speckitDir, "*", SearchOption.AllDirectories)
@@ -177,8 +178,8 @@ public sealed class ConstitutionReferenceResolutionTests
                 domainRules: [("API-001", "api", "API rule."), ("SEC-001", "security", "Security rule.")]);
 
             var target = new SpeckitTargetComponent(FakeTemplates);
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir1, Enabled = true }, default);
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir2, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir1, Enabled = true }, BuildWritePlan(model), default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir2, Enabled = true }, BuildWritePlan(model), default);
 
             var files1 = Directory.GetFiles(outputDir1, "*.md")
                 .Select(Path.GetFileName)
@@ -212,7 +213,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule text.")],
                 domainRules: [("API-001", "api", "API domain text.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             var constitution = await File.ReadAllTextAsync(Path.Combine(outputDir, "constitution.md"));
 
@@ -234,7 +235,7 @@ public sealed class ConstitutionReferenceResolutionTests
                 coreRules: [("CORE-001", "core", "Core rule text.")],
                 domainRules: [("API-001", "api", "API domain text.")]);
 
-            await target.GenerateAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, default);
+            await target.GenerateWithPlanAsync(model, new TargetConfiguration { Id = "speckit", OutputPath = outputDir, Enabled = true }, BuildWritePlan(model), default);
 
             var apiModule = await File.ReadAllTextAsync(Path.Combine(outputDir, "api.md"));
 
@@ -262,6 +263,29 @@ public sealed class ConstitutionReferenceResolutionTests
 
         return new ResolvedSteeringModel { Rules = rules };
     }
+
+    private static WritePlan BuildWritePlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "speckit",
+        Files = model.Rules
+            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+                ? "constitution.md"
+                : $"{rule.Domain}.md",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => new WritePlanFile
+            {
+                Path = group.Key,
+                AppendUnits = group
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            })
+            .ToList(),
+    };
 
     private sealed class InlineTemplateProvider(string constitutionTemplate, string moduleTemplate) : ITemplateProvider
     {

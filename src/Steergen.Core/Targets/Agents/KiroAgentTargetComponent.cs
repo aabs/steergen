@@ -19,47 +19,6 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
     public string TargetId => "kiro-agent";
     public TargetDescriptor Descriptor => KiroAgentDescriptor;
 
-    public async Task GenerateAsync(
-        ResolvedSteeringModel model,
-        TargetConfiguration config,
-        CancellationToken cancellationToken)
-    {
-        var outputPath = config.OutputPath
-            ?? throw new InvalidOperationException("Kiro agent target requires OutputPath to be set.");
-
-        foreach (var key in config.RequiredMetadata)
-        {
-            if (!config.FormatOptions.ContainsKey(key))
-                throw new TargetGenerationException(key);
-        }
-
-        Directory.CreateDirectory(outputPath);
-
-        foreach (var doc in model.Documents)
-        {
-            var activeRules = FilterRules(doc.Rules, model.ActiveProfiles);
-            if (activeRules.Count == 0)
-                continue;
-
-            var description = config.FormatOptions.TryGetValue("description", out var desc)
-                ? desc
-                : (doc.Title ?? doc.Id ?? Path.GetFileNameWithoutExtension(doc.SourcePath ?? "steering"));
-
-            var documentModel = new KiroAgentDocumentModel
-            {
-                Name = doc.Title ?? doc.Id,
-                Description = description,
-                Rules = ToProseModels(activeRules),
-            };
-
-            var rendered = await RenderDocumentAsync(documentModel, cancellationToken);
-
-            var fileName = DeriveFileName(doc);
-            var filePath = Path.Combine(outputPath, fileName);
-            await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
-        }
-    }
-
     public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
@@ -137,15 +96,4 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
             PrimaryText = r.PrimaryText ?? "",
             ExplanatoryText = r.ExplanatoryText,
         }).ToList();
-
-    private static string DeriveFileName(SteeringDocument doc)
-    {
-        if (doc.SourcePath is not null)
-        {
-            var baseName = Path.GetFileNameWithoutExtension(doc.SourcePath);
-            return $"{baseName}.md";
-        }
-
-        return $"{doc.Id ?? "steering"}.md";
-    }
 }

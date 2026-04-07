@@ -27,7 +27,7 @@ public sealed class RoutePlanner
 
     private RouteResolutionResult ResolveWithFallback(SteeringRule rule, TargetLayoutDefinition layout)
     {
-        var result = _resolver.Resolve(rule, layout);
+        var result = _resolver.Resolve(rule, layout, rule.SourceScope);
         if (result.IsResolved) return result;
 
         return ApplyFallback(rule, layout, result);

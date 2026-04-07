@@ -13,11 +13,18 @@ public sealed class RouteResolver
     /// Resolves <paramref name="rule"/> against <paramref name="layout"/>.
     /// Returns an unresolved result if no route matches.
     /// </summary>
-    public RouteResolutionResult Resolve(SteeringRule rule, TargetLayoutDefinition layout)
+    public RouteResolutionResult Resolve(SteeringRule rule, TargetLayoutDefinition layout) =>
+        Resolve(rule, layout, rule.SourceScope);
+
+    /// <summary>
+    /// Resolves <paramref name="rule"/> against <paramref name="layout"/> using an explicit scope.
+    /// Returns an unresolved result if no route matches.
+    /// </summary>
+    public RouteResolutionResult Resolve(SteeringRule rule, TargetLayoutDefinition layout, RouteScope scope)
     {
         var candidates = layout.Routes
             .Select((route, index) => (route, index))
-            .Where(x => ScopeMatches(x.route.Scope, rule.SourceScope))
+            .Where(x => ScopeMatches(x.route.Scope, scope))
             .Where(x => Matches(x.route.Match, rule))
             .ToList();
 

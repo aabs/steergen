@@ -134,10 +134,17 @@ public sealed class GenerationPipeline
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
-            if (writePlans.TryGetValue(target.TargetId, out var writePlan) && writePlan.Files.Count > 0)
-                await target.GenerateWithPlanAsync(model, config, writePlan, cancellationToken);
-            else
-                await target.GenerateAsync(model, config, cancellationToken);
+            var writePlan = writePlans.TryGetValue(target.TargetId, out var planned)
+                ? planned
+                : new WritePlan
+                {
+                    TargetId = target.TargetId,
+                    Files = [],
+                    GlobalRoot = globalRoot,
+                    ProjectRoot = projectRoot,
+                };
+
+            await target.GenerateWithPlanAsync(model, config, writePlan, cancellationToken);
 
             targetsExecuted++;
         }

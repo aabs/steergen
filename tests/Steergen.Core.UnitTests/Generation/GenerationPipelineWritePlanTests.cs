@@ -220,9 +220,6 @@ public sealed class GenerationPipelineWritePlanTests
         public TargetDescriptor Descriptor => new(targetId, targetId, "Captures write plans for tests.");
         public WritePlan? CapturedWritePlan { get; private set; }
 
-        public Task GenerateAsync(ResolvedSteeringModel model, TargetConfiguration config, CancellationToken cancellationToken) =>
-            Task.CompletedTask;
-
         public Task GenerateWithPlanAsync(
             ResolvedSteeringModel model,
             TargetConfiguration config,

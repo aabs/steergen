@@ -118,7 +118,7 @@ public sealed class KiroTargetComponentTests
     }
 
     [Fact]
-    public async Task GenerateAsync_DeprecatedRules_AreExcludedFromOutput()
+    public async Task GenerateWithPlanAsync_DeprecatedRules_AreExcludedFromOutput()
     {
         var target = new KiroTargetComponent(FakeTemplates);
         var outputDir = Path.Combine(Path.GetTempPath(), $"kiro-unit-{Guid.NewGuid():N}");
@@ -141,7 +141,11 @@ public sealed class KiroTargetComponentTests
                         ],
                     },
                 ],
-                Rules = [],
+                Rules =
+                [
+                    new SteeringRule { Id = "R-001", Severity = "error", PrimaryText = "Active rule.", InputFileStem = "test-doc" },
+                    new SteeringRule { Id = "R-002", Severity = "warning", PrimaryText = "Deprecated rule.", Deprecated = true, InputFileStem = "test-doc" },
+                ],
                 ActiveProfiles = [],
             };
 
@@ -152,7 +156,7 @@ public sealed class KiroTargetComponentTests
                 OutputPath = outputDir,
             };
 
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, BuildWritePlan(model), CancellationToken.None);
 
             var files = Directory.GetFiles(outputDir, "*.md");
             Assert.Single(files);
@@ -168,7 +172,7 @@ public sealed class KiroTargetComponentTests
     }
 
     [Fact]
-    public async Task GenerateAsync_EmptyDocumentAfterFiltering_SkipsDocumentOutput()
+    public async Task GenerateWithPlanAsync_EmptyDocumentAfterFiltering_SkipsDocumentOutput()
     {
         var target = new KiroTargetComponent(FakeTemplates);
         var outputDir = Path.Combine(Path.GetTempPath(), $"kiro-empty-{Guid.NewGuid():N}");
@@ -190,7 +194,10 @@ public sealed class KiroTargetComponentTests
                         ],
                     },
                 ],
-                Rules = [],
+                Rules =
+                [
+                    new SteeringRule { Id = "R-001", PrimaryText = "Old rule.", Deprecated = true, InputFileStem = "all-deprecated" },
+                ],
                 ActiveProfiles = [],
             };
 
@@ -201,7 +208,7 @@ public sealed class KiroTargetComponentTests
                 OutputPath = outputDir,
             };
 
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, BuildWritePlan(model), CancellationToken.None);
 
             var files = Directory.GetFiles(outputDir, "*.md");
             Assert.Empty(files);
@@ -285,4 +292,23 @@ public sealed class KiroTargetComponentTests
                 _ => throw new InvalidOperationException($"Unknown template '{templateName}'."),
             };
     }
+
+    private static WritePlan BuildWritePlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "kiro",
+        Files = model.Documents
+            .Select(document => new WritePlanFile
+            {
+                Path = $"{Path.GetFileNameWithoutExtension(document.SourcePath ?? document.Id ?? "steering")}.md",
+                AppendUnits = document.Rules
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            })
+            .ToList(),
+    };
 }

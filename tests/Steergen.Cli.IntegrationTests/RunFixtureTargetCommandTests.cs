@@ -16,7 +16,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -38,7 +38,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -62,7 +62,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -93,7 +93,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -124,7 +124,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -155,7 +155,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: nonExistentDir,
                 projectRoot: nonExistentDir,
                 activeProfiles: [],
@@ -178,7 +178,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],

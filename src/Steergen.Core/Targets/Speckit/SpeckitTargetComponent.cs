@@ -21,40 +21,6 @@ public sealed class SpeckitTargetComponent : ITargetComponent
     public string TargetId => "speckit";
     public TargetDescriptor Descriptor => SpeckitDescriptor;
 
-    public async Task GenerateAsync(
-        ResolvedSteeringModel model,
-        TargetConfiguration config,
-        CancellationToken cancellationToken)
-    {
-        var outputPath = config.OutputPath
-            ?? throw new InvalidOperationException("Speckit target requires OutputPath to be set.");
-
-        var partition = _partitioner.Partition(model.Rules);
-
-        var constitutionModel = new SpeckitConstitutionModel
-        {
-            Rules = ToRuleModels(partition.CoreRules),
-        };
-
-        var rendered = await RenderConstitutionAsync(constitutionModel, cancellationToken);
-
-        Directory.CreateDirectory(outputPath);
-        var constitutionPath = Path.Combine(outputPath, "constitution.md");
-        await File.WriteAllTextAsync(constitutionPath, rendered, cancellationToken);
-
-        foreach (var (domain, rules) in partition.DomainModules)
-        {
-            var moduleModel = new SpeckitModuleModel
-            {
-                Domain = domain,
-                Rules = ToRuleModels(rules),
-            };
-            var moduleRendered = await RenderModuleAsync(moduleModel, cancellationToken);
-            var modulePath = Path.Combine(outputPath, $"{domain}.md");
-            await File.WriteAllTextAsync(modulePath, moduleRendered, cancellationToken);
-        }
-    }
-
     public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,

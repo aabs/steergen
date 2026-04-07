@@ -28,6 +28,9 @@ public sealed class WritePlanBuilder
     /// silently dropped.  Destination files are ordered alphabetically by path
     /// for stable output.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when any route resolution failed to resolve, to preserve fail-closed semantics.
+    /// </exception>
     public WritePlan Build(
         string targetId,
         IReadOnlyList<RouteResolutionResult> resolutions)

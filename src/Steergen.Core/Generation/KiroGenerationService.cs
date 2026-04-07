@@ -12,7 +12,7 @@ public sealed class KiroGenerationService
 {
     private readonly GenerationPipeline _pipeline = new();
 
-    public async Task<GenerationResult> GenerateAsync(
+    public async Task<GenerationResult> RunAsync(
         string globalRoot,
         string projectRoot,
         IReadOnlyList<string> activeProfiles,

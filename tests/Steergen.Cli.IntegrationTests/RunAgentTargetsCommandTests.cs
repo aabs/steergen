@@ -21,7 +21,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new CopilotAgentGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -50,7 +50,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new CopilotAgentGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -81,7 +81,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new KiroAgentGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -108,7 +108,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new KiroAgentGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -163,7 +163,7 @@ public sealed class RunAgentTargetsCommandTests
             };
 
             await Assert.ThrowsAsync<TargetGenerationException>(() =>
-                component.GenerateAsync(model, config, CancellationToken.None));
+                component.GenerateWithPlanAsync(model, config, EmptyPlan("copilot-agent"), CancellationToken.None));
         }
         finally
         {
@@ -217,7 +217,7 @@ public sealed class RunAgentTargetsCommandTests
             };
 
             await Assert.ThrowsAsync<TargetGenerationException>(() =>
-                component.GenerateAsync(model, config, CancellationToken.None));
+                component.GenerateWithPlanAsync(model, config, EmptyPlan("kiro-agent"), CancellationToken.None));
         }
         finally
         {
@@ -225,4 +225,10 @@ public sealed class RunAgentTargetsCommandTests
                 Directory.Delete(outputDir, recursive: true);
         }
     }
+
+    private static WritePlan EmptyPlan(string targetId) => new()
+    {
+        TargetId = targetId,
+        Files = [],
+    };
 }
