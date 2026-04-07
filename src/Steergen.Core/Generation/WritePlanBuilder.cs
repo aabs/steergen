@@ -13,22 +13,56 @@ namespace Steergen.Core.Generation;
 public sealed class WritePlanBuilder
 {
     /// <summary>
+    /// Fallback destination used when a resolution remains unresolved even after
+    /// <see cref="RoutePlanner"/> has attempted its own fallback strategy (e.g.
+    /// when the layout has no core-anchor route).  Every such rule is collected
+    /// into a single <c>other.md</c> file so no rule is silently dropped.
+    /// </summary>
+    public const string FallbackOtherFile = "other.md";
+
+    /// <summary>
     /// Builds a <see cref="WritePlan"/> for <paramref name="targetId"/> from
-    /// <paramref name="resolutions"/>. Unresolved entries are excluded.
-    /// Destination files are ordered alphabetically by path for stable output.
+    /// <paramref name="resolutions"/>. Any entries that remain unresolved (i.e.
+    /// <see cref="RouteResolutionResult.IsResolved"/> is <c>false</c>) are
+    /// collected into a top-level <c>other.md</c> file so that no rule is ever
+    /// silently dropped.  Destination files are ordered alphabetically by path
+    /// for stable output.
     /// </summary>
     public WritePlan Build(
         string targetId,
         IReadOnlyList<RouteResolutionResult> resolutions)
     {
-        var files = resolutions
-            .Where(r => r.IsResolved && r.SelectedDestinationPath is not null)
-            .GroupBy(r => r.SelectedDestinationPath!, StringComparer.Ordinal)
-            .Select(group => BuildFile(group.Key, group.ToList()))
-            .OrderBy(f => f.Path, StringComparer.Ordinal)
-            .ToList();
+        var files = new List<WritePlanFile>();
+        var unresolvedGroup = new List<RouteResolutionResult>();
+        var resolvedByPath = new Dictionary<string, List<RouteResolutionResult>>(StringComparer.Ordinal);
 
-        return new WritePlan { TargetId = targetId, Files = files };
+        foreach (var r in resolutions)
+        {
+            if (r.IsResolved && r.SelectedDestinationPath is not null)
+            {
+                if (!resolvedByPath.TryGetValue(r.SelectedDestinationPath, out var group))
+                    resolvedByPath[r.SelectedDestinationPath] = group = [];
+                group.Add(r);
+            }
+            else
+            {
+                unresolvedGroup.Add(r);
+            }
+        }
+
+        foreach (var (path, group) in resolvedByPath)
+            files.Add(BuildFile(path, group));
+
+        // Rules that remain unresolved (e.g. layout has no core-anchor route)
+        // are collected into a catch-all other.md so they are never silently lost.
+        if (unresolvedGroup.Count > 0)
+            files.Add(BuildFile(FallbackOtherFile, unresolvedGroup));
+
+        return new WritePlan
+        {
+            TargetId = targetId,
+            Files = files.OrderBy(f => f.Path, StringComparer.Ordinal).ToList(),
+        };
     }
 
     private static WritePlanFile BuildFile(string path, List<RouteResolutionResult> resolutions)
