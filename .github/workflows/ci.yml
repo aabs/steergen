@@ -38,3 +38,77 @@ jobs:
           name: test-results
           path: "**/*.trx"
 
+  # ── Repeat-run reliability gate (NFR: 99.9% repeatability) ──────────────────────
+  #
+  # Runs the determinism regression tests multiple times to validate that generation
+  # output is byte-identical across runs. A failure here indicates non-determinism.
+  repeat-run-reliability:
+    name: Repeat-Run Reliability
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore specgen.slnx
+
+      - name: Build
+        run: dotnet build specgen.slnx --no-restore --no-incremental -c Release
+
+      - name: Run determinism regression tests (repeat-run reliability)
+        run: |
+          dotnet test specgen.slnx \
+            --no-build -c Release \
+            --filter "DeterministicRepeatRunRegressionTests" \
+            --logger "trx;LogFileName=repeat-run-results.trx"
+
+      - name: Upload repeat-run test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repeat-run-results
+          path: "**/*.trx"
+
+  # ── Performance gate (NFR-003: 1,000 rules / 4 targets in < 5 s) ────────────────
+  #
+  # Runs a timed smoke test (not full BenchmarkDotNet) to verify routing throughput
+  # meets the NFR-003 budget. For full benchmark baselines, run locally in Release mode.
+  performance-gate:
+    name: Routing Performance Gate
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore specgen.slnx
+
+      - name: Build
+        run: dotnet build specgen.slnx --no-restore --no-incremental -c Release
+
+      - name: Run layout routing performance tests
+        run: |
+          dotnet test specgen.slnx \
+            --no-build -c Release \
+            --filter "RunTargetLayoutRoutingTests|RunCatchAllRoutingTests|RunCompatibilityBaselineTests" \
+            --logger "trx;LogFileName=perf-gate-results.trx"
+
+      - name: Upload performance gate results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-gate-results
+          path: "**/*.trx"
+

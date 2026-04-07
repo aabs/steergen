@@ -1,4 +1,5 @@
 using Scriban;
+using Steergen.Core.Generation;
 using Steergen.Core.Model;
 using Steergen.Core.Targets.Speckit;
 
@@ -20,37 +21,56 @@ public sealed class SpeckitTargetComponent : ITargetComponent
     public string TargetId => "speckit";
     public TargetDescriptor Descriptor => SpeckitDescriptor;
 
-    public async Task GenerateAsync(
+    public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
+        WritePlan writePlan,
         CancellationToken cancellationToken)
     {
         var outputPath = config.OutputPath
             ?? throw new InvalidOperationException("Speckit target requires OutputPath to be set.");
 
-        var partition = _partitioner.Partition(model.Rules);
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
 
-        var constitutionModel = new SpeckitConstitutionModel
+        foreach (var file in writePlan.Files)
         {
-            Rules = ToRuleModels(partition.CoreRules),
-        };
 
-        var rendered = await RenderConstitutionAsync(constitutionModel, cancellationToken);
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
 
-        Directory.CreateDirectory(outputPath);
-        var constitutionPath = Path.Combine(outputPath, "constitution.md");
-        await File.WriteAllTextAsync(constitutionPath, rendered, cancellationToken);
+            if (rules.Count == 0) continue;
 
-        foreach (var (domain, rules) in partition.DomainModules)
-        {
-            var moduleModel = new SpeckitModuleModel
+            var resolvedPath = PlannedOutputPathResolver.Resolve(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+
+            var fileName = Path.GetFileNameWithoutExtension(resolvedPath);
+            string rendered;
+
+            if (string.Equals(fileName, "constitution", StringComparison.OrdinalIgnoreCase)
+                || rules.All(r => r.Domain == "core"))
             {
-                Domain = domain,
-                Rules = ToRuleModels(rules),
-            };
-            var moduleRendered = await RenderModuleAsync(moduleModel, cancellationToken);
-            var modulePath = Path.Combine(outputPath, $"{domain}.md");
-            await File.WriteAllTextAsync(modulePath, moduleRendered, cancellationToken);
+                var constitutionModel = new SpeckitConstitutionModel
+                {
+                    Rules = ToRuleModels(rules),
+                };
+                rendered = await RenderConstitutionAsync(constitutionModel, cancellationToken);
+            }
+            else
+            {
+                var domain = rules[0].Domain ?? fileName;
+                var moduleModel = new SpeckitModuleModel
+                {
+                    Domain = domain,
+                    Rules = ToRuleModels(rules),
+                };
+                rendered = await RenderModuleAsync(moduleModel, cancellationToken);
+            }
+
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
         }
     }
 

@@ -1,4 +1,5 @@
 using Scriban;
+using Steergen.Core.Generation;
 using Steergen.Core.Model;
 
 namespace Steergen.Core.Targets.Kiro;
@@ -18,29 +19,36 @@ public sealed class KiroTargetComponent : ITargetComponent
     public string TargetId => "kiro";
     public TargetDescriptor Descriptor => KiroDescriptor;
 
-    public async Task GenerateAsync(
+    public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
+        WritePlan writePlan,
         CancellationToken cancellationToken)
     {
         var outputPath = config.OutputPath
             ?? throw new InvalidOperationException("Kiro target requires OutputPath to be set.");
 
         var options = KiroTargetOptions.FromFormatOptions(config.FormatOptions);
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
 
-        Directory.CreateDirectory(outputPath);
-
-        foreach (var doc in model.Documents)
+        foreach (var file in writePlan.Files)
         {
-            var activeRules = FilterRules(doc.Rules, model.ActiveProfiles);
-            if (activeRules.Count == 0)
-                continue;
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
+
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
 
             var (inclusion, fileMatchPattern) = KiroInclusionMapper.Map(activeRules, options);
 
+            var description = activeRules[0].InputFileStem
+                ?? Path.GetFileNameWithoutExtension(file.Path);
             var kiroModel = new KiroDocumentModel
             {
-                Description = doc.Title ?? doc.Id ?? Path.GetFileNameWithoutExtension(doc.SourcePath ?? "steering"),
+                Description = description,
                 Inclusion = inclusion,
                 FileMatchPattern = fileMatchPattern,
                 Rules = ToProseModels(activeRules),
@@ -48,9 +56,10 @@ public sealed class KiroTargetComponent : ITargetComponent
 
             var rendered = await RenderDocumentAsync(kiroModel, cancellationToken);
 
-            var fileName = DeriveFileName(doc);
-            var filePath = Path.Combine(outputPath, fileName);
-            await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
+            var resolvedPath = PlannedOutputPathResolver.Resolve(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
         }
     }
 
@@ -82,15 +91,4 @@ public sealed class KiroTargetComponent : ITargetComponent
             PrimaryText = r.PrimaryText ?? "",
             ExplanatoryText = r.ExplanatoryText,
         }).ToList();
-
-    private static string DeriveFileName(SteeringDocument doc)
-    {
-        if (doc.SourcePath is not null)
-        {
-            var baseName = Path.GetFileNameWithoutExtension(doc.SourcePath);
-            return $"{baseName}.md";
-        }
-
-        return $"{doc.Id ?? "steering"}.md";
-    }
 }

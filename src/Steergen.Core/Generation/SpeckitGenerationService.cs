@@ -12,7 +12,7 @@ public sealed class SpeckitGenerationService
 {
     private readonly GenerationPipeline _pipeline = new();
 
-    public async Task<GenerationResult> GenerateAsync(
+    public async Task<GenerationResult> RunAsync(
         string globalRoot,
         string projectRoot,
         IReadOnlyList<string> activeProfiles,
@@ -39,7 +39,9 @@ public sealed class SpeckitGenerationService
             [targetComponent],
             [targetConfig],
             cancellationToken,
-            manifestOutputPath: writeManifest ? outputPath : null);
+            manifestOutputPath: writeManifest ? outputPath : null,
+            globalRoot: globalRoot,
+            projectRoot: projectRoot);
     }
 
     private static IReadOnlyList<SteeringDocument> LoadDocumentsFromDirectory(string root)

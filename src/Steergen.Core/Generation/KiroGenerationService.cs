@@ -12,7 +12,7 @@ public sealed class KiroGenerationService
 {
     private readonly GenerationPipeline _pipeline = new();
 
-    public async Task<GenerationResult> GenerateAsync(
+    public async Task<GenerationResult> RunAsync(
         string globalRoot,
         string projectRoot,
         IReadOnlyList<string> activeProfiles,
@@ -41,7 +41,9 @@ public sealed class KiroGenerationService
             activeProfiles,
             [targetComponent],
             [targetConfig],
-            cancellationToken);
+            cancellationToken,
+            globalRoot: globalRoot,
+            projectRoot: projectRoot);
     }
 
     private static IReadOnlyList<SteeringDocument> LoadDocumentsFromDirectory(string root)

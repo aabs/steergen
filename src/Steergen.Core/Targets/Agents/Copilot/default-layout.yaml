@@ -1,0 +1,57 @@
+# Default Layout: Copilot Agent Target
+# This file is the built-in routing and layout profile for the Copilot Agent target.
+# Copy and modify this file to create a per-target override (layoutOverridePath in steergen.config.yaml).
+# See docs/routing-syntax.md for full syntax reference.
+#
+# The Copilot Agent target produces a single consolidated instructions file
+# (e.g., .github/copilot-instructions.md) aggregating all steering rules.
+
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.github"
+
+routes:
+  # --- Global scope routes ---
+
+  # Core anchor: global Copilot instructions (all global rules in one file)
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.github"
+      fileName: "copilot-instructions"
+      extension: ".md"
+
+  # --- Project scope routes ---
+
+  # Core anchor: project Copilot instructions (all project rules in one file)
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.github"
+      fileName: "copilot-instructions"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.github"
+    - "${projectRoot}/.github"
+  globs:
+    - "copilot-instructions.md"
+    - "other.md"

@@ -16,7 +16,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -38,13 +38,15 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir);
 
             var manifestPath = Path.Combine(outputDir, "fixture-manifest.txt");
+            if (!File.Exists(manifestPath))
+                manifestPath = Directory.GetFiles(outputDir, "fixture-manifest.txt", SearchOption.AllDirectories).FirstOrDefault();
             Assert.True(File.Exists(manifestPath), "fixture-manifest.txt should exist in output directory");
         }
         finally
@@ -60,13 +62,21 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir);
 
-            var lines = await File.ReadAllLinesAsync(Path.Combine(outputDir, "fixture-manifest.txt"));
+            var manifestPath = Path.Combine(outputDir, "fixture-manifest.txt");
+            if (!File.Exists(manifestPath))
+            {
+                var found = Directory.GetFiles(outputDir, "fixture-manifest.txt", SearchOption.AllDirectories).FirstOrDefault();
+                if (found != null)
+                    manifestPath = found;
+            }
+
+            var lines = await File.ReadAllLinesAsync(manifestPath);
             Assert.Contains("CORE-001", lines);
             Assert.Contains("CORE-002", lines);
         }
@@ -83,13 +93,21 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir);
 
-            var lines = await File.ReadAllLinesAsync(Path.Combine(outputDir, "fixture-manifest.txt"));
+            var manifestPath = Path.Combine(outputDir, "fixture-manifest.txt");
+            if (!File.Exists(manifestPath))
+            {
+                var found = Directory.GetFiles(outputDir, "fixture-manifest.txt", SearchOption.AllDirectories).FirstOrDefault();
+                if (found != null)
+                    manifestPath = found;
+            }
+
+            var lines = await File.ReadAllLinesAsync(manifestPath);
             var sorted = lines.OrderBy(l => l, StringComparer.Ordinal).ToArray();
             Assert.Equal(sorted, lines);
         }
@@ -106,13 +124,21 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir);
 
-            var lines = await File.ReadAllLinesAsync(Path.Combine(outputDir, "fixture-manifest.txt"));
+            var manifestPath = Path.Combine(outputDir, "fixture-manifest.txt");
+            if (!File.Exists(manifestPath))
+            {
+                var found = Directory.GetFiles(outputDir, "fixture-manifest.txt", SearchOption.AllDirectories).FirstOrDefault();
+                if (found != null)
+                    manifestPath = found;
+            }
+
+            var lines = await File.ReadAllLinesAsync(manifestPath);
             Assert.DoesNotContain(lines, string.IsNullOrWhiteSpace);
         }
         finally
@@ -129,7 +155,7 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: nonExistentDir,
                 projectRoot: nonExistentDir,
                 activeProfiles: [],
@@ -152,13 +178,13 @@ public sealed class RunFixtureTargetCommandTests
         try
         {
             var service = new FixtureGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir);
 
-            var files = Directory.GetFiles(outputDir).Select(Path.GetFileName).ToList();
+            var files = Directory.GetFiles(outputDir, "*", SearchOption.AllDirectories).Select(Path.GetFileName).ToList();
             Assert.Single(files);
             Assert.Equal("fixture-manifest.txt", files[0]);
         }

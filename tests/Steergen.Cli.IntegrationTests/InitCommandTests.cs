@@ -47,7 +47,7 @@ public sealed class InitCommandTests
         {
             InitCommand.RunAsync(root, ["kiro"]);
 
-            Assert.True(Directory.Exists(Path.Combine(root, "kiro")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".kiro", "steering")));
         }
         finally { Directory.Delete(root, recursive: true); }
     }
@@ -84,9 +84,9 @@ public sealed class InitCommandTests
             var result = InitCommand.RunAsync(root, ["speckit", "kiro", "copilot-agent"]);
 
             Assert.Equal(0, result);
-            Assert.True(Directory.Exists(Path.Combine(root, "speckit")));
-            Assert.True(Directory.Exists(Path.Combine(root, "kiro")));
-            Assert.True(Directory.Exists(Path.Combine(root, "copilot-agent")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".speckit", "memory")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".kiro", "steering")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".github")));
         }
         finally { Directory.Delete(root, recursive: true); }
     }
@@ -116,7 +116,7 @@ public sealed class InitCommandTests
         {
             // Place a sentinel file inside the target folder to verify it is not wiped.
             InitCommand.RunAsync(root, ["speckit"]);
-            var sentinel = Path.Combine(root, "speckit", "sentinel.txt");
+            var sentinel = Path.Combine(root, ".speckit", "memory", "sentinel.txt");
             File.WriteAllText(sentinel, "do not delete");
 
             InitCommand.RunAsync(root, ["speckit"]);

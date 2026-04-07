@@ -6,5 +6,10 @@ public interface ITargetComponent
 {
     string TargetId { get; }
     TargetDescriptor Descriptor { get; }
-    Task GenerateAsync(ResolvedSteeringModel model, TargetConfiguration config, CancellationToken cancellationToken);
+
+    Task GenerateWithPlanAsync(
+        ResolvedSteeringModel model,
+        TargetConfiguration config,
+        WritePlan writePlan,
+    CancellationToken cancellationToken);
 }

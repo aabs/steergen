@@ -19,9 +19,10 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
     public string TargetId => "copilot-agent";
     public TargetDescriptor Descriptor => CopilotAgentDescriptor;
 
-    public async Task GenerateAsync(
+    public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
+        WritePlan writePlan,
         CancellationToken cancellationToken)
     {
         var outputPath = config.OutputPath
@@ -33,25 +34,31 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
                 throw new TargetGenerationException(key);
         }
 
-        var allRules = model.Documents
-            .SelectMany(d => d.Rules)
-            .Concat(model.Rules)
-            .ToList();
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
 
-        var activeRules = FilterRules(allRules, model.ActiveProfiles);
-        if (activeRules.Count == 0)
-            return;
-
-        var documentModel = new CopilotAgentDocumentModel
+        foreach (var file in writePlan.Files)
         {
-            Rules = ToProseModels(activeRules),
-        };
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
 
-        var rendered = await RenderAsync(documentModel, cancellationToken);
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
 
-        Directory.CreateDirectory(outputPath);
-        var filePath = Path.Combine(outputPath, "copilot-instructions.md");
-        await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
+            var documentModel = new CopilotAgentDocumentModel
+            {
+                Rules = ToProseModels(activeRules),
+            };
+
+            var rendered = await RenderAsync(documentModel, cancellationToken);
+
+            var resolvedPath = PlannedOutputPathResolver.Resolve(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
+        }
     }
 
     public async Task<string> RenderAsync(

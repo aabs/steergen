@@ -1,0 +1,77 @@
+# Default Layout: Kiro Target
+# This file is the built-in routing and layout profile for the Kiro target.
+# Copy and modify this file to create a per-target override (layoutOverridePath in steergen.config.yaml).
+# See docs/routing-syntax.md for full syntax reference.
+
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.kiro/steering"
+
+routes:
+  # --- Global scope routes ---
+
+  # Core anchor: global steering entry point
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.kiro/steering"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # Global catch-all: route by source document
+  - id: catch-all-global
+    scope: global
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.kiro/steering"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # --- Project scope routes ---
+
+  # Core anchor: project steering entry point
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.kiro/steering"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # Project catch-all: route by source document
+  - id: catch-all-project
+    scope: project
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.kiro/steering"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.kiro/steering"
+    - "${projectRoot}/.kiro/steering"
+  globs:
+    - "**/*.md"

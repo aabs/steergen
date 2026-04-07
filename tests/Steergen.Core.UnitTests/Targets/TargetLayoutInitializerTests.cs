@@ -43,7 +43,7 @@ public sealed class TargetLayoutInitializerTests
         var root = Path.GetTempPath();
         var folders = TargetLayoutInitializer.GetLayoutFolders(root, "kiro");
 
-        Assert.Contains(folders, f => f.EndsWith("kiro", StringComparison.Ordinal));
+        Assert.Contains(folders, f => f.EndsWith(Path.Combine(".kiro", "steering"), StringComparison.Ordinal));
     }
 
     // ── Initialize: invalid target ───────────────────────────────────────────
@@ -90,7 +90,8 @@ public sealed class TargetLayoutInitializerTests
             Assert.True(result.Success);
             Assert.True(Directory.Exists(Path.Combine(root, "steering", "global")));
             Assert.True(Directory.Exists(Path.Combine(root, "steering", "project")));
-            Assert.True(Directory.Exists(Path.Combine(root, "speckit")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".speckit")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".speckit", "memory")));
         }
         finally { Directory.Delete(root, recursive: true); }
     }
@@ -139,8 +140,8 @@ public sealed class TargetLayoutInitializerTests
             var result = TargetLayoutInitializer.Initialize(root, ["speckit", "kiro"]);
 
             Assert.True(result.Success);
-            Assert.True(Directory.Exists(Path.Combine(root, "speckit")));
-            Assert.True(Directory.Exists(Path.Combine(root, "kiro")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".speckit", "memory")));
+            Assert.True(Directory.Exists(Path.Combine(root, ".kiro", "steering")));
         }
         finally { Directory.Delete(root, recursive: true); }
     }

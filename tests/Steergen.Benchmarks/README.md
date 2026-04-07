@@ -25,6 +25,17 @@ Core transformation pipeline: parse → validate → resolve.
 | `ValidateDocument` | Validate a 50-rule document |
 | `ResolveModel` | Resolve 5+5 docs (10 rules each) |
 
+### LayoutRoutingBenchmarks
+
+Layout routing engine: 1,000 rules routed across 4 built-in targets (NFR-003 scenario).
+
+| Benchmark | Description | Envelope |
+|-----------|-------------|---------|
+| `ResolveSingleRule` | Resolve 1 rule against a 10-route layout | < 10 µs |
+| `PlanThousandRules` | Route 1,000 rules through one target layout | < 1 s |
+| `BuildWritePlan` | Plan + build write plan for 1,000 rules | < 1 s |
+| `RouteThroughAllTargets` | Route 1,000 rules through all 4 built-in targets | < 5 s |
+
 ### ScalabilityEnvelopeBenchmarks
 
 Scalability envelope verification against SC-006 targets (100 docs / 1,000 rules under 5 s).

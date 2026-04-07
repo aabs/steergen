@@ -21,7 +21,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new CopilotAgentGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -32,6 +32,8 @@ public sealed class RunAgentTargetsCommandTests
                 $"Generation failed: {string.Join("; ", result.Diagnostics.Select(d => d.Message))}");
             Assert.True(Directory.Exists(outputDir), "Output directory should be created");
             var instructionsFile = Path.Combine(outputDir, "copilot-instructions.md");
+            if (!File.Exists(instructionsFile))
+                instructionsFile = Directory.GetFiles(outputDir, "copilot-instructions.md", SearchOption.AllDirectories).FirstOrDefault();
             Assert.True(File.Exists(instructionsFile), "copilot-instructions.md should exist");
         }
         finally
@@ -48,14 +50,21 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new CopilotAgentGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            var content = await File.ReadAllTextAsync(Path.Combine(outputDir, "copilot-instructions.md"));
+            var instructionsFile = Path.Combine(outputDir, "copilot-instructions.md");
+            if (!File.Exists(instructionsFile))
+            {
+                var found = Directory.GetFiles(outputDir, "copilot-instructions.md", SearchOption.AllDirectories).FirstOrDefault();
+                if (found != null)
+                    instructionsFile = found;
+            }
+            var content = await File.ReadAllTextAsync(instructionsFile);
             Assert.NotEmpty(content.Trim());
         }
         finally
@@ -72,7 +81,7 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new KiroAgentGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -82,7 +91,7 @@ public sealed class RunAgentTargetsCommandTests
             Assert.True(result.Success,
                 $"Generation failed: {string.Join("; ", result.Diagnostics.Select(d => d.Message))}");
             Assert.True(Directory.Exists(outputDir), "Output directory should be created");
-            var files = Directory.GetFiles(outputDir, "*.md");
+            var files = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.NotEmpty(files);
         }
         finally
@@ -99,14 +108,14 @@ public sealed class RunAgentTargetsCommandTests
         try
         {
             var service = new KiroAgentGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            foreach (var file in Directory.GetFiles(outputDir, "*.md"))
+            foreach (var file in Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories))
             {
                 var content = await File.ReadAllTextAsync(file);
                 Assert.Contains("description:", content);
@@ -154,7 +163,7 @@ public sealed class RunAgentTargetsCommandTests
             };
 
             await Assert.ThrowsAsync<TargetGenerationException>(() =>
-                component.GenerateAsync(model, config, CancellationToken.None));
+                component.GenerateWithPlanAsync(model, config, EmptyPlan("copilot-agent"), CancellationToken.None));
         }
         finally
         {
@@ -208,7 +217,7 @@ public sealed class RunAgentTargetsCommandTests
             };
 
             await Assert.ThrowsAsync<TargetGenerationException>(() =>
-                component.GenerateAsync(model, config, CancellationToken.None));
+                component.GenerateWithPlanAsync(model, config, EmptyPlan("kiro-agent"), CancellationToken.None));
         }
         finally
         {
@@ -216,4 +225,10 @@ public sealed class RunAgentTargetsCommandTests
                 Directory.Delete(outputDir, recursive: true);
         }
     }
+
+    private static WritePlan EmptyPlan(string targetId) => new()
+    {
+        TargetId = targetId,
+        Files = [],
+    };
 }

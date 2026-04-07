@@ -1,3 +1,4 @@
+using Steergen.Core.Configuration;
 using Steergen.Core.Model;
 using Steergen.Core.Merge;
 using Steergen.Core.Validation;
@@ -12,7 +13,9 @@ public sealed record GenerationResult(
     bool Success,
     IReadOnlyList<Diagnostic> Diagnostics,
     int TargetsExecuted,
-    DeterministicOutputManifest? Manifest = null)
+    DeterministicOutputManifest? Manifest = null,
+    IReadOnlyDictionary<string, WritePlan>? WritePlans = null,
+    IReadOnlyDictionary<string, IReadOnlyList<RouteResolutionResult>>? RouteResolutions = null)
 {
     /// <summary>
     /// Formats diagnostics as CI-parseable lines suitable for stderr.
@@ -40,12 +43,17 @@ public sealed class GenerationPipeline
 {
     private readonly SteeringResolver _resolver = new();
     private readonly SteeringValidator _validator = new();
+    private readonly LayoutOverrideLoader _layoutLoader = new();
+    private readonly RoutePlanner _routePlanner = new();
+    private readonly WritePlanBuilder _writePlanBuilder = new();
 
     /// <param name="manifestOutputPath">
     /// When set, a <see cref="DeterministicOutputManifest"/> is written to this directory
     /// after generation completes. The manifest captures SHA-256 hashes of all generated
     /// files and is included in the returned <see cref="GenerationResult"/>.
     /// </param>
+    /// <param name="globalRoot">Optional resolved global root path for context variable substitution in layout paths.</param>
+    /// <param name="projectRoot">Optional resolved project root path for context variable substitution in layout paths.</param>
     public async Task<GenerationResult> RunAsync(
         IEnumerable<SteeringDocument> globalDocuments,
         IEnumerable<SteeringDocument> projectDocuments,
@@ -53,7 +61,9 @@ public sealed class GenerationPipeline
         IReadOnlyList<Targets.ITargetComponent> targets,
         IReadOnlyList<TargetConfiguration> targetConfigs,
         CancellationToken cancellationToken = default,
-        string? manifestOutputPath = null)
+        string? manifestOutputPath = null,
+        string? globalRoot = null,
+        string? projectRoot = null)
     {
         var allDiagnostics = new List<Diagnostic>();
         var globalList = globalDocuments.ToList();
@@ -79,13 +89,63 @@ public sealed class GenerationPipeline
             .Where(t => t.Id is not null)
             .ToDictionary(t => t.Id!, StringComparer.Ordinal);
 
+        // Build write plans for each enabled target using the layout engine.
+        var writePlans = new Dictionary<string, WritePlan>(StringComparer.Ordinal);
+        var allResolutions = new Dictionary<string, IReadOnlyList<RouteResolutionResult>>(StringComparer.Ordinal);
+        foreach (var target in targets)
+        {
+            if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
+                continue;
+
+            try
+            {
+                var layout = await _layoutLoader.LoadAsync(
+                    target.TargetId,
+                    config.LayoutOverridePath,
+                    cancellationToken);
+
+                var provenanceSource = config.LayoutOverridePath is not null
+                    ? RouteProvenance.Merged
+                    : RouteProvenance.Default;
+                var resolutions = _routePlanner.Plan(model.Rules, layout)
+                    .Select(r => r with { Source = provenanceSource })
+                    .ToList();
+                allResolutions[target.TargetId] = resolutions;
+                var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
+                var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);
+                writePlans[target.TargetId] = resolvedPlan with
+                {
+                    GlobalRoot = globalRoot,
+                    ProjectRoot = projectRoot,
+                };
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                allDiagnostics.Add(new Diagnostic(
+                    Code: "LAYOUT-001",
+                    Message: $"Failed to build write plan for target '{target.TargetId}': {ex.Message}",
+                    Severity: DiagnosticSeverity.Warning));
+            }
+        }
+
         int targetsExecuted = 0;
         foreach (var target in targets)
         {
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
-            await target.GenerateAsync(model, config, cancellationToken);
+            var writePlan = writePlans.TryGetValue(target.TargetId, out var planned)
+                ? planned
+                : new WritePlan
+                {
+                    TargetId = target.TargetId,
+                    Files = [],
+                    GlobalRoot = globalRoot,
+                    ProjectRoot = projectRoot,
+                };
+
+            await target.GenerateWithPlanAsync(model, config, writePlan, cancellationToken);
+
             targetsExecuted++;
         }
 
@@ -99,6 +159,41 @@ public sealed class GenerationPipeline
             await manifest.WriteAsync(manifestOutputPath, cancellationToken);
         }
 
-        return new GenerationResult(true, allDiagnostics, targetsExecuted, manifest);
+        return new GenerationResult(
+            true,
+            allDiagnostics,
+            targetsExecuted,
+            manifest,
+            writePlans.Count > 0 ? writePlans : null,
+            allResolutions.Count > 0 ? allResolutions : null);
+    }
+
+    // ── Context variable resolution ─────────────────────────────────────────────
+
+    private static WritePlan ResolveContextVariables(
+        WritePlan plan,
+        string? globalRoot,
+        string? projectRoot)
+    {
+        if (globalRoot is null && projectRoot is null)
+            return plan;
+
+        var resolvedFiles = plan.Files
+            .Select(f => f with { Path = ResolveContextVarsInPath(f.Path, globalRoot, projectRoot) })
+            .ToList();
+
+        return plan with { Files = resolvedFiles };
+    }
+
+    private static string ResolveContextVarsInPath(
+        string path,
+        string? globalRoot,
+        string? projectRoot)
+    {
+        if (globalRoot is not null)
+            path = path.Replace("${globalRoot}", globalRoot, StringComparison.OrdinalIgnoreCase);
+        if (projectRoot is not null)
+            path = path.Replace("${projectRoot}", projectRoot, StringComparison.OrdinalIgnoreCase);
+        return path;
     }
 }

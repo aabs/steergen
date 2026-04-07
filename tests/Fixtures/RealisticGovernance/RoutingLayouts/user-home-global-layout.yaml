@@ -1,0 +1,54 @@
+# User-Home Global Layout Override — Acceptance Fixture
+#
+# Convention: layout YAML is stored in the user's home config directory and shared
+# across multiple projects. The `layoutOverridePath` in each project's config file
+# uses an absolute path pointing to the shared home directory file.
+#
+# Example config linkage:
+#   targets:
+#     - id: speckit
+#       enabled: true
+#       layoutOverridePath: /home/user/.config/steergen/speckit-layout.yaml  # absolute path
+#
+# This fixture routes all rules to a flat single-directory layout (one file per domain),
+# suitable for a global cross-project governance baseline.
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${globalRoot}/.speckit-global"
+
+routes:
+  - id: core-anchor
+    scope: both
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.speckit-global"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: domain-module
+    scope: both
+    explicit: false
+    order: 50
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.speckit-global"
+      fileName: "${domain}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.speckit-global"
+  globs:
+    - "**/*.md"

@@ -54,7 +54,9 @@ public sealed class AgentTargetSemanticParityTests
     private static ResolvedSteeringModel BuildModel() => new()
     {
         Documents = SampleDocuments,
-        Rules = [],
+        Rules = SampleRules
+            .Select(rule => rule with { InputFileStem = "guidance" })
+            .ToList(),
         ActiveProfiles = [],
     };
 
@@ -72,15 +74,15 @@ public sealed class AgentTargetSemanticParityTests
         {
             var model = BuildModel();
 
-            await copilotTarget.GenerateAsync(model, new TargetConfiguration
+            await copilotTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "copilot-agent", Enabled = true, OutputPath = copilotOut,
-            }, CancellationToken.None);
+            }, CopilotPlan(model), CancellationToken.None);
 
-            await kiroTarget.GenerateAsync(model, new TargetConfiguration
+            await kiroTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "kiro-agent", Enabled = true, OutputPath = kiroOut,
-            }, CancellationToken.None);
+            }, KiroAgentPlan(model), CancellationToken.None);
 
             var copilotContent = await File.ReadAllTextAsync(
                 Path.Combine(copilotOut, "copilot-instructions.md"));
@@ -114,15 +116,15 @@ public sealed class AgentTargetSemanticParityTests
         {
             var model = BuildModel();
 
-            await copilotTarget.GenerateAsync(model, new TargetConfiguration
+            await copilotTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "copilot-agent", Enabled = true, OutputPath = copilotOut,
-            }, CancellationToken.None);
+            }, CopilotPlan(model), CancellationToken.None);
 
-            await kiroTarget.GenerateAsync(model, new TargetConfiguration
+            await kiroTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "kiro-agent", Enabled = true, OutputPath = kiroOut,
-            }, CancellationToken.None);
+            }, KiroAgentPlan(model), CancellationToken.None);
 
             var copilotContent = await File.ReadAllTextAsync(
                 Path.Combine(copilotOut, "copilot-instructions.md"));
@@ -153,15 +155,15 @@ public sealed class AgentTargetSemanticParityTests
         {
             var model = BuildModel();
 
-            await copilotTarget.GenerateAsync(model, new TargetConfiguration
+            await copilotTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "copilot-agent", Enabled = true, OutputPath = copilotOut,
-            }, CancellationToken.None);
+            }, CopilotPlan(model), CancellationToken.None);
 
-            await kiroTarget.GenerateAsync(model, new TargetConfiguration
+            await kiroTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "kiro-agent", Enabled = true, OutputPath = kiroOut,
-            }, CancellationToken.None);
+            }, KiroAgentPlan(model), CancellationToken.None);
 
             var copilotContent = await File.ReadAllTextAsync(
                 Path.Combine(copilotOut, "copilot-instructions.md"));
@@ -192,15 +194,15 @@ public sealed class AgentTargetSemanticParityTests
         {
             var model = BuildModel();
 
-            await copilotTarget.GenerateAsync(model, new TargetConfiguration
+            await copilotTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "copilot-agent", Enabled = true, OutputPath = copilotOut,
-            }, CancellationToken.None);
+            }, CopilotPlan(model), CancellationToken.None);
 
-            await kiroTarget.GenerateAsync(model, new TargetConfiguration
+            await kiroTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "kiro-agent", Enabled = true, OutputPath = kiroOut,
-            }, CancellationToken.None);
+            }, KiroAgentPlan(model), CancellationToken.None);
 
             var copilotContent = await File.ReadAllTextAsync(
                 Path.Combine(copilotOut, "copilot-instructions.md"));
@@ -229,4 +231,44 @@ public sealed class AgentTargetSemanticParityTests
                 _ => throw new InvalidOperationException($"Unknown template '{targetId}/{templateName}'."),
             };
     }
+
+    private static WritePlan CopilotPlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "copilot-agent",
+        Files =
+        [
+            new WritePlanFile
+            {
+                Path = "copilot-instructions.md",
+                AppendUnits = model.Rules
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            },
+        ],
+    };
+
+    private static WritePlan KiroAgentPlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "kiro-agent",
+        Files =
+        [
+            new WritePlanFile
+            {
+                Path = "guidance.md",
+                AppendUnits = model.Rules
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            },
+        ],
+    };
 }

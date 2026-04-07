@@ -97,7 +97,7 @@ public sealed class SpeckitTargetComponentTests
     }
 
     [Fact]
-    public async Task GenerateAsync_WritesConstitutionAndModuleFiles()
+    public async Task GenerateWithPlanAsync_WritesConstitutionAndModuleFiles()
     {
         var target = new SpeckitTargetComponent(FakeTemplates);
         var model = new ResolvedSteeringModel
@@ -112,7 +112,7 @@ public sealed class SpeckitTargetComponentTests
         try
         {
             var config = new TargetConfiguration { Id = "speckit", Enabled = true, OutputPath = outputDir };
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, BuildWritePlan(model), CancellationToken.None);
 
             Assert.True(File.Exists(Path.Combine(outputDir, "constitution.md")));
             Assert.True(File.Exists(Path.Combine(outputDir, "api.md")));
@@ -133,7 +133,7 @@ public sealed class SpeckitTargetComponentTests
     }
 
     [Fact]
-    public async Task GenerateAsync_DeprecatedAndSupersedes_MetadataPreservedInOutput()
+    public async Task GenerateWithPlanAsync_DeprecatedAndSupersedes_MetadataPreservedInOutput()
     {
         var target = new SpeckitTargetComponent(FakeTemplates);
         var model = new ResolvedSteeringModel
@@ -148,7 +148,7 @@ public sealed class SpeckitTargetComponentTests
         try
         {
             var config = new TargetConfiguration { Id = "speckit", Enabled = true, OutputPath = outputDir };
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, BuildWritePlan(model), CancellationToken.None);
 
             var content = await File.ReadAllTextAsync(Path.Combine(outputDir, "constitution.md"));
             Assert.Contains("*(deprecated)*", content);
@@ -171,4 +171,27 @@ public sealed class SpeckitTargetComponentTests
                 _ => throw new InvalidOperationException($"Unknown template '{templateName}'."),
             };
     }
+
+    private static WritePlan BuildWritePlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "speckit",
+        Files = model.Rules
+            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+                ? "constitution.md"
+                : $"{rule.Domain}.md",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => new WritePlanFile
+            {
+                Path = group.Key,
+                AppendUnits = group
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            })
+            .ToList(),
+    };
 }

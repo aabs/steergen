@@ -20,7 +20,7 @@ public sealed class RunKiroCommandTests
         try
         {
             var service = new KiroGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -30,7 +30,7 @@ public sealed class RunKiroCommandTests
             Assert.True(result.Success,
                 $"Generation failed: {string.Join("; ", result.Diagnostics.Select(d => d.Message))}");
             Assert.True(Directory.Exists(outputDir), "Output directory should be created");
-            var files = Directory.GetFiles(outputDir, "*.md");
+            var files = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.NotEmpty(files);
         }
         finally
@@ -49,18 +49,18 @@ public sealed class RunKiroCommandTests
             var globalDir = Path.Combine(FixturesRoot, "global");
             var projectDir = Path.Combine(FixturesRoot, "project");
 
-            var expectedDocCount = Directory.GetFiles(globalDir, "*.md").Length
-                + Directory.GetFiles(projectDir, "*.md").Length;
+            var expectedDocCount = Directory.GetFiles(globalDir, "*.md", SearchOption.TopDirectoryOnly).Length
+                + Directory.GetFiles(projectDir, "*.md", SearchOption.TopDirectoryOnly).Length;
 
             var service = new KiroGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: globalDir,
                 projectRoot: projectDir,
                 activeProfiles: [],
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            var outputFiles = Directory.GetFiles(outputDir, "*.md");
+            var outputFiles = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.Equal(expectedDocCount, outputFiles.Length);
         }
         finally
@@ -77,14 +77,14 @@ public sealed class RunKiroCommandTests
         try
         {
             var service = new KiroGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            foreach (var file in Directory.GetFiles(outputDir, "*.md"))
+            foreach (var file in Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories))
             {
                 var content = await File.ReadAllTextAsync(file);
                 Assert.Contains("inclusion: always", content);
@@ -104,7 +104,7 @@ public sealed class RunKiroCommandTests
         try
         {
             var service = new KiroGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -116,7 +116,7 @@ public sealed class RunKiroCommandTests
                     ["fileMatchPattern"] = "**/*.ts",
                 });
 
-            foreach (var file in Directory.GetFiles(outputDir, "*.md"))
+            foreach (var file in Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories))
             {
                 var content = await File.ReadAllTextAsync(file);
                 Assert.Contains("inclusion: fileMatch", content);
@@ -153,14 +153,14 @@ public sealed class RunKiroCommandTests
                 """);
 
             var service = new KiroGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: tempGlobal,
                 projectRoot: tempGlobal + "-empty",
                 activeProfiles: [],
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            var files = Directory.GetFiles(outputDir, "*.md");
+            var files = Directory.GetFiles(outputDir, "*.md", SearchOption.AllDirectories);
             Assert.Single(files);
             var content = await File.ReadAllTextAsync(files[0]);
             Assert.Contains("Active rule text", content);
@@ -183,22 +183,22 @@ public sealed class RunKiroCommandTests
             var service = new KiroGenerationService();
             var provider = new EmbeddedTemplateProvider();
 
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: dir1,
                 templateProvider: provider);
 
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
                 outputPath: dir2,
                 templateProvider: provider);
 
-            var files1 = Directory.EnumerateFiles(dir1).OrderBy(Path.GetFileName).ToList();
-            var files2 = Directory.EnumerateFiles(dir2).OrderBy(Path.GetFileName).ToList();
+            var files1 = Directory.EnumerateFiles(dir1, "*.md", SearchOption.AllDirectories).OrderBy(Path.GetFileName).ToList();
+            var files2 = Directory.EnumerateFiles(dir2, "*.md", SearchOption.AllDirectories).OrderBy(Path.GetFileName).ToList();
 
             Assert.Equal(files1.Count, files2.Count);
             for (var i = 0; i < files1.Count; i++)

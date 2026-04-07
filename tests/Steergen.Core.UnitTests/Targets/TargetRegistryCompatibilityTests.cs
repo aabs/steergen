@@ -63,7 +63,7 @@ public sealed class TargetRegistryCompatibilityTests
                 OutputPath = outputDir,
             };
 
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, FixturePlan(model), CancellationToken.None);
 
             var manifestPath = Path.Combine(outputDir, "fixture-manifest.txt");
             Assert.True(File.Exists(manifestPath), "fixture-manifest.txt should be created");
@@ -101,7 +101,7 @@ public sealed class TargetRegistryCompatibilityTests
                 OutputPath = outputDir,
             };
 
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, FixturePlan(model), CancellationToken.None);
 
             var lines = await File.ReadAllLinesAsync(Path.Combine(outputDir, "fixture-manifest.txt"));
             Assert.Equal(["AARULE", "MMRULE", "ZZRULE"], lines);
@@ -135,7 +135,7 @@ public sealed class TargetRegistryCompatibilityTests
                 OutputPath = outputDir,
             };
 
-            await target.GenerateAsync(model, config, CancellationToken.None);
+            await target.GenerateWithPlanAsync(model, config, FixturePlan(model), CancellationToken.None);
 
             var lines = await File.ReadAllLinesAsync(Path.Combine(outputDir, "fixture-manifest.txt"));
             Assert.Single(lines);
@@ -161,19 +161,19 @@ public sealed class TargetRegistryCompatibilityTests
                 new StubSpeckitTemplateProvider());
             var fixtureTarget = new FixtureTargetComponent();
 
-            await speckitTarget.GenerateAsync(model, new TargetConfiguration
+            await speckitTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "speckit",
                 Enabled = true,
                 OutputPath = speckitDir,
-            }, CancellationToken.None);
+            }, SpeckitPlan(model), CancellationToken.None);
 
-            await fixtureTarget.GenerateAsync(model, new TargetConfiguration
+            await fixtureTarget.GenerateWithPlanAsync(model, new TargetConfiguration
             {
                 Id = "fixture",
                 Enabled = true,
                 OutputPath = fixtureDir,
-            }, CancellationToken.None);
+            }, FixturePlan(model), CancellationToken.None);
 
             // Speckit still produces constitution.md
             Assert.True(File.Exists(Path.Combine(speckitDir, "constitution.md")));
@@ -219,6 +219,48 @@ public sealed class TargetRegistryCompatibilityTests
         var model = BuildSampleModel(1);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => target.GenerateAsync(model, config, CancellationToken.None));
+            () => target.GenerateWithPlanAsync(model, config, FixturePlan(model), CancellationToken.None));
     }
+
+    private static WritePlan FixturePlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "fixture",
+        Files =
+        [
+            new WritePlanFile
+            {
+                Path = "fixture-manifest.txt",
+                AppendUnits = model.Rules
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            },
+        ],
+    };
+
+    private static WritePlan SpeckitPlan(ResolvedSteeringModel model) => new()
+    {
+        TargetId = "speckit",
+        Files = model.Rules
+            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+                ? "constitution.md"
+                : $"{rule.Domain}.md",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => new WritePlanFile
+            {
+                Path = group.Key,
+                AppendUnits = group
+                    .OrderBy(rule => rule.Id, StringComparer.Ordinal)
+                    .Select((rule, index) => new ContentUnit
+                    {
+                        RuleId = rule.Id ?? string.Empty,
+                        OrderKey = (0, index, rule.Id ?? string.Empty),
+                    })
+                    .ToList(),
+            })
+            .ToList(),
+    };
 }

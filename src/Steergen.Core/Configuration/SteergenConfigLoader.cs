@@ -31,6 +31,7 @@ public sealed class SteergenConfigLoader
                     Id = t.Id,
                     Enabled = t.Enabled,
                     OutputPath = t.OutputPath,
+                    LayoutOverridePath = t.LayoutOverridePath,
                     FormatOptions = t.FormatOptions ?? [],
                     RequiredMetadata = t.RequiredMetadata ?? [],
                 }).ToList(),
@@ -54,6 +55,7 @@ public sealed class SteergenConfigLoader
         public string? Id { get; set; }
         public bool Enabled { get; set; } = true;
         public string? OutputPath { get; set; }
+        public string? LayoutOverridePath { get; set; }
         public Dictionary<string, string>? FormatOptions { get; set; }
         public List<string>? RequiredMetadata { get; set; }
     }

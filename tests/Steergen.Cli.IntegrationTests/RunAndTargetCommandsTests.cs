@@ -75,7 +75,9 @@ public sealed class RunAndTargetCommandsTests
                 quiet: true,
                 cancellationToken: default);
 
-            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")));
+            Assert.True(
+                Directory.GetFiles(outputDir, "constitution.md", SearchOption.AllDirectories).Length > 0,
+                "constitution.md should be produced by the speckit target");
         }
         finally { Directory.Delete(outputDir, recursive: true); }
     }
@@ -104,7 +106,9 @@ public sealed class RunAndTargetCommandsTests
                 cancellationToken: default);
 
             Assert.Equal(0, exitCode);
-            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")));
+            Assert.True(
+                Directory.GetFiles(outputDir, "constitution.md", SearchOption.AllDirectories).Length > 0,
+                "constitution.md should be produced by the speckit target");
         }
         finally { Directory.Delete(workDir, recursive: true); }
     }
@@ -127,7 +131,9 @@ public sealed class RunAndTargetCommandsTests
             var exitCode = await RunCommand.Create().Parse($"--output {outputDir}").InvokeAsync();
 
             Assert.Equal(0, exitCode);
-            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")));
+            Assert.True(
+                Directory.GetFiles(outputDir, "constitution.md", SearchOption.AllDirectories).Length > 0,
+                "constitution.md should be produced by the speckit target");
         }
         finally { Directory.Delete(workDir, recursive: true); }
     }

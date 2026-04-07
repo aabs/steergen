@@ -19,9 +19,10 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
     public string TargetId => "kiro-agent";
     public TargetDescriptor Descriptor => KiroAgentDescriptor;
 
-    public async Task GenerateAsync(
+    public async Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
+        WritePlan writePlan,
         CancellationToken cancellationToken)
     {
         var outputPath = config.OutputPath
@@ -33,30 +34,37 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
                 throw new TargetGenerationException(key);
         }
 
-        Directory.CreateDirectory(outputPath);
+        var ruleIndex = model.Rules.ToDictionary(r => r.Id ?? "", StringComparer.Ordinal);
 
-        foreach (var doc in model.Documents)
+        foreach (var file in writePlan.Files)
         {
-            var activeRules = FilterRules(doc.Rules, model.ActiveProfiles);
-            if (activeRules.Count == 0)
-                continue;
+            var rules = file.AppendUnits
+                .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
+                .Where(r => r is not null)
+                .Cast<SteeringRule>()
+                .ToList();
 
+            var activeRules = FilterRules(rules, model.ActiveProfiles);
+            if (activeRules.Count == 0) continue;
+
+            var stem = activeRules[0].InputFileStem ?? Path.GetFileNameWithoutExtension(file.Path);
             var description = config.FormatOptions.TryGetValue("description", out var desc)
                 ? desc
-                : (doc.Title ?? doc.Id ?? Path.GetFileNameWithoutExtension(doc.SourcePath ?? "steering"));
+                : stem;
 
             var documentModel = new KiroAgentDocumentModel
             {
-                Name = doc.Title ?? doc.Id,
+                Name = stem,
                 Description = description,
                 Rules = ToProseModels(activeRules),
             };
 
             var rendered = await RenderDocumentAsync(documentModel, cancellationToken);
 
-            var fileName = DeriveFileName(doc);
-            var filePath = Path.Combine(outputPath, fileName);
-            await File.WriteAllTextAsync(filePath, rendered, cancellationToken);
+            var resolvedPath = PlannedOutputPathResolver.Resolve(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
+            var outputDir = Path.GetDirectoryName(resolvedPath)!;
+            Directory.CreateDirectory(outputDir);
+            await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
         }
     }
 
@@ -88,15 +96,4 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
             PrimaryText = r.PrimaryText ?? "",
             ExplanatoryText = r.ExplanatoryText,
         }).ToList();
-
-    private static string DeriveFileName(SteeringDocument doc)
-    {
-        if (doc.SourcePath is not null)
-        {
-            var baseName = Path.GetFileNameWithoutExtension(doc.SourcePath);
-            return $"{baseName}.md";
-        }
-
-        return $"{doc.Id ?? "steering"}.md";
-    }
 }

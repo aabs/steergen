@@ -108,6 +108,7 @@ public static class RunCommand
         var reporter = new MeasurementProtocolReporter(verbose || debug);
         try
         {
+            var defaultOutputPath = Directory.GetCurrentDirectory();
             SteeringConfiguration? config = null;
             if (configPath is not null)
             {
@@ -176,15 +177,28 @@ public static class RunCommand
                 {
                     Id = id,
                     Enabled = true,
-                    OutputPath = outputBase is not null ? Path.Combine(outputBase, id) : id,
+                    OutputPath = outputBase ?? defaultOutputPath,
                 });
             }
 
-            // Override OutputPath if --output provided
-            if (outputBase is not null)
+            // outputPath remains a legacy config field. Routed layout destinations are based on
+            // the layout plan plus the CLI-selected base directory (or current directory when omitted).
+            targetConfigs = targetConfigs
+                .Select(t => t with { OutputPath = outputBase ?? defaultOutputPath })
+                .ToList();
+
+            // Resolve relative layoutOverridePath values relative to the config file directory.
+            if (configPath is not null)
             {
+                var configDir = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
                 targetConfigs = targetConfigs
-                    .Select(t => t with { OutputPath = Path.Combine(outputBase, t.Id!) })
+                    .Select(t => t with
+                    {
+                        LayoutOverridePath =
+                            t.LayoutOverridePath is not null && !Path.IsPathRooted(t.LayoutOverridePath)
+                                ? Path.GetFullPath(Path.Combine(configDir, t.LayoutOverridePath))
+                                : t.LayoutOverridePath,
+                    })
                     .ToList();
             }
 
@@ -204,7 +218,9 @@ public static class RunCommand
                     selectedComponents,
                     targetConfigs,
                     cancellationToken,
-                    manifestOutputPath: outputBase));
+                    manifestOutputPath: outputBase,
+                    globalRoot: resolvedGlobal,
+                    projectRoot: resolvedProject));
 
             reporter.EmitTotal();
 
@@ -222,6 +238,9 @@ public static class RunCommand
                     Console.Error.WriteLine($"{loc}[{sev}] {diag.Code}: {diag.Message}");
                 }
             }
+
+            if (verbose && result.RouteResolutions is not null)
+                EmitRoutingDiagnostics(result.RouteResolutions);
 
             if (!result.Success)
                 return Composition.ExitCodeMapper.ValidationError;
@@ -258,5 +277,33 @@ public static class RunCommand
             .OrderBy(p => p, StringComparer.Ordinal)
             .Select(path => SteeringMarkdownParser.Parse(File.ReadAllText(path), path))
             .ToList();
+    }
+
+    private static void EmitRoutingDiagnostics(
+        IReadOnlyDictionary<string, IReadOnlyList<Core.Model.RouteResolutionResult>> routeResolutions)
+    {
+        foreach (var (targetId, resolutions) in routeResolutions.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            var resolved = resolutions.Where(r => r.IsResolved).ToList();
+            var failed = resolutions.Where(r => !r.IsResolved).ToList();
+
+            Console.Error.WriteLine(
+                $"[routing] {targetId}: {resolved.Count}/{resolutions.Count} rules routed" +
+                (failed.Count > 0 ? $", {failed.Count} unresolved (see below)" : ""));
+
+            foreach (var r in resolved.OrderBy(r => r.RuleId, StringComparer.Ordinal))
+            {
+                var dest = Path.GetFileName(r.SelectedDestinationPath) ?? r.SelectedDestinationPath;
+                Console.Error.WriteLine(
+                    $"  [routing] {r.RuleId} → {dest}" +
+                    $" (route: {r.SelectedRouteId}, source: {r.Source})");
+            }
+
+            foreach (var r in failed.OrderBy(r => r.RuleId, StringComparer.Ordinal))
+            {
+                Console.Error.WriteLine(
+                    $"  [routing:fail] {r.RuleId}: {r.SelectionReason}");
+            }
+        }
     }
 }

@@ -20,9 +20,10 @@ public sealed class MyCustomTarget : ITargetComponent
     public string TargetId => "my-target";
     TargetDescriptor ITargetComponent.Descriptor => Descriptor;
 
-    public Task GenerateAsync(
+    public Task GenerateWithPlanAsync(
         ResolvedSteeringModel model,
         TargetConfiguration config,
+        WritePlan writePlan,
         CancellationToken cancellationToken)
     {
         var outputPath = config.OutputPath
@@ -30,7 +31,12 @@ public sealed class MyCustomTarget : ITargetComponent
 
         Directory.CreateDirectory(outputPath);
 
-        // Write your custom artefacts here.
+        foreach (var file in writePlan.Files)
+        {
+            var destination = Path.Combine(outputPath, Path.GetFileName(file.Path));
+            File.WriteAllText(destination, "custom output");
+        }
+
         return Task.CompletedTask;
     }
 }
@@ -78,7 +84,7 @@ targets:
 | `TargetId` | Unique, lowercase-kebab, stable across versions |
 | `OutputPath` | Must be honoured; create the directory before writing |
 | `Deprecated` rules | Filter rules with `r.Deprecated == true` unless the target intentionally includes them |
-| Thread safety | `GenerateAsync` may be called concurrently for distinct configs; do not share mutable state |
+| Thread safety | `GenerateWithPlanAsync` may be called concurrently for distinct configs; do not share mutable state |
 | Exceptions | Throw `TargetGenerationException` (from `Steergen.Core.Generation`) for recoverable generation errors |
 
 ## Compatibility guarantee

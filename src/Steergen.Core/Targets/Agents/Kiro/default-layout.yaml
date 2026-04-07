@@ -1,0 +1,80 @@
+# Default Layout: Kiro Agent Target
+# This file is the built-in routing and layout profile for the Kiro Agent target.
+# Copy and modify this file to create a per-target override (layoutOverridePath in steergen.config.yaml).
+# See docs/routing-syntax.md for full syntax reference.
+#
+# The Kiro Agent target produces per-source-document agent instruction files
+# under .kiro/agents/ named after the source document stem.
+
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${projectRoot}/.kiro/agents"
+
+routes:
+  # --- Global scope routes ---
+
+  # Core anchor: global Kiro agent instructions entry point (per-document routing)
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${globalRoot}/.kiro/agents"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # Global catch-all: route remaining documents by source file stem
+  - id: catch-all-global
+    scope: global
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${globalRoot}/.kiro/agents"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # --- Project scope routes ---
+
+  # Core anchor: project Kiro agent instructions entry point (per-document routing)
+  - id: core-project
+    scope: project
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      domain: core
+    destination:
+      directory: "${projectRoot}/.kiro/agents"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+  # Project catch-all: route remaining documents by source file stem
+  - id: catch-all-project
+    scope: project
+    explicit: false
+    order: 100
+    match:
+      domain: "*"
+    destination:
+      directory: "${projectRoot}/.kiro/agents"
+      fileName: "${inputFileStem}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+
+purge:
+  roots:
+    - "${globalRoot}/.kiro/agents"
+    - "${projectRoot}/.kiro/agents"
+  globs:
+    - "**/*.md"

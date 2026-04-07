@@ -71,7 +71,7 @@ public sealed class CiWorkflowRegressionTests
         try
         {
             var service = new SpeckitGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -94,7 +94,7 @@ public sealed class CiWorkflowRegressionTests
         try
         {
             var service = new SpeckitGenerationService();
-            await service.GenerateAsync(
+            await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -121,7 +121,7 @@ public sealed class CiWorkflowRegressionTests
         try
         {
             var service = new SpeckitGenerationService();
-            var result = await service.GenerateAsync(
+            var result = await service.RunAsync(
                 globalRoot: Path.Combine(FixturesRoot, "global"),
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 activeProfiles: [],
@@ -154,10 +154,10 @@ public sealed class CiWorkflowRegressionTests
             var projectRoot = Path.Combine(FixturesRoot, "project");
             var provider = new EmbeddedTemplateProvider();
 
-            var result1 = await service.GenerateAsync(
+            var result1 = await service.RunAsync(
                 globalRoot, projectRoot, [], outputDir1, provider, writeManifest: true);
 
-            var result2 = await service.GenerateAsync(
+            var result2 = await service.RunAsync(
                 globalRoot, projectRoot, [], outputDir2, provider, writeManifest: true);
 
             Assert.True(result1.Success);
