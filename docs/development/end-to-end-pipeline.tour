@@ -1,0 +1,114 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Steergen End-to-End Pipeline",
+  "description": "Guided walkthrough of how Steergen discovers steering docs, parses rules, routes them, and renders target outputs.",
+  "isPrimary": true,
+  "steps": [
+    {
+      "title": "Start Here",
+      "description": "# Steergen End-to-End Pipeline\n\nThis tour is intentionally code-first. It walks the runtime path from CLI entry, through source discovery and parsing, into validation, merge, routing, write planning, and finally target-specific rendering.\n\nUse it to answer three questions quickly:\n\n1. Where do source steering documents come from?\n2. How does a rule get routed to a destination file?\n3. Which component actually renders and writes the final output?"
+    },
+    {
+      "title": "CLI Entry Point",
+      "file": "src/Steergen.Cli/Commands/RunCommand.cs",
+      "line": 97,
+      "description": "# CLI Entry\n\n`RunCommand.RunAsync` is the operational entrypoint for generation. It resolves config, roots, target IDs, output-base semantics, and then invokes the generation pipeline.\n\nThis is the best place to start if you want to answer: \"what happens when a user runs `steergen run`?\""
+    },
+    {
+      "title": "Source Discovery",
+      "file": "src/Steergen.Cli/Commands/RunCommand.cs",
+      "line": 270,
+      "description": "# Source Discovery\n\nSteergen discovers input documents by recursively enumerating `*.md` files under `globalRoot` and `projectRoot`. The paths are sorted before parsing so the run is deterministic.\n\nIf output is missing, confirm the file is under the correct root and actually ends in `.md`."
+    },
+    {
+      "title": "Markdown Parsing",
+      "file": "src/Steergen.Core/Parsing/SteeringMarkdownParser.cs",
+      "line": 24,
+      "description": "# Parsing\n\n`SteeringMarkdownParser` turns each Markdown file into a `SteeringDocument`. It reads optional YAML frontmatter and then extracts `:::rule ... :::` blocks into `SteeringRule` records.\n\nA key practical detail: plain Markdown does not become rules automatically. If a file has no `:::rule` blocks, it contributes zero rules to the pipeline."
+    },
+    {
+      "title": "Rule Extraction",
+      "file": "src/Steergen.Core/Parsing/SteeringMarkdownParser.cs",
+      "line": 79,
+      "description": "# Rule Extraction\n\nThis loop is the real parser for steering rules. It finds an opening `:::rule`, collects all lines until the closing fence, and converts the attribute string plus body text into a `SteeringRule`.\n\nIf you want to extend the steering syntax, this is one of the first files you need to change."
+    },
+    {
+      "title": "Corpus Validation",
+      "file": "src/Steergen.Core/Validation/SteeringValidator.cs",
+      "line": 24,
+      "description": "# Validation\n\n`SteeringValidator.ValidateCorpus` is the first hard gate inside the generation pipeline. It checks per-document and cross-document invariants such as missing IDs, duplicate rule IDs, invalid severities, and broken `supersedes` references.\n\nIf validation produces any errors, generation stops before output files are written."
+    },
+    {
+      "title": "Pipeline Orchestration",
+      "file": "src/Steergen.Core/Generation/GenerationPipeline.cs",
+      "line": 57,
+      "description": "# Pipeline Orchestration\n\n`GenerationPipeline` is the central coordinator. It validates the corpus first, stops early on validation errors, then asks `SteeringResolver` to merge global and project documents into one resolved model.\n\nThis class is the main seam between parsing and generation."
+    },
+    {
+      "title": "Resolved Model",
+      "file": "src/Steergen.Core/Merge/SteeringResolver.cs",
+      "line": 7,
+      "description": "# Resolved Model\n\n`SteeringResolver` merges global and project documents, tracks source scope, derives `InputFileStem`, filters by active profiles, and produces the `ResolvedSteeringModel`.\n\nRouting later depends on this enrichment, especially `SourceScope` and `InputFileStem`."
+    },
+    {
+      "title": "Target Layouts",
+      "file": "src/Steergen.Core/Configuration/LayoutOverrideLoader.cs",
+      "line": 46,
+      "description": "# Layout Loading\n\nBefore a target can generate output, Steergen loads that target's built-in layout YAML and optionally deep-merges a user override YAML on top.\n\nThis is where the target-native output structure comes from. The layout describes roots, routes, fallback behavior, and purge policy."
+    },
+    {
+      "title": "Default Kiro Layout",
+      "file": "src/Steergen.Core/Targets/Kiro/default-layout.yaml",
+      "line": 1,
+      "description": "# Concrete Layout Example\n\nThis built-in layout shows what the routing system is working with for Kiro. Notice that routes write to `.kiro/steering`, and that destination paths are expressed with variables like `${globalRoot}`, `${projectRoot}`, and `${inputFileStem}`.\n\nWhen debugging output locations, inspect the target's default-layout YAML first."
+    },
+    {
+      "title": "Route Selection",
+      "file": "src/Steergen.Core/Generation/RouteResolver.cs",
+      "line": 16,
+      "description": "# Route Selection\n\n`RouteResolver` evaluates all candidate routes for a single rule, filters by scope and metadata, then applies deterministic precedence.\n\nThe main ordering rule is: explicit routes first, then more specific matches, then configured order, then declaration order, then route ID. This is what keeps routing stable and predictable."
+    },
+    {
+      "title": "Fallback Routing",
+      "file": "src/Steergen.Core/Generation/RoutePlanner.cs",
+      "line": 36,
+      "description": "# Fallback Behavior\n\n`RoutePlanner` wraps `RouteResolver` and applies the `other.*` fallback when no route matches. The fallback is colocated with the target's core anchor for the same scope.\n\nIf a layout is missing a core anchor, unresolved routing stays unresolved and the selection reason explains why."
+    },
+    {
+      "title": "Write Plan",
+      "file": "src/Steergen.Core/Generation/WritePlanBuilder.cs",
+      "line": 20,
+      "description": "# Write Planning\n\nThe write plan groups many rule-level route resolutions into file-level work. Each `WritePlanFile` says which rules belong in a single output file and in what deterministic order.\n\nThis is the boundary between routing and rendering: paths are known now, but content is still target-specific."
+    },
+    {
+      "title": "Target Abstraction",
+      "file": "src/Steergen.Core/Targets/ITargetComponent.cs",
+      "line": 5,
+      "description": "# Target Abstraction\n\nEvery built-in target implements `ITargetComponent`, and the contract is now plan-only. Routing computes destination files first, then each target implements `GenerateWithPlanAsync` to render content into those planned locations.\n\nIf you are adding a new target, this is the contract you start from."
+    },
+    {
+      "title": "Kiro Generation",
+      "file": "src/Steergen.Core/Targets/Kiro/KiroTargetComponent.cs",
+      "line": 22,
+      "description": "# Kiro Rendering\n\nKiro generation uses the write plan to gather the routed rules for each destination file, builds a `KiroDocumentModel`, renders the Scriban template, and writes the result to the rebased path.\n\nThis is the modern layout-aware generation path for Kiro."
+    },
+    {
+      "title": "Speckit Generation",
+      "file": "src/Steergen.Core/Targets/Speckit/SpeckitTargetComponent.cs",
+      "line": 24,
+      "description": "# Speckit Rendering\n\nSpeckit generation follows the same plan-aware pattern, but its rendering model is bucketed differently: a destination may become a constitution file or a domain module depending on the routed rules.\n\nThis is a good file to compare against Kiro if you want to understand the target abstraction."
+    },
+    {
+      "title": "Path Rebasing",
+      "file": "src/Steergen.Core/Generation/PlannedOutputPathResolver.cs",
+      "line": 10,
+      "description": "# Path Rebasing\n\nLayouts often express absolute target-native paths like `${projectRoot}/.kiro/steering/...`. `PlannedOutputPathResolver` converts those planned paths into concrete output paths under the current run's selected output base.\n\nThis is the piece that lets layouts stay target-native while still supporting `--output` rebasing for tests and controlled runs."
+    },
+    {
+      "title": "Templates",
+      "file": "src/Steergen.Templates/EmbeddedTemplateProvider.cs",
+      "line": 15,
+      "description": "# Templates\n\nRendered output ultimately comes from embedded Scriban templates. `EmbeddedTemplateProvider` loads them by the naming convention `Steergen.Templates.Scriban.{targetId}.{templateName}.scriban`.\n\nIf a target renders the wrong shape of output, inspect both the target component and the corresponding Scriban template."
+    }
+  ]
+}
