@@ -3,6 +3,7 @@ namespace Steergen.Core.Model;
 public record SteeringRule
 {
     public string? Id { get; init; }
+    public RouteScope SourceScope { get; init; } = RouteScope.Both;
     public string Severity { get; init; } = "info";
     public string? Category { get; init; }
     public string Domain { get; init; } = "core";

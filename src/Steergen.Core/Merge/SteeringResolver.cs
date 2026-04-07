@@ -10,17 +10,26 @@ public sealed class SteeringResolver
         IEnumerable<string> activeProfiles)
     {
         var profiles = activeProfiles.ToList();
+        var globalList = globalDocuments.ToList();
+        var projectList = projectDocuments.ToList();
 
         var docMap = new Dictionary<string, SteeringDocument>(StringComparer.Ordinal);
-        foreach (var doc in globalDocuments)
+        var sourceScopes = new Dictionary<string, RouteScope>(StringComparer.Ordinal);
+        foreach (var doc in globalList)
         {
             if (doc.Id is not null)
+            {
                 docMap[doc.Id] = doc;
+                sourceScopes[doc.Id] = RouteScope.Global;
+            }
         }
-        foreach (var doc in projectDocuments)
+        foreach (var doc in projectList)
         {
             if (doc.Id is not null)
+            {
                 docMap[doc.Id] = doc;
+                sourceScopes[doc.Id] = RouteScope.Project;
+            }
         }
 
         var sortedDocs = docMap.Values
@@ -33,11 +42,14 @@ public sealed class SteeringResolver
             var stem = doc.SourcePath is not null
                 ? Path.GetFileNameWithoutExtension(doc.SourcePath)
                 : doc.Id;
+            var sourceScope = doc.Id is not null && sourceScopes.TryGetValue(doc.Id, out var resolvedScope)
+                ? resolvedScope
+                : RouteScope.Both;
 
             foreach (var rule in doc.Rules)
             {
                 if (rule.Id is not null)
-                    ruleMap[rule.Id] = rule with { InputFileStem = stem };
+                    ruleMap[rule.Id] = rule with { InputFileStem = stem, SourceScope = sourceScope };
             }
         }
 

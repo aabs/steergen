@@ -17,6 +17,7 @@ public sealed class RouteResolver
     {
         var candidates = layout.Routes
             .Select((route, index) => (route, index))
+            .Where(x => ScopeMatches(x.route.Scope, rule.SourceScope))
             .Where(x => Matches(x.route.Match, rule))
             .ToList();
 
@@ -70,6 +71,9 @@ public sealed class RouteResolver
 
         return true;
     }
+
+    internal static bool ScopeMatches(RouteScope routeScope, RouteScope ruleScope) =>
+        routeScope == RouteScope.Both || ruleScope == RouteScope.Both || routeScope == ruleScope;
 
     private static bool MatchesField(IReadOnlyList<string> filter, string? value)
     {

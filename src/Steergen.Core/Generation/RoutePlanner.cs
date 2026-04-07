@@ -38,7 +38,8 @@ public sealed class RoutePlanner
         TargetLayoutDefinition layout,
         RouteResolutionResult unresolved)
     {
-        var coreAnchor = layout.Routes.FirstOrDefault(r => r.Anchor == RouteAnchor.Core);
+        var coreAnchor = layout.Routes.FirstOrDefault(r =>
+            r.Anchor == RouteAnchor.Core && RouteResolver.ScopeMatches(r.Scope, rule.SourceScope));
         if (coreAnchor is null)
         {
             // Missing core anchor is a validation error; propagate the unresolved result.

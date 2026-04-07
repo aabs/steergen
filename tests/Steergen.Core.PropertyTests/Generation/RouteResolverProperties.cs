@@ -125,6 +125,21 @@ public sealed class RouteResolverProperties
         Assert.DoesNotContain("core", result.MatchedRouteIds); // domain=core won't match domain=security
     }
 
+    [Fact]
+    public void Resolve_ProjectRule_IgnoresMatchingGlobalRouteWhenProjectRouteExists()
+    {
+        var layout = MakeLayout([
+            MakeRoute("global-catch-all", domain: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Global),
+            MakeRoute("project-catch-all", domain: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Project),
+        ]);
+        var rule = MakeRule("SEC-001", domain: "security") with { SourceScope = RouteScope.Project };
+
+        var result = new RouteResolver().Resolve(rule, layout);
+
+        Assert.Equal("project-catch-all", result.SelectedRouteId);
+        Assert.DoesNotContain("global-catch-all", result.MatchedRouteIds);
+    }
+
     // ── Property: empty layout (no routes) always produces unresolved ─────────────
 
     [Fact]
@@ -153,10 +168,12 @@ public sealed class RouteResolverProperties
         string domain,
         RouteAnchor anchor,
         int order,
-        bool isExplicit = false) =>
+        bool isExplicit = false,
+        RouteScope scope = RouteScope.Both) =>
         new()
         {
             Id = id,
+            Scope = scope,
             Explicit = isExplicit,
             Anchor = anchor,
             Order = order,
