@@ -67,6 +67,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
 
         foreach (var file in writePlan.Files)
         {
+
             var rules = file.AppendUnits
                 .Select(u => ruleIndex.TryGetValue(u.RuleId, out var r) ? r : null)
                 .Where(r => r is not null)
@@ -75,7 +76,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
 
             if (rules.Count == 0) continue;
 
-            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
             var outputDir = Path.GetDirectoryName(resolvedPath)!;
             Directory.CreateDirectory(outputDir);
 
@@ -106,16 +107,19 @@ public sealed class SpeckitTargetComponent : ITargetComponent
         }
     }
 
-    /// <summary>
-    /// Resolves a plan path: if fully resolved (no template vars), use as-is;
-    /// otherwise preserve relative directory structure from the plan.
-    /// </summary>
-    private static string ResolveOutputPath(string planPath, string outputPath)
+    private static string ResolveOutputPath(string planPath, string outputPath, string? globalRoot, string? projectRoot)
     {
-        // If planPath is absolute, use it as-is (context variables already resolved by pipeline).
         if (Path.IsPathRooted(planPath))
-            return planPath;
-        // Otherwise, combine with outputPath, preserving relative directory structure.
+        {
+            foreach (var root in new[] { globalRoot, projectRoot }
+                         .Where(r => r is not null)
+                         .Select(r => r!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)))
+            {
+                if (planPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                    return Path.Combine(outputPath, planPath[(root.Length + 1)..]);
+            }
+            return Path.Combine(outputPath, Path.GetFileName(planPath));
+        }
         return Path.Combine(outputPath, planPath);
     }
 

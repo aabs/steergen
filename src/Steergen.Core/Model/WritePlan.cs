@@ -5,6 +5,10 @@ public record WritePlan
 {
     public string TargetId { get; init; } = "";
     public IReadOnlyList<WritePlanFile> Files { get; init; } = [];
+    /// <summary>Resolved global root used for stripping layout-rooted absolute paths.</summary>
+    public string? GlobalRoot { get; init; }
+    /// <summary>Resolved project root used for stripping layout-rooted absolute paths.</summary>
+    public string? ProjectRoot { get; init; }
 }
 
 /// <summary>Represents one destination file and its ordered content units.</summary>

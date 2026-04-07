@@ -2,11 +2,6 @@ using Steergen.Cli.Commands;
 
 namespace Steergen.Cli.IntegrationTests;
 
-/// <summary>
-/// Compatibility regression tests verifying that existing targets produce the same
-/// output files when no layout override is configured.
-/// These tests guard against regressions introduced by the dynamic layout engine.
-/// </summary>
 [Collection("CliOutput")]
 public sealed class RunCompatibilityBaselineTests
 {
@@ -55,7 +50,7 @@ public sealed class RunCompatibilityBaselineTests
                 quiet: true,
                 cancellationToken: default);
 
-            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")),
+            Assert.True(File.Exists(Path.Combine(outputDir, ".speckit", "memory", "constitution.md")),
                 "constitution.md must still be produced for domain=core rules");
         }
         finally { Directory.Delete(outputDir, recursive: true); }
@@ -77,7 +72,7 @@ public sealed class RunCompatibilityBaselineTests
                 cancellationToken: default);
 
             var content = await File.ReadAllTextAsync(
-                Path.Combine(outputDir, "speckit", "constitution.md"));
+                Path.Combine(outputDir, ".speckit", "memory", "constitution.md"));
 
             Assert.Contains("CORE-001", content);
             Assert.Contains("CORE-002", content);
@@ -101,13 +96,12 @@ public sealed class RunCompatibilityBaselineTests
                 quiet: true,
                 cancellationToken: default);
 
-            var speckitDir = Path.Combine(outputDir, "speckit");
-            var outputFiles = Directory.GetFiles(speckitDir, "*.md")
+            var memoryDir = Path.Combine(outputDir, ".speckit", "memory");
+            var outputFiles = Directory.GetFiles(memoryDir, "*.md")
                 .Select(Path.GetFileName)
                 .OrderBy(f => f)
                 .ToArray();
 
-            // At least constitution.md plus one or more domain modules
             Assert.True(outputFiles.Length >= 2,
                 $"Expected constitution.md plus domain modules; got: {string.Join(", ", outputFiles)}");
             Assert.Contains("constitution.md", outputFiles);
@@ -152,8 +146,7 @@ public sealed class RunCompatibilityBaselineTests
                 quiet: true,
                 cancellationToken: default);
 
-            var kiroDir = Path.Combine(outputDir, "kiro");
-            var mdFiles = Directory.GetFiles(kiroDir, "*.md");
+            var mdFiles = Directory.GetFiles(Path.Combine(outputDir, ".kiro", "steering"), "*.md");
             Assert.True(mdFiles.Length > 0,
                 "Kiro target should produce at least one .md file from realistic fixtures");
         }
@@ -175,28 +168,16 @@ public sealed class RunCompatibilityBaselineTests
                 projectRoot: Path.Combine(FixturesRoot, "project"),
                 explicitTargets: (IReadOnlyList<string>)["speckit"]);
 
-            await RunCommand.RunAsync(
-                configPath: opts.configPath,
-                globalRoot: opts.globalRoot,
-                projectRoot: opts.projectRoot,
-                outputBase: outputDir1,
-                explicitTargets: opts.explicitTargets,
-                quiet: true,
-                cancellationToken: default);
+            await RunCommand.RunAsync(opts.configPath, opts.globalRoot, opts.projectRoot,
+                outputDir1, opts.explicitTargets, quiet: true, cancellationToken: default);
+            await RunCommand.RunAsync(opts.configPath, opts.globalRoot, opts.projectRoot,
+                outputDir2, opts.explicitTargets, quiet: true, cancellationToken: default);
 
-            await RunCommand.RunAsync(
-                configPath: opts.configPath,
-                globalRoot: opts.globalRoot,
-                projectRoot: opts.projectRoot,
-                outputBase: outputDir2,
-                explicitTargets: opts.explicitTargets,
-                quiet: true,
-                cancellationToken: default);
+            var memoryDir1 = Path.Combine(outputDir1, ".speckit", "memory");
+            var memoryDir2 = Path.Combine(outputDir2, ".speckit", "memory");
 
-            var files1 = Directory.GetFiles(Path.Combine(outputDir1, "speckit"), "*.md")
-                .Select(Path.GetFileName).OrderBy(f => f).ToArray();
-            var files2 = Directory.GetFiles(Path.Combine(outputDir2, "speckit"), "*.md")
-                .Select(Path.GetFileName).OrderBy(f => f).ToArray();
+            var files1 = Directory.GetFiles(memoryDir1, "*.md").Select(Path.GetFileName).OrderBy(f => f).ToArray();
+            var files2 = Directory.GetFiles(memoryDir2, "*.md").Select(Path.GetFileName).OrderBy(f => f).ToArray();
 
             Assert.Equal(files1, files2);
         }

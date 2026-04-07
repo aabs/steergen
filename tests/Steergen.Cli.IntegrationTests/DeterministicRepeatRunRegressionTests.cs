@@ -108,16 +108,7 @@ public sealed class DeterministicRepeatRunRegressionTests
                 Assert.Equal(0, exitCode);
             }
 
-            // Verify each generated subdirectory across all runs
-            var referenceSubdirs = Directory
-                .GetDirectories(outputDirs[0])
-                .Select(Path.GetFileName)
-                .ToList();
-
-            Assert.True(referenceSubdirs.Count > 0, "At least one target output directory must be produced");
-
-            foreach (var subdir in referenceSubdirs)
-                AssertOutputsAreIdentical(outputDirs, subdir!);
+            AssertOutputsAreIdentical(outputDirs, "");
         }
         finally
         {
@@ -130,9 +121,11 @@ public sealed class DeterministicRepeatRunRegressionTests
 
     private static void AssertOutputsAreIdentical(string[] outputDirs, string targetSubdir)
     {
-        var referenceDir = Path.Combine(outputDirs[0], targetSubdir);
+        // With layout routing, files land under target-specific subdirs like .speckit/memory or .kiro/steering
+        // Search recursively from the output root for .md files
+        var referenceDir = outputDirs[0];
         Assert.True(Directory.Exists(referenceDir),
-            $"Reference output directory '{targetSubdir}' must exist after run 1");
+            $"Reference output directory must exist after run 1");
 
         var referenceFiles = Directory
             .GetFiles(referenceDir, "*.md", SearchOption.AllDirectories)
@@ -141,17 +134,16 @@ public sealed class DeterministicRepeatRunRegressionTests
             .ToList();
 
         Assert.True(referenceFiles.Count > 0,
-            $"Run 1 must produce at least one .md file in {targetSubdir}/");
+            $"Run 1 must produce at least one .md file");
 
         foreach (var otherOutputDir in outputDirs.Skip(1))
         {
-            var otherDir = Path.Combine(otherOutputDir, targetSubdir);
-            Assert.True(Directory.Exists(otherDir),
-                $"Output directory '{targetSubdir}' must exist in every repeat run");
+            Assert.True(Directory.Exists(otherOutputDir),
+                $"Output directory must exist in every repeat run");
 
             var otherFiles = Directory
-                .GetFiles(otherDir, "*.md", SearchOption.AllDirectories)
-                .Select(f => Path.GetRelativePath(otherDir, f))
+                .GetFiles(otherOutputDir, "*.md", SearchOption.AllDirectories)
+                .Select(f => Path.GetRelativePath(otherOutputDir, f))
                 .OrderBy(f => f, StringComparer.Ordinal)
                 .ToList();
 
@@ -160,10 +152,10 @@ public sealed class DeterministicRepeatRunRegressionTests
             foreach (var relativePath in referenceFiles)
             {
                 var refContent = File.ReadAllText(Path.Combine(referenceDir, relativePath));
-                var otherContent = File.ReadAllText(Path.Combine(otherDir, relativePath));
+                var otherContent = File.ReadAllText(Path.Combine(otherOutputDir, relativePath));
                 Assert.True(
                     refContent == otherContent,
-                    $"File '{relativePath}' in '{targetSubdir}/' must be byte-identical across all runs. " +
+                    $"File '{relativePath}' must be byte-identical across all runs. " +
                     $"Non-determinism detected in repeat run.");
             }
         }

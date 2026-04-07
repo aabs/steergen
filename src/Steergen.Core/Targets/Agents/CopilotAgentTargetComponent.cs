@@ -89,22 +89,28 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
 
             var rendered = await RenderAsync(documentModel, cancellationToken);
 
-            var resolvedPath = ResolveOutputPath(file.Path, outputPath);
+            var resolvedPath = ResolveOutputPath(file.Path, outputPath, writePlan.GlobalRoot, writePlan.ProjectRoot);
             var outputDir = Path.GetDirectoryName(resolvedPath)!;
             Directory.CreateDirectory(outputDir);
             await File.WriteAllTextAsync(resolvedPath, rendered, cancellationToken);
         }
     }
 
-    private static string ResolveOutputPath(string planPath, string outputPath)
+    private static string ResolveOutputPath(string planPath, string outputPath, string? globalRoot, string? projectRoot)
     {
-        // If planPath is absolute, use it as-is (context variables already resolved by pipeline).
         if (Path.IsPathRooted(planPath))
-            return planPath;
-        // Otherwise, combine with outputPath, preserving relative directory structure.
+        {
+            foreach (var root in new[] { globalRoot, projectRoot }
+                         .Where(r => r is not null)
+                         .Select(r => r!.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)))
+            {
+                if (planPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                    return Path.Combine(outputPath, planPath[(root.Length + 1)..]);
+            }
+            return Path.Combine(outputPath, Path.GetFileName(planPath));
+        }
         return Path.Combine(outputPath, planPath);
     }
-
 
     public async Task<string> RenderAsync(
         CopilotAgentDocumentModel model,

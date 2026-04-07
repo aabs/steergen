@@ -7,11 +7,6 @@ using Steergen.Templates;
 
 namespace Steergen.Cli.IntegrationTests;
 
-/// <summary>
-/// Integration tests verifying that catch-all routes capture rules before the
-/// <c>other-at-core-anchor</c> fallback is applied, and that specific routes
-/// take precedence over catch-all routes.
-/// </summary>
 [Collection("CliOutput")]
 public sealed class RunCatchAllRoutingTests
 {
@@ -23,13 +18,9 @@ public sealed class RunCatchAllRoutingTests
     private static string MakeTempDir() =>
         Directory.CreateTempSubdirectory("catchall-routing-test-").FullName;
 
-    // ── Catch-all routing: all rules land in named destination files ─────────────
-
     [Fact]
     public async Task Run_CatchAllFixture_CoreDomainRoutesBeatCatchAll()
     {
-        // default speckit layout has domain=core → constitution.md (explicit, anchor=core)
-        // AND domain=* catch-all. Explicit route must win for domain=core.
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
         try
@@ -38,20 +29,11 @@ public sealed class RunCatchAllRoutingTests
                 Path.Combine(globalRoot, "catch-all.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
 
-            await RunCommand.RunAsync(
-                configPath: null,
-                globalRoot: globalRoot,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var constitutionPath = Path.Combine(outputDir, "speckit", "constitution.md");
-            Assert.True(File.Exists(constitutionPath),
-                "constitution.md must exist — domain=core route beats catch-all");
-            var content = await File.ReadAllTextAsync(constitutionPath);
-            Assert.Contains("RLAY-001", content);
+            var constitutionPath = Path.Combine(outputDir, ".speckit", "memory", "constitution.md");
+            Assert.True(File.Exists(constitutionPath), "constitution.md must exist — domain=core route beats catch-all");
+            Assert.Contains("RLAY-001", await File.ReadAllTextAsync(constitutionPath));
         }
         finally
         {
@@ -63,9 +45,6 @@ public sealed class RunCatchAllRoutingTests
     [Fact]
     public async Task Run_CatchAllFixture_UnrecognizedDomainsLandInNamedCatchAllFiles()
     {
-        // RLAY-006 (domain=frontend) and RLAY-007 (domain=frontend) have no explicit
-        // route — the default speckit layout routes them via domain-module-global (domain=*)
-        // catch-all to frontend.md.
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
         try
@@ -74,18 +53,10 @@ public sealed class RunCatchAllRoutingTests
                 Path.Combine(globalRoot, "catch-all.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
 
-            await RunCommand.RunAsync(
-                configPath: null,
-                globalRoot: globalRoot,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var frontendPath = Path.Combine(outputDir, "speckit", "frontend.md");
-            Assert.True(File.Exists(frontendPath),
-                "frontend.md should exist — catch-all (domain=*) captures domain=frontend rules");
+            var frontendPath = Path.Combine(outputDir, ".speckit", "memory", "frontend.md");
+            Assert.True(File.Exists(frontendPath), "frontend.md should exist — catch-all captures domain=frontend rules");
             var content = await File.ReadAllTextAsync(frontendPath);
             Assert.Contains("RLAY-006", content);
             Assert.Contains("RLAY-007", content);
@@ -100,8 +71,6 @@ public sealed class RunCatchAllRoutingTests
     [Fact]
     public async Task Run_CatchAllFixture_NoCatchAllLayout_UnmatchedRulesFallBackToOtherMd()
     {
-        // Use a custom layout with no wildcard catch-all route.
-        // Only domain=core has a specific route; all other rules fall back to other.md.
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
         try
@@ -110,12 +79,13 @@ public sealed class RunCatchAllRoutingTests
                 Path.Combine(globalRoot, "fallback.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "fallback-fixture.md")));
 
-            var layoutYaml = """
+            // Custom layout: only domain=core route, no catch-all — unmatched rules fall back to other.md
+            var layoutYaml = $"""
                 version: "1.0"
                 roots:
-                  globalRoot: "${globalRoot}"
-                  projectRoot: "${projectRoot}"
-                  targetRoot: "${globalRoot}"
+                  globalRoot: "{globalRoot}"
+                  projectRoot: "{globalRoot}"
+                  targetRoot: "{globalRoot}"
                 routes:
                   - id: core-anchor
                     scope: both
@@ -125,7 +95,7 @@ public sealed class RunCatchAllRoutingTests
                     match:
                       domain: core
                     destination:
-                      directory: "${globalRoot}"
+                      directory: "{globalRoot}"
                       fileName: "constitution"
                       extension: ".md"
                 fallback:
@@ -139,8 +109,7 @@ public sealed class RunCatchAllRoutingTests
             await File.WriteAllTextAsync(layoutPath, layoutYaml);
 
             var configPath = Path.Combine(globalRoot, "steergen.config.yaml");
-            var writer = new SteergenConfigWriter();
-            await writer.WriteAsync(configPath, new SteeringConfiguration
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
                 GlobalRoot = globalRoot,
                 Targets =
@@ -149,25 +118,17 @@ public sealed class RunCatchAllRoutingTests
                     {
                         Id = "speckit",
                         Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "speckit"),
+                        OutputPath = outputDir,
                         LayoutOverridePath = layoutPath,
                     },
                 ],
             });
 
-            await RunCommand.RunAsync(
-                configPath: configPath,
-                globalRoot: null,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var otherMdPath = Path.Combine(outputDir, "speckit", "other.md");
-            Assert.True(File.Exists(otherMdPath),
-                "other.md should exist — unmatched rules fall back to other-at-core-anchor");
-
+            // With this layout, globalRoot is the destination root; stripping it leaves just "other.md"
+            var otherMdPath = Path.Combine(outputDir, "other.md");
+            Assert.True(File.Exists(otherMdPath), "other.md should exist — unmatched rules fall back to other-at-core-anchor");
             var otherContent = await File.ReadAllTextAsync(otherMdPath);
             Assert.Contains("FALL-001", otherContent);
             Assert.Contains("FALL-002", otherContent);
@@ -183,8 +144,6 @@ public sealed class RunCatchAllRoutingTests
     [Fact]
     public async Task Run_CatchAllFixture_FallbackNeverActivatesWhenCatchAllPresent()
     {
-        // With the default layout (domain=* catch-all), no rule should fall back to other.md.
-        // Every rule gets a named destination from the catch-all route.
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
         try
@@ -193,19 +152,11 @@ public sealed class RunCatchAllRoutingTests
                 Path.Combine(globalRoot, "catch-all.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
 
-            await RunCommand.RunAsync(
-                configPath: null,
-                globalRoot: globalRoot,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var speckitDir = Path.Combine(outputDir, "speckit");
-            var otherMd = Path.Combine(speckitDir, "other.md");
-            Assert.True(!File.Exists(otherMd),
-                "other.md should NOT exist — catch-all (domain=*) routes everything, leaving nothing for fallback");
+            var otherMd = Path.Combine(outputDir, ".speckit", "memory", "other.md");
+            Assert.False(File.Exists(otherMd),
+                "other.md should NOT exist — catch-all routes everything, leaving nothing for fallback");
         }
         finally
         {
@@ -217,19 +168,14 @@ public sealed class RunCatchAllRoutingTests
     [Fact]
     public async Task WritePlan_CatchAllLayout_AllRulesResolved()
     {
-        // Direct pipeline-level test: all rules from catch-all-fixture get a resolved path.
         var source = await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md"));
         var doc = SteeringMarkdownParser.Parse(source, "catch-all.md");
         var rules = doc.Rules.ToList();
 
-        var layoutLoader = new LayoutOverrideLoader();
-        var layout = await layoutLoader.LoadAsync("speckit", null, default);
-
-        var planner = new RoutePlanner();
-        var resolutions = planner.Plan(rules, layout);
+        var layout = await new LayoutOverrideLoader().LoadAsync("speckit", null, default);
+        var resolutions = new RoutePlanner().Plan(rules, layout);
 
         Assert.All(resolutions, r =>
-            Assert.True(r.IsResolved,
-                $"Rule '{r.RuleId}' was not resolved — every rule must have a route (specific or catch-all)."));
+            Assert.True(r.IsResolved, $"Rule '{r.RuleId}' was not resolved — every rule must have a route."));
     }
 }

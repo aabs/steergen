@@ -41,7 +41,9 @@ public sealed class KiroGenerationService
             activeProfiles,
             [targetComponent],
             [targetConfig],
-            cancellationToken);
+            cancellationToken,
+            globalRoot: globalRoot,
+            projectRoot: projectRoot);
     }
 
     private static IReadOnlyList<SteeringDocument> LoadDocumentsFromDirectory(string root)

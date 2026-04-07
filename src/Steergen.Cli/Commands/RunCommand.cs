@@ -176,7 +176,7 @@ public static class RunCommand
                 {
                     Id = id,
                     Enabled = true,
-                    OutputPath = outputBase is not null ? Path.Combine(outputBase, id) : id,
+                    OutputPath = outputBase ?? id,
                 });
             }
 
@@ -184,7 +184,7 @@ public static class RunCommand
             if (outputBase is not null)
             {
                 targetConfigs = targetConfigs
-                    .Select(t => t with { OutputPath = Path.Combine(outputBase, t.Id!) })
+                    .Select(t => t with { OutputPath = outputBase })
                     .ToList();
             }
 

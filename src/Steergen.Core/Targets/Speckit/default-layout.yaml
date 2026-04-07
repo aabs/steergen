@@ -22,7 +22,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${globalRoot}/.speckit"
+      directory: "${globalRoot}/.speckit/memory"
       fileName: "constitution"
       extension: ".md"
 
@@ -34,7 +34,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${globalRoot}/.speckit"
+      directory: "${globalRoot}/.speckit/memory"
       fileName: "${domain}"
       extension: ".md"
 
@@ -61,7 +61,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${projectRoot}/.speckit"
+      directory: "${projectRoot}/.speckit/memory"
       fileName: "${domain}"
       extension: ".md"
 
@@ -71,7 +71,7 @@ fallback:
 
 purge:
   roots:
-    - "${globalRoot}/.speckit"
-    - "${projectRoot}/.speckit"
+    - "${globalRoot}/.speckit/memory"
+    - "${projectRoot}/.speckit/memory"
   globs:
     - "**/*.md"

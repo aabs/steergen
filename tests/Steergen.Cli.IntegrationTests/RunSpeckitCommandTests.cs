@@ -14,6 +14,11 @@ public sealed class RunSpeckitCommandTests
             AppContext.BaseDirectory,
             "..", "..", "..", "..", "..", "tests", "Fixtures", "RealisticGovernance"));
 
+    // SpeckitGenerationService sets OutputPath = outputDir directly,
+    // so layout produces files under outputDir/.speckit/memory/
+    private static string SpeckitMemoryDir(string outputDir) =>
+        Path.Combine(outputDir, ".speckit", "memory");
+
     [Fact]
     public async Task Run_WithRealisticFixtures_ProducesConstitutionFile()
     {
@@ -29,8 +34,9 @@ public sealed class RunSpeckitCommandTests
                 templateProvider: new EmbeddedTemplateProvider());
 
             Assert.True(result.Success, $"Generation failed: {string.Join("; ", result.Diagnostics.Select(d => d.Message))}");
-            Assert.True(File.Exists(Path.Combine(outputDir, "constitution.md")),
-                "constitution.md should be created");
+            Assert.True(
+                File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md")),
+                "constitution.md should be created under .speckit/memory/");
         }
         finally
         {
@@ -53,9 +59,9 @@ public sealed class RunSpeckitCommandTests
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            var constitutionContent = await File.ReadAllTextAsync(Path.Combine(outputDir, "constitution.md"));
+            var constitutionContent = await File.ReadAllTextAsync(
+                Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
 
-            // CORE-001..CORE-005 are core rules and should appear in constitution
             Assert.Contains("CORE-001", constitutionContent);
             Assert.Contains("CORE-002", constitutionContent);
             Assert.Contains("CORE-003", constitutionContent);
@@ -75,7 +81,6 @@ public sealed class RunSpeckitCommandTests
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-integ-{Guid.NewGuid():N}");
         try
         {
-            // Load the project steering doc to know what domains it uses
             var projectDoc = SteeringMarkdownParser.Parse(
                 await File.ReadAllTextAsync(Path.Combine(FixturesRoot, "project", "project-steering.md")),
                 "project-steering.md");
@@ -96,8 +101,9 @@ public sealed class RunSpeckitCommandTests
 
             foreach (var domain in domains)
             {
-                Assert.True(File.Exists(Path.Combine(outputDir, $"{domain}.md")),
-                    $"Expected domain module file for domain '{domain}'");
+                Assert.True(
+                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"{domain}.md")),
+                    $"Expected domain module file for domain '{domain}' under .speckit/memory/");
             }
         }
         finally
@@ -131,8 +137,8 @@ public sealed class RunSpeckitCommandTests
                 outputPath: dir2,
                 templateProvider: provider);
 
-            var files1 = Directory.EnumerateFiles(dir1).OrderBy(p => Path.GetFileName(p)).ToList();
-            var files2 = Directory.EnumerateFiles(dir2).OrderBy(p => Path.GetFileName(p)).ToList();
+            var files1 = Directory.EnumerateFiles(dir1, "*.md", SearchOption.AllDirectories).OrderBy(p => Path.GetFileName(p)).ToList();
+            var files2 = Directory.EnumerateFiles(dir2, "*.md", SearchOption.AllDirectories).OrderBy(p => Path.GetFileName(p)).ToList();
 
             Assert.Equal(files1.Count, files2.Count);
             for (var i = 0; i < files1.Count; i++)
@@ -156,7 +162,6 @@ public sealed class RunSpeckitCommandTests
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-profile-{Guid.NewGuid():N}");
         try
         {
-            // Build a synthetic corpus with profile-scoped rules
             var globalDir = Path.Combine(Path.GetTempPath(), $"speckit-global-{Guid.NewGuid():N}");
             Directory.CreateDirectory(globalDir);
             await File.WriteAllTextAsync(Path.Combine(globalDir, "constitution.md"), """
@@ -181,7 +186,8 @@ public sealed class RunSpeckitCommandTests
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            var constitution = await File.ReadAllTextAsync(Path.Combine(outputDir, "constitution.md"));
+            var constitution = await File.ReadAllTextAsync(
+                Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
             Assert.Contains("CORE-001", constitution);
             Assert.DoesNotContain("CORE-002", constitution);
         }

@@ -6,16 +6,6 @@ using Xunit;
 
 namespace Steergen.Cli.IntegrationTests;
 
-/// <summary>
-/// Integration tests for per-target layout override linkage and isolation.
-///
-/// Validates:
-/// - Override is applied only to the configured target; other targets use defaults.
-/// - Per-target override isolation: overriding speckit does not affect kiro output.
-/// - RouteResolutionResult.Source reports Merged when an override is in use.
-/// - Relative layoutOverridePath is resolved relative to the config file directory.
-/// - Invalid override path emits a diagnostic instead of crashing.
-/// </summary>
 [Collection("CliOutput")]
 public sealed class RunLayoutOverrideTests
 {
@@ -27,10 +17,7 @@ public sealed class RunLayoutOverrideTests
     private static string MakeTempDir() =>
         Directory.CreateTempSubdirectory("layout-override-test-").FullName;
 
-    /// <summary>
-    /// A single-file layout YAML that routes everything to "custom-output.md"
-    /// in the given directory.
-    /// </summary>
+    /// Routes everything to "custom-output.md" in the given directory.
     private static string SingleFileLayoutYaml(string dir) => $"""
         version: "1.0"
         roots:
@@ -67,8 +54,6 @@ public sealed class RunLayoutOverrideTests
           globs: []
         """;
 
-    // ── Override applied only to the configured target ────────────────────────
-
     [Fact]
     public async Task Run_OverrideOnSpeckit_SpeckitUsesCustomLayout()
     {
@@ -78,47 +63,31 @@ public sealed class RunLayoutOverrideTests
         {
             var overridePath = Path.Combine(workspace, "speckit-override.yaml");
             await File.WriteAllTextAsync(overridePath, SingleFileLayoutYaml(workspace));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(workspace, "mixed.md"),
+            await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
-            var writer = new SteergenConfigWriter();
-            await writer.WriteAsync(configPath, new SteeringConfiguration
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
                 GlobalRoot = workspace,
                 Targets =
                 [
                     new TargetConfiguration
                     {
-                        Id = "speckit",
-                        Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "speckit"),
+                        Id = "speckit", Enabled = true,
+                        OutputPath = outputDir,
                         LayoutOverridePath = overridePath,
                     },
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(
-                configPath: configPath,
-                globalRoot: null,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
-
-            // Custom layout should route all rules to custom-output.md
-            Assert.True(
-                File.Exists(Path.Combine(outputDir, "speckit", "custom-output.md")),
+            // Override routes to workspace/custom-output.md; stripping workspace prefix → custom-output.md under outputDir
+            Assert.True(File.Exists(Path.Combine(outputDir, "custom-output.md")),
                 "speckit should write to custom-output.md when override is active");
-
-            // Default output files (constitution.md, modules/*.md) should NOT exist
-            Assert.False(
-                File.Exists(Path.Combine(outputDir, "speckit", "constitution.md")),
+            Assert.False(File.Exists(Path.Combine(outputDir, "constitution.md")),
                 "constitution.md should not exist when custom single-file override is active");
         }
         finally
@@ -127,8 +96,6 @@ public sealed class RunLayoutOverrideTests
             if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
         }
     }
-
-    // ── Override isolation: overriding speckit does NOT affect kiro ───────────
 
     [Fact]
     public async Task Run_OverrideOnSpeckit_KiroUsesDefaultLayout()
@@ -139,60 +106,32 @@ public sealed class RunLayoutOverrideTests
         {
             var overridePath = Path.Combine(workspace, "speckit-override.yaml");
             await File.WriteAllTextAsync(overridePath, SingleFileLayoutYaml(workspace));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(workspace, "mixed.md"),
+            await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
-            var writer = new SteergenConfigWriter();
-            await writer.WriteAsync(configPath, new SteeringConfiguration
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
                 GlobalRoot = workspace,
                 Targets =
                 [
-                    new TargetConfiguration
-                    {
-                        Id = "speckit",
-                        Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "speckit"),
-                        LayoutOverridePath = overridePath,
-                    },
-                    new TargetConfiguration
-                    {
-                        Id = "kiro",
-                        Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "kiro"),
-                        LayoutOverridePath = null,
-                    },
+                    new TargetConfiguration { Id = "speckit", Enabled = true, OutputPath = outputDir, LayoutOverridePath = overridePath },
+                    new TargetConfiguration { Id = "kiro",    Enabled = true, OutputPath = outputDir, LayoutOverridePath = null },
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(
-                configPath: configPath,
-                globalRoot: null,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit", "kiro"],
-                quiet: true,
-                cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit", "kiro"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
-
-            // speckit: custom layout → custom-output.md
-            Assert.True(File.Exists(Path.Combine(outputDir, "speckit", "custom-output.md")),
+            Assert.True(File.Exists(Path.Combine(outputDir, "custom-output.md")),
                 "speckit custom-output.md should exist with override");
 
-            // kiro: default layout → should produce output using its default routing
-            var kiroDir = Path.Combine(outputDir, "kiro");
-            Assert.True(
-                Directory.Exists(kiroDir) && Directory.GetFiles(kiroDir, "*.md").Length > 0,
+            // kiro default layout → .kiro/steering/ under outputDir
+            var kiroFiles = Directory.GetFiles(Path.Combine(outputDir, ".kiro", "steering"), "*.md");
+            Assert.True(kiroFiles.Length > 0,
                 "kiro should produce .md files using the default layout (not affected by speckit override)");
-
-            // kiro should NOT have custom-output.md
-            Assert.False(
-                File.Exists(Path.Combine(kiroDir, "custom-output.md")),
-                "kiro should not have custom-output.md — override is scoped to speckit only");
+            Assert.False(File.Exists(Path.Combine(outputDir, ".kiro", "steering", "custom-output.md")),
+                "kiro should not have custom-output.md");
         }
         finally
         {
@@ -200,8 +139,6 @@ public sealed class RunLayoutOverrideTests
             if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
         }
     }
-
-    // ── Relative path resolution: relative path resolved from config dir ──────
 
     [Fact]
     public async Task Run_RelativeLayoutOverridePath_ResolvedRelativeToConfigDirectory()
@@ -212,44 +149,29 @@ public sealed class RunLayoutOverrideTests
         var outputDir = MakeTempDir();
         try
         {
-            // Place the override YAML in a subdirectory of the workspace.
-            var overridePath = Path.Combine(subDir, "my-override.yaml");
-            await File.WriteAllTextAsync(overridePath, SingleFileLayoutYaml(workspace));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(workspace, "mixed.md"),
+            await File.WriteAllTextAsync(Path.Combine(subDir, "my-override.yaml"), SingleFileLayoutYaml(workspace));
+            await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
-            var writer = new SteergenConfigWriter();
-            // Store the override path as relative to the config file directory.
-            await writer.WriteAsync(configPath, new SteeringConfiguration
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
                 GlobalRoot = workspace,
                 Targets =
                 [
                     new TargetConfiguration
                     {
-                        Id = "speckit",
-                        Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "speckit"),
-                        LayoutOverridePath = "layouts/my-override.yaml",  // relative path
+                        Id = "speckit", Enabled = true,
+                        OutputPath = outputDir,
+                        LayoutOverridePath = "layouts/my-override.yaml",
                     },
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(
-                configPath: configPath,
-                globalRoot: null,
-                projectRoot: null,
-                outputBase: outputDir,
-                explicitTargets: ["speckit"],
-                quiet: true,
-                cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
-            Assert.True(
-                File.Exists(Path.Combine(outputDir, "speckit", "custom-output.md")),
+            Assert.True(File.Exists(Path.Combine(outputDir, "custom-output.md")),
                 "Relative layoutOverridePath should be resolved from the config file directory");
         }
         finally
@@ -258,8 +180,6 @@ public sealed class RunLayoutOverrideTests
             if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
         }
     }
-
-    // ── Provenance: Merged when override is applied ───────────────────────────
 
     [Fact]
     public async Task Run_WithOverride_RouteResolutionsReportMergedProvenance()
@@ -270,41 +190,30 @@ public sealed class RunLayoutOverrideTests
         {
             var overridePath = Path.Combine(workspace, "speckit-override.yaml");
             await File.WriteAllTextAsync(overridePath, SingleFileLayoutYaml(workspace));
-
-            await File.WriteAllTextAsync(
-                Path.Combine(workspace, "mixed.md"),
+            await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
             var targetConfig = new Core.Model.TargetConfiguration
             {
-                Id = "speckit",
-                Enabled = true,
-                OutputPath = Path.Combine(outputDir, "speckit"),
-                LayoutOverridePath = overridePath,  // absolute path — no relative resolution needed here
+                Id = "speckit", Enabled = true,
+                OutputPath = outputDir,
+                LayoutOverridePath = overridePath,
             };
 
-            var pipeline = new Core.Generation.GenerationPipeline();
-            var result = await pipeline.RunAsync(
+            var result = await new Core.Generation.GenerationPipeline().RunAsync(
                 globalDocuments: LoadDocuments(workspace),
                 projectDocuments: [],
                 activeProfiles: [],
-                targets: [new Core.Targets.Speckit.SpeckitTargetComponent(new Templates.EmbeddedTemplateProvider())],
+                targets: [new Core.Targets.Speckit.SpeckitTargetComponent(new EmbeddedTemplateProvider())],
                 targetConfigs: [targetConfig],
                 cancellationToken: default);
 
             Assert.NotNull(result.RouteResolutions);
-            Assert.True(result.RouteResolutions.ContainsKey("speckit"),
-                "RouteResolutions should contain a speckit entry");
-
             var speckitResolutions = result.RouteResolutions["speckit"];
-            Assert.NotEmpty(speckitResolutions);
-
-            // All resolved results should report Merged provenance since an override was used
             var resolvedResults = speckitResolutions.Where(r => r.IsResolved).ToList();
-            Assert.True(resolvedResults.Count > 0, "At least some rules should be resolved");
+            Assert.True(resolvedResults.Count > 0);
             Assert.All(resolvedResults, r =>
-                Assert.True(
-                    r.Source == Core.Model.RouteProvenance.Merged,
+                Assert.True(r.Source == Core.Model.RouteProvenance.Merged,
                     $"Rule '{r.RuleId}' should have Source=Merged when override is active, got {r.Source}"));
         }
         finally
@@ -314,8 +223,6 @@ public sealed class RunLayoutOverrideTests
         }
     }
 
-    // ── Default provenance: Default when no override ──────────────────────────
-
     [Fact]
     public async Task Run_WithoutOverride_RouteResolutionsReportDefaultProvenance()
     {
@@ -323,37 +230,29 @@ public sealed class RunLayoutOverrideTests
         var outputDir = MakeTempDir();
         try
         {
-            await File.WriteAllTextAsync(
-                Path.Combine(workspace, "mixed.md"),
+            await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
-            var pipeline = new Core.Generation.GenerationPipeline();
-            var result = await pipeline.RunAsync(
+            var result = await new Core.Generation.GenerationPipeline().RunAsync(
                 globalDocuments: LoadDocuments(workspace),
                 projectDocuments: [],
                 activeProfiles: [],
-                targets: [new Core.Targets.Speckit.SpeckitTargetComponent(new Templates.EmbeddedTemplateProvider())],
+                targets: [new Core.Targets.Speckit.SpeckitTargetComponent(new EmbeddedTemplateProvider())],
                 targetConfigs:
                 [
                     new Core.Model.TargetConfiguration
                     {
-                        Id = "speckit",
-                        Enabled = true,
-                        OutputPath = Path.Combine(outputDir, "speckit"),
+                        Id = "speckit", Enabled = true,
+                        OutputPath = outputDir,
                         LayoutOverridePath = null,
                     }
                 ],
                 cancellationToken: default);
 
-            Assert.NotNull(result.RouteResolutions);
-            var speckitResolutions = result.RouteResolutions["speckit"];
-            var resolvedResults = speckitResolutions.Where(r => r.IsResolved).ToList();
+            var resolvedResults = result.RouteResolutions!["speckit"].Where(r => r.IsResolved).ToList();
             Assert.True(resolvedResults.Count > 0);
-
-            // No override → all resolved results should report Default provenance
             Assert.All(resolvedResults, r =>
-                Assert.True(
-                    r.Source == Core.Model.RouteProvenance.Default,
+                Assert.True(r.Source == Core.Model.RouteProvenance.Default,
                     $"Rule '{r.RuleId}' should have Source=Default when no override, got {r.Source}"));
         }
         finally

@@ -97,9 +97,6 @@ public sealed class GenerationPipeline
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
-            if (!Targets.TargetRegistry.HasDefaultLayout(target.TargetId))
-                continue;
-
             try
             {
                 var layout = await _layoutLoader.LoadAsync(
@@ -116,7 +113,11 @@ public sealed class GenerationPipeline
                 allResolutions[target.TargetId] = resolutions;
                 var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
                 var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);
-                writePlans[target.TargetId] = resolvedPlan;
+                writePlans[target.TargetId] = resolvedPlan with
+                {
+                    GlobalRoot = globalRoot,
+                    ProjectRoot = projectRoot,
+                };
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -133,7 +134,7 @@ public sealed class GenerationPipeline
             if (!configMap.TryGetValue(target.TargetId, out var config) || !config.Enabled)
                 continue;
 
-            if (writePlans.TryGetValue(target.TargetId, out var writePlan))
+            if (writePlans.TryGetValue(target.TargetId, out var writePlan) && writePlan.Files.Count > 0)
                 await target.GenerateWithPlanAsync(model, config, writePlan, cancellationToken);
             else
                 await target.GenerateAsync(model, config, cancellationToken);
