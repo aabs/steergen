@@ -108,6 +108,7 @@ public static class RunCommand
         var reporter = new MeasurementProtocolReporter(verbose || debug);
         try
         {
+            var defaultOutputPath = Directory.GetCurrentDirectory();
             SteeringConfiguration? config = null;
             if (configPath is not null)
             {
@@ -176,17 +177,13 @@ public static class RunCommand
                 {
                     Id = id,
                     Enabled = true,
-                    OutputPath = outputBase ?? id,
+                    OutputPath = outputBase ?? defaultOutputPath,
                 });
             }
 
-            // Override OutputPath if --output provided
-            if (outputBase is not null)
-            {
-                targetConfigs = targetConfigs
-                    .Select(t => t with { OutputPath = outputBase })
-                    .ToList();
-            }
+            targetConfigs = targetConfigs
+                .Select(t => t with { OutputPath = outputBase ?? t.OutputPath ?? defaultOutputPath })
+                .ToList();
 
             // Resolve relative layoutOverridePath values relative to the config file directory.
             if (configPath is not null)

@@ -18,6 +18,13 @@ public sealed class RunCatchAllRoutingTests
     private static string MakeTempDir() =>
         Directory.CreateTempSubdirectory("catchall-routing-test-").FullName;
 
+    private static async Task WriteFixtureAsync(string destinationPath, string fixtureFileName)
+    {
+        await File.WriteAllTextAsync(
+            destinationPath,
+            await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, fixtureFileName)));
+    }
+
     [Fact]
     public async Task Run_CatchAllFixture_CoreDomainRoutesBeatCatchAll()
     {
@@ -25,9 +32,7 @@ public sealed class RunCatchAllRoutingTests
         var outputDir = MakeTempDir();
         try
         {
-            await File.WriteAllTextAsync(
-                Path.Combine(globalRoot, "catch-all.md"),
-                await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
+            await WriteFixtureAsync(Path.Combine(globalRoot, "catch-all.md"), "catch-all-fixture.md");
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
@@ -49,9 +54,7 @@ public sealed class RunCatchAllRoutingTests
         var outputDir = MakeTempDir();
         try
         {
-            await File.WriteAllTextAsync(
-                Path.Combine(globalRoot, "catch-all.md"),
-                await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
+            await WriteFixtureAsync(Path.Combine(globalRoot, "catch-all.md"), "catch-all-fixture.md");
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
@@ -75,9 +78,7 @@ public sealed class RunCatchAllRoutingTests
         var outputDir = MakeTempDir();
         try
         {
-            await File.WriteAllTextAsync(
-                Path.Combine(globalRoot, "fallback.md"),
-                await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "fallback-fixture.md")));
+            await WriteFixtureAsync(Path.Combine(globalRoot, "fallback.md"), "fallback-fixture.md");
 
             // Custom layout: only domain=core route, no catch-all — unmatched rules fall back to other.md
             var layoutYaml = $"""
@@ -148,9 +149,7 @@ public sealed class RunCatchAllRoutingTests
         var outputDir = MakeTempDir();
         try
         {
-            await File.WriteAllTextAsync(
-                Path.Combine(globalRoot, "catch-all.md"),
-                await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "catch-all-fixture.md")));
+            await WriteFixtureAsync(Path.Combine(globalRoot, "catch-all.md"), "catch-all-fixture.md");
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
@@ -177,5 +176,42 @@ public sealed class RunCatchAllRoutingTests
 
         Assert.All(resolutions, r =>
             Assert.True(r.IsResolved, $"Rule '{r.RuleId}' was not resolved — every rule must have a route."));
+    }
+
+    [Fact]
+    public async Task Run_KiroCatchAllWithoutOutput_WritesToLayoutPathWithoutTargetPrefix()
+    {
+        var workspace = MakeTempDir();
+        var globalRoot = MakeTempDir();
+        try
+        {
+            await WriteFixtureAsync(Path.Combine(globalRoot, "accessibility-standards.md"), "catch-all-fixture.md");
+
+            using var scope = new CurrentDirectoryScope(workspace);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: null,
+                globalRoot: globalRoot,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: ["kiro"],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var incorrectPath = Path.Combine(workspace, "kiro", ".kiro", "steering", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath),
+                "Kiro catch-all output should be written directly under .kiro/steering when no --output is supplied.");
+            Assert.False(File.Exists(incorrectPath),
+                "Kiro catch-all output must not be nested under an extra target directory prefix.");
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+            if (Directory.Exists(globalRoot)) Directory.Delete(globalRoot, recursive: true);
+        }
     }
 }
