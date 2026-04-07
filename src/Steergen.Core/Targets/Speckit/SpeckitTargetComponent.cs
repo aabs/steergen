@@ -108,10 +108,16 @@ public sealed class SpeckitTargetComponent : ITargetComponent
 
     /// <summary>
     /// Resolves a plan path: if fully resolved (no template vars), use as-is;
-    /// otherwise fall back to outputPath combined with the plan path's filename.
+    /// otherwise preserve relative directory structure from the plan.
     /// </summary>
-    private static string ResolveOutputPath(string planPath, string outputPath) =>
-        Path.Combine(outputPath, Path.GetFileName(planPath));
+    private static string ResolveOutputPath(string planPath, string outputPath)
+    {
+        // If planPath is absolute, use it as-is (context variables already resolved by pipeline).
+        if (Path.IsPathRooted(planPath))
+            return planPath;
+        // Otherwise, combine with outputPath, preserving relative directory structure.
+        return Path.Combine(outputPath, planPath);
+    }
 
     public async Task<string> RenderConstitutionAsync(
         SpeckitConstitutionModel model,

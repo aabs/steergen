@@ -96,8 +96,14 @@ public sealed class CopilotAgentTargetComponent : ITargetComponent
         }
     }
 
-    private static string ResolveOutputPath(string planPath, string outputPath) =>
-        Path.Combine(outputPath, Path.GetFileName(planPath));
+    private static string ResolveOutputPath(string planPath, string outputPath)
+    {
+        // If planPath is absolute, use it as-is (context variables already resolved by pipeline).
+        if (Path.IsPathRooted(planPath))
+            return planPath;
+        // Otherwise, combine with outputPath, preserving relative directory structure.
+        return Path.Combine(outputPath, planPath);
+    }
 
 
     public async Task<string> RenderAsync(
