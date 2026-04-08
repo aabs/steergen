@@ -36,7 +36,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var constitutionPath = Path.Combine(outputDir, ".speckit", "memory", "constitution.md");
+            var constitutionPath = Path.Combine(outputDir, ".specify", "memory", "constitution.md");
             Assert.True(File.Exists(constitutionPath), "constitution.md must exist — domain=core route beats catch-all");
             Assert.Contains("RLAY-001", await File.ReadAllTextAsync(constitutionPath));
         }
@@ -58,7 +58,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var frontendPath = Path.Combine(outputDir, ".speckit", "memory", "frontend.md");
+            var frontendPath = Path.Combine(outputDir, ".specify", "memory", "frontend.md");
             Assert.True(File.Exists(frontendPath), "frontend.md should exist — catch-all captures domain=frontend rules");
             var content = await File.ReadAllTextAsync(frontendPath);
             Assert.Contains("RLAY-006", content);
@@ -153,7 +153,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var otherMd = Path.Combine(outputDir, ".speckit", "memory", "other.md");
+            var otherMd = Path.Combine(outputDir, ".specify", "memory", "other.md");
             Assert.False(File.Exists(otherMd),
                 "other.md should NOT exist — catch-all routes everything, leaving nothing for fallback");
         }

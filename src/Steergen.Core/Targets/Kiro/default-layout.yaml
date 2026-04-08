@@ -8,7 +8,7 @@ version: "1.0"
 roots:
   globalRoot: "${globalRoot}"
   projectRoot: "${projectRoot}"
-  targetRoot: "${projectRoot}/.kiro/steering"
+  targetRoot: "${generationRoot}/.kiro/steering"
 
 routes:
   # --- Global scope routes ---
@@ -22,7 +22,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${globalRoot}/.kiro/steering"
+      directory: "${targetRoot}"
       fileName: "${inputFileStem}"
       extension: ".md"
 
@@ -49,7 +49,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${projectRoot}/.kiro/steering"
+      directory: "${targetRoot}"
       fileName: "${inputFileStem}"
       extension: ".md"
 
@@ -61,7 +61,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${projectRoot}/.kiro/steering"
+      directory: "${targetRoot}"
       fileName: "${inputFileStem}"
       extension: ".md"
 
@@ -72,6 +72,6 @@ fallback:
 purge:
   roots:
     - "${globalRoot}/.kiro/steering"
-    - "${projectRoot}/.kiro/steering"
+    - "${targetRoot}"
   globs:
     - "**/*.md"

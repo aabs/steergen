@@ -112,7 +112,12 @@ public sealed class GenerationPipeline
                     .ToList();
                 allResolutions[target.TargetId] = resolutions;
                 var plan = _writePlanBuilder.Build(target.TargetId, resolutions);
-                var resolvedPlan = ResolveContextVariables(plan, globalRoot, projectRoot);
+                var resolvedPlan = ResolveContextVariables(
+                    plan,
+                    layout,
+                    globalRoot,
+                    projectRoot,
+                    config.OutputPath);
                 writePlans[target.TargetId] = resolvedPlan with
                 {
                     GlobalRoot = globalRoot,
@@ -172,28 +177,57 @@ public sealed class GenerationPipeline
 
     private static WritePlan ResolveContextVariables(
         WritePlan plan,
+        TargetLayoutDefinition layout,
         string? globalRoot,
-        string? projectRoot)
+        string? projectRoot,
+        string? generationRoot)
     {
-        if (globalRoot is null && projectRoot is null)
+        var context = BuildPathContext(layout, globalRoot, projectRoot, generationRoot);
+        if (context.Count == 0)
             return plan;
 
         var resolvedFiles = plan.Files
-            .Select(f => f with { Path = ResolveContextVarsInPath(f.Path, globalRoot, projectRoot) })
+            .Select(f => f with { Path = ResolveContextVarsInPath(f.Path, context) })
             .ToList();
 
         return plan with { Files = resolvedFiles };
     }
 
+    private static Dictionary<string, string> BuildPathContext(
+        TargetLayoutDefinition layout,
+        string? globalRoot,
+        string? projectRoot,
+        string? generationRoot)
+    {
+        var context = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(globalRoot)) context["globalRoot"] = globalRoot;
+        // Layout compatibility: when only a global source root is provided, projectRoot-token
+        // destinations can still resolve for targets that anchor output under ${projectRoot}.
+        if (!string.IsNullOrWhiteSpace(projectRoot))
+            context["projectRoot"] = projectRoot;
+        else if (!string.IsNullOrWhiteSpace(globalRoot))
+            context["projectRoot"] = globalRoot;
+        if (!string.IsNullOrWhiteSpace(generationRoot)) context["generationRoot"] = generationRoot;
+
+        // targetRoot can reference globalRoot/projectRoot/generationRoot and is then reused
+        // by route destinations and purge roots as ${targetRoot}.
+        if (!string.IsNullOrWhiteSpace(layout.Roots.TargetRoot))
+        {
+            var resolvedTargetRoot = ResolveContextVarsInPath(layout.Roots.TargetRoot, context);
+            if (!string.IsNullOrWhiteSpace(resolvedTargetRoot))
+                context["targetRoot"] = resolvedTargetRoot;
+        }
+
+        return context;
+    }
+
     private static string ResolveContextVarsInPath(
         string path,
-        string? globalRoot,
-        string? projectRoot)
+        IReadOnlyDictionary<string, string> context)
     {
-        if (globalRoot is not null)
-            path = path.Replace("${globalRoot}", globalRoot, StringComparison.OrdinalIgnoreCase);
-        if (projectRoot is not null)
-            path = path.Replace("${projectRoot}", projectRoot, StringComparison.OrdinalIgnoreCase);
+        foreach (var (key, value) in context)
+            path = path.Replace($"${{{key}}}", value, StringComparison.OrdinalIgnoreCase);
+
         return path;
     }
 }

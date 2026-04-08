@@ -138,7 +138,7 @@ public sealed class GenerationPipelineWritePlanTests
 
             var plannedPath = writePlan.Files[0].Path;
             Assert.Equal(
-                Path.Combine(projectRoot, ".kiro", "steering", "testing-standards.md"),
+                Path.Combine(outputPath, ".kiro", "steering", "testing-standards.md"),
                 plannedPath);
             Assert.DoesNotContain(
                 Path.Combine("kiro", ".kiro", "steering"),
@@ -204,7 +204,7 @@ public sealed class GenerationPipelineWritePlanTests
             Assert.True(result.Success);
             var plannedPath = Assert.Single(captureTarget.CapturedWritePlan!.Files).Path;
             Assert.DoesNotContain("${globalRoot}", plannedPath, StringComparison.Ordinal);
-            Assert.StartsWith(projectRoot, plannedPath, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            Assert.StartsWith(outputPath, plannedPath, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
         finally
         {

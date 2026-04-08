@@ -73,6 +73,23 @@ public sealed class PlannedOutputPathResolverTests
             result);
     }
 
+    [Fact]
+    public void Resolve_AbsolutePathAlreadyUnderOutputBase_PreservesNestedPath()
+    {
+        var outputBase = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}");
+        var planPath = Path.Combine(outputBase, ".kiro", "steering", "constitution.md");
+
+        var result = PlannedOutputPathResolver.Resolve(
+            planPath,
+            outputBase,
+            globalRoot: null,
+            projectRoot: null);
+
+        Assert.Equal(
+            Path.Combine(outputBase, ".kiro", "steering", "constitution.md"),
+            result);
+    }
+
     /// <summary>
     /// Regression test for the case where both projectRoot and the plan path are relative
     /// (e.g. projectRoot: "docs/steering" in steergen.config.yaml), causing the plan path

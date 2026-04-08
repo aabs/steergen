@@ -21,7 +21,7 @@ public sealed class RunTargetLayoutRoutingTests
     }
 
     private static string MemoryDir(string outputDir) =>
-        Path.Combine(outputDir, ".speckit", "memory");
+        Path.Combine(outputDir, ".specify", "memory");
 
     [Fact]
     public async Task Run_MixedDomainsFixture_ExitCode0()

@@ -8,7 +8,7 @@ version: "1.0"
 roots:
   globalRoot: "${globalRoot}"
   projectRoot: "${projectRoot}"
-  targetRoot: "${projectRoot}/.speckit"
+  targetRoot: "${projectRoot}/.specify"
 
 routes:
   # --- Global scope routes ---
@@ -22,7 +22,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${globalRoot}/.speckit/memory"
+      directory: "${targetRoot}/memory"
       fileName: "constitution"
       extension: ".md"
 
@@ -34,7 +34,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${globalRoot}/.speckit/memory"
+      directory: "${targetRoot}/memory"
       fileName: "${domain}"
       extension: ".md"
 
@@ -49,7 +49,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${projectRoot}/.speckit"
+      directory: "${targetRoot}/memory"
       fileName: "constitution"
       extension: ".md"
 
@@ -61,7 +61,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${projectRoot}/.speckit/memory"
+      directory: "${targetRoot}/memory"
       fileName: "${domain}"
       extension: ".md"
 
@@ -71,7 +71,6 @@ fallback:
 
 purge:
   roots:
-    - "${globalRoot}/.speckit/memory"
-    - "${projectRoot}/.speckit/memory"
+    - "${targetRoot}/memory"
   globs:
     - "**/*.md"

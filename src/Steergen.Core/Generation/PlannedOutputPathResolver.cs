@@ -23,6 +23,11 @@ public static class PlannedOutputPathResolver
                 return Path.Combine(outputPath, relativePath);
         }
 
+        // If a plan path is already rooted under outputPath (for example via ${generationRoot}),
+        // preserve its nested structure under outputPath.
+        if (TryResolveRelativeToRoot(planPath, outputPath, out var relativeToOutputBase))
+            return Path.Combine(outputPath, relativeToOutputBase);
+
         // No root matched: preserve relative paths as-is under outputPath;
         // absolute paths that match no known root fall back to filename only.
         if (!Path.IsPathRooted(planPath))

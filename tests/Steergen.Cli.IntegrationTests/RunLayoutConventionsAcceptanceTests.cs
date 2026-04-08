@@ -183,12 +183,12 @@ public sealed class RunLayoutConventionsAcceptanceTests
             await File.WriteAllTextAsync(Path.Combine(workspace, "mixed.md"),
                 await File.ReadAllTextAsync(Path.Combine(RoutingFixturesRoot, "mixed-domains-fixture.md")));
 
-            // No config, no override — RunCommand sets OutputPath = outputDir, layout routes to outputDir/.speckit/memory/
+            // No config, no override — RunCommand sets OutputPath = outputDir, layout routes to outputDir/.specify/memory/
             var exitCode = await RunCommand.RunAsync(null, workspace, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
-            Assert.True(File.Exists(Path.Combine(outputDir, ".speckit", "memory", "constitution.md")),
-                "Default layout should route domain=core rules to .speckit/memory/constitution.md");
+            Assert.True(File.Exists(Path.Combine(outputDir, ".specify", "memory", "constitution.md")),
+                "Default layout should route domain=core rules to .specify/memory/constitution.md");
         }
         finally
         {
