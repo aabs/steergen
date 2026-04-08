@@ -14,12 +14,12 @@ public sealed class KiroRenderingProperties
         fileMatchPattern: {{ file_match_pattern }}
         {{ end -}}
         ---
-        {{- for rule in rules }}
-        {{ rule.primary_text }}
-        {{ if rule.explanatory_text -}}
-        {{ rule.explanatory_text }}
+        {{ for section in sections -}}
+        ## {{ section.heading }}
+        {{ for rule in section.rules -}}
+        - {{ if rule.id }}{{ rule.id }}: {{ end }}{{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
         {{ end -}}
-        {{- end }}
+        {{ end -}}
         """;
 
     private static readonly ITemplateProvider FakeTemplates =

@@ -3,11 +3,19 @@ namespace Steergen.Core.Targets.Speckit;
 public record SpeckitConstitutionModel
 {
     public IReadOnlyList<SpeckitRuleModel> Rules { get; init; } = [];
+    public IReadOnlyList<SpeckitRuleSectionModel> Sections { get; init; } = [];
 }
 
 public record SpeckitModuleModel
 {
     public string Domain { get; init; } = "";
+    public IReadOnlyList<SpeckitRuleModel> Rules { get; init; } = [];
+    public IReadOnlyList<SpeckitRuleSectionModel> Sections { get; init; } = [];
+}
+
+public record SpeckitRuleSectionModel
+{
+    public string Heading { get; init; } = "General";
     public IReadOnlyList<SpeckitRuleModel> Rules { get; init; } = [];
 }
 

@@ -197,4 +197,33 @@ public sealed class RunSpeckitCommandTests
                 Directory.Delete(outputDir, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task Run_ConstitutionUsesCompactSectionedFormat()
+    {
+        var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-compact-{Guid.NewGuid():N}");
+        try
+        {
+            var service = new SpeckitGenerationService();
+            await service.RunAsync(
+                globalRoot: Path.Combine(FixturesRoot, "global"),
+                projectRoot: Path.Combine(FixturesRoot, "project"),
+                activeProfiles: [],
+                outputPath: outputDir,
+                templateProvider: new EmbeddedTemplateProvider());
+
+            var constitution = await File.ReadAllTextAsync(
+                Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
+
+            Assert.Contains("## Quality", constitution);
+            Assert.Contains("- CORE-001: All production code must maintain a minimum of 80% line coverage and 70% branch coverage as reported by the CI pipeline. Coverage thresholds are enforced on every pull request. New code added without accompanying tests will block merge.", constitution);
+            Assert.DoesNotContain("title:", constitution, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("**Severity**", constitution, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            if (Directory.Exists(outputDir))
+                Directory.Delete(outputDir, recursive: true);
+        }
+    }
 }

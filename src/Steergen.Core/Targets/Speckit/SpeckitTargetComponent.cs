@@ -49,13 +49,15 @@ public sealed class SpeckitTargetComponent : ITargetComponent
 
             var fileName = Path.GetFileNameWithoutExtension(resolvedPath);
             string rendered;
+            var ruleModels = ToRuleModels(rules);
 
             if (string.Equals(fileName, "constitution", StringComparison.OrdinalIgnoreCase)
                 || rules.All(r => r.Domain == "core"))
             {
                 var constitutionModel = new SpeckitConstitutionModel
                 {
-                    Rules = ToRuleModels(rules),
+                    Rules = ruleModels,
+                    Sections = BuildSections(ruleModels),
                 };
                 rendered = await RenderConstitutionAsync(constitutionModel, cancellationToken);
             }
@@ -65,7 +67,8 @@ public sealed class SpeckitTargetComponent : ITargetComponent
                 var moduleModel = new SpeckitModuleModel
                 {
                     Domain = domain,
-                    Rules = ToRuleModels(rules),
+                    Rules = ruleModels,
+                    Sections = BuildSections(ruleModels),
                 };
                 rendered = await RenderModuleAsync(moduleModel, cancellationToken);
             }
@@ -80,7 +83,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
     {
         var templateText = _templateProvider.GetTemplate("speckit", "constitution");
         var template = Template.Parse(templateText);
-        return await template.RenderAsync(model);
+        return await template.RenderAsync(EnsureSections(model));
     }
 
     public async Task<string> RenderModuleAsync(
@@ -89,7 +92,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
     {
         var templateText = _templateProvider.GetTemplate("speckit", "module");
         var template = Template.Parse(templateText);
-        return await template.RenderAsync(model);
+        return await template.RenderAsync(EnsureSections(model));
     }
 
     private static IReadOnlyList<SpeckitRuleModel> ToRuleModels(IReadOnlyList<SteeringRule> rules) =>
@@ -100,7 +103,36 @@ public sealed class SpeckitTargetComponent : ITargetComponent
             Category = r.Category,
             Deprecated = r.Deprecated,
             Supersedes = r.Supersedes,
-            PrimaryText = r.PrimaryText ?? "",
-            ExplanatoryText = r.ExplanatoryText,
+            PrimaryText = CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText),
         }).ToList();
+
+    private static SpeckitConstitutionModel EnsureSections(SpeckitConstitutionModel model)
+    {
+        if (model.Sections.Count > 0)
+        {
+            return model;
+        }
+
+        return model with { Sections = BuildSections(model.Rules) };
+    }
+
+    private static SpeckitModuleModel EnsureSections(SpeckitModuleModel model)
+    {
+        if (model.Sections.Count > 0)
+        {
+            return model;
+        }
+
+        return model with { Sections = BuildSections(model.Rules) };
+    }
+
+    private static IReadOnlyList<SpeckitRuleSectionModel> BuildSections(IReadOnlyList<SpeckitRuleModel> rules) =>
+        rules
+            .GroupBy(rule => CompactMarkdownFormatter.FormatSectionHeading(rule.Category), StringComparer.Ordinal)
+            .Select(group => new SpeckitRuleSectionModel
+            {
+                Heading = group.Key,
+                Rules = group.ToList(),
+            })
+            .ToList();
 }

@@ -14,12 +14,12 @@ public sealed class KiroTargetComponentTests
         fileMatchPattern: {{ file_match_pattern }}
         {{ end -}}
         ---
-        {{- for rule in rules }}
-        {{ rule.primary_text }}
-        {{ if rule.explanatory_text -}}
-        {{ rule.explanatory_text }}
+        {{ for section in sections -}}
+        ## {{ section.heading }}
+        {{ for rule in section.rules -}}
+        - {{ if rule.id }}{{ rule.id }}: {{ end }}{{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
         {{ end -}}
-        {{- end }}
+        {{ end -}}
         """;
 
     private static readonly ITemplateProvider FakeTemplates =
@@ -86,13 +86,17 @@ public sealed class KiroTargetComponentTests
             Inclusion = "always",
             Rules =
             [
-                new KiroRuleProseModel { PrimaryText = "Write clean code." },
-                new KiroRuleProseModel { PrimaryText = "Document all APIs." },
+                new KiroRuleProseModel { Id = "CODE-001", Category = "quality", PrimaryText = "Write clean code." },
+                new KiroRuleProseModel { Id = "API-002", Category = "api-design", PrimaryText = "Document all APIs." },
             ],
         };
 
         var output = await target.RenderDocumentAsync(model);
 
+        Assert.Contains("## Quality", output);
+        Assert.Contains("## API Design", output);
+        Assert.Contains("- CODE-001: Write clean code.", output);
+        Assert.Contains("- API-002: Document all APIs.", output);
         Assert.Contains("Write clean code.", output);
         Assert.Contains("Document all APIs.", output);
     }
@@ -115,6 +119,31 @@ public sealed class KiroTargetComponentTests
         var output = await target.RenderDocumentAsync(model);
 
         Assert.DoesNotMatch(@"\b[A-Z]+-\d{3}\b", output);
+    }
+
+    [Fact]
+    public async Task RenderDocument_StripsEmbeddedTitleLines_FromCompactOutput()
+    {
+        var target = new KiroTargetComponent(FakeTemplates);
+        var model = new KiroDocumentModel
+        {
+            Description = "Accessibility rules",
+            Inclusion = "always",
+            Rules =
+            [
+                new KiroRuleProseModel
+                {
+                    Id = "A11Y-001",
+                    Category = "accessibility",
+                    PrimaryText = "All UI components shall comply with WCAG 2.1 AA standards.",
+                },
+            ],
+        };
+
+        var output = await target.RenderDocumentAsync(model);
+
+        Assert.Contains("- A11Y-001: All UI components shall comply with WCAG 2.1 AA standards.", output);
+        Assert.DoesNotContain("title:", output, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

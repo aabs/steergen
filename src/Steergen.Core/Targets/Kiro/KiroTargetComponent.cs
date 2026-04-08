@@ -46,12 +46,14 @@ public sealed class KiroTargetComponent : ITargetComponent
 
             var description = activeRules[0].InputFileStem
                 ?? Path.GetFileNameWithoutExtension(file.Path);
+            var proseRules = ToProseModels(activeRules);
             var kiroModel = new KiroDocumentModel
             {
                 Description = description,
                 Inclusion = inclusion,
                 FileMatchPattern = fileMatchPattern,
-                Rules = ToProseModels(activeRules),
+                Rules = proseRules,
+                Sections = BuildSections(proseRules),
             };
 
             var rendered = await RenderDocumentAsync(kiroModel, cancellationToken);
@@ -69,7 +71,7 @@ public sealed class KiroTargetComponent : ITargetComponent
     {
         var templateText = _templateProvider.GetTemplate("kiro", "document");
         var template = Template.Parse(templateText);
-        return await template.RenderAsync(model);
+        return await template.RenderAsync(EnsureSections(model));
     }
 
     private static IReadOnlyList<SteeringRule> FilterRules(
@@ -88,7 +90,30 @@ public sealed class KiroTargetComponent : ITargetComponent
     private static IReadOnlyList<KiroRuleProseModel> ToProseModels(IReadOnlyList<SteeringRule> rules) =>
         rules.Select(r => new KiroRuleProseModel
         {
-            PrimaryText = r.PrimaryText ?? "",
-            ExplanatoryText = r.ExplanatoryText,
+            Id = r.Id,
+            Category = r.Category,
+            Deprecated = r.Deprecated,
+            Supersedes = r.Supersedes,
+            PrimaryText = CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText),
         }).ToList();
+
+    private static KiroDocumentModel EnsureSections(KiroDocumentModel model)
+    {
+        if (model.Sections.Count > 0)
+        {
+            return model;
+        }
+
+        return model with { Sections = BuildSections(model.Rules) };
+    }
+
+    private static IReadOnlyList<KiroRuleSectionModel> BuildSections(IReadOnlyList<KiroRuleProseModel> rules) =>
+        rules
+            .GroupBy(rule => CompactMarkdownFormatter.FormatSectionHeading(rule.Category), StringComparer.Ordinal)
+            .Select(group => new KiroRuleSectionModel
+            {
+                Heading = group.Key,
+                Rules = group.ToList(),
+            })
+            .ToList();
 }
