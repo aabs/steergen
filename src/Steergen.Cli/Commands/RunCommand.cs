@@ -124,6 +124,7 @@ public static class RunCommand
             // Resolve roots: CLI args > config file
             var resolvedGlobal = globalRoot ?? config?.GlobalRoot;
             var resolvedProject = projectRoot ?? config?.ProjectRoot;
+            var resolvedGenerationRoot = outputBase ?? config?.GenerationRoot ?? defaultOutputPath;
             var activeProfiles = config?.ActiveProfiles ?? [];
 
             if (resolvedGlobal is null && resolvedProject is null)
@@ -177,14 +178,14 @@ public static class RunCommand
                 {
                     Id = id,
                     Enabled = true,
-                    OutputPath = outputBase ?? defaultOutputPath,
+                    OutputPath = resolvedGenerationRoot,
                 });
             }
 
             // outputPath remains a legacy config field. Routed layout destinations are based on
             // the layout plan plus the CLI-selected base directory (or current directory when omitted).
             targetConfigs = targetConfigs
-                .Select(t => t with { OutputPath = outputBase ?? defaultOutputPath })
+                .Select(t => t with { OutputPath = resolvedGenerationRoot })
                 .ToList();
 
             // Resolve relative layoutOverridePath values relative to the config file directory.

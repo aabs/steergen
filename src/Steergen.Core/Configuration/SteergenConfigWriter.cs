@@ -58,6 +58,7 @@ public sealed class SteergenConfigWriter
         {
             GlobalRoot = config.GlobalRoot,
             ProjectRoot = config.ProjectRoot,
+            GenerationRoot = config.GenerationRoot,
             ActiveProfiles = config.ActiveProfiles,
             Targets = config.Targets.Select(t => new TargetConfigurationYamlOut
             {
@@ -77,6 +78,7 @@ public sealed class SteergenConfigWriter
     {
         public string? GlobalRoot { get; set; }
         public string? ProjectRoot { get; set; }
+        public string? GenerationRoot { get; set; }
         public IReadOnlyList<string>? ActiveProfiles { get; set; }
         public List<TargetConfigurationYamlOut>? Targets { get; set; }
         public IReadOnlyList<string>? RegisteredTargets { get; set; }

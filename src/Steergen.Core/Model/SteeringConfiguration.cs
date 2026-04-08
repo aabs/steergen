@@ -4,6 +4,7 @@ public record SteeringConfiguration
 {
     public string? GlobalRoot { get; init; }
     public string? ProjectRoot { get; init; }
+    public string? GenerationRoot { get; init; }
     public IReadOnlyList<string> ActiveProfiles { get; init; } = [];
     public IReadOnlyList<TargetConfiguration> Targets { get; init; } = [];
     public IReadOnlyList<string> RegisteredTargets { get; init; } = [];

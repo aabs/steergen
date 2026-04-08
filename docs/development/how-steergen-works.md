@@ -56,7 +56,7 @@ Important implementation details:
 - CLI arguments override config values for `globalRoot` and `projectRoot`.
 - Explicit `--target` values override `registeredTargets` from config.
 - Document discovery is recursive and only includes `*.md` files.
-- The current working directory is the default base output path when `--output` is omitted.
+- Output base selection order is `--output` > `generationRoot` from config > current working directory.
 - `outputPath` on target config is now treated as a legacy compatibility field; routed output location is driven by the layout plan and the selected output base.
 
 The file that owns this is [src/Steergen.Cli/Commands/RunCommand.cs](/mnt/d/dev/aabs/steergen/src/Steergen.Cli/Commands/RunCommand.cs).
@@ -262,6 +262,12 @@ Those roots can come from:
 
 - CLI arguments
 - `steergen.config.yaml`
+
+Generated output base can come from:
+
+- `--output`
+- `generationRoot` in `steergen.config.yaml`
+- current working directory (fallback)
 
 If both are absent, generation fails early.
 

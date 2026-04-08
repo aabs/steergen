@@ -71,6 +71,52 @@ steergen validate
 
 If `steergen.config.yaml` is present in the current directory, `run` and `validate` will discover it automatically.
 
+## Configuration Roots
+
+Steergen supports separate roots for source discovery and generated output:
+
+- `globalRoot`: global steering source folder
+- `projectRoot`: project steering source folder
+- `generationRoot`: base folder where routed output files are written when `--output` is not provided
+
+`steergen run` resolves output base in this order:
+
+1. `--output`
+2. `generationRoot` from `steergen.config.yaml`
+3. current working directory
+
+Example `steergen.config.yaml`:
+
+```yaml
+globalRoot: steering/global
+projectRoot: steering/project
+generationRoot: .
+registeredTargets:
+	- speckit
+	- kiro
+```
+
+## Scenario: Sources Under docs/steering, Output Under Solution Root
+
+If your steering sources live under `docs/steering` but you want generated target files rooted at the solution folder:
+
+```yaml
+globalRoot: docs/steering/global
+projectRoot: docs/steering/project
+generationRoot: .
+registeredTargets:
+	- speckit
+	- kiro
+```
+
+From the solution root, run:
+
+```bash
+steergen run
+```
+
+This keeps source discovery under `docs/steering/*` while writing routed outputs (for example `.kiro/steering/*`, `.speckit/memory/*`) relative to the solution root.
+
 ## A Few Common Examples
 
 Generate for a single target:

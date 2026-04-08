@@ -271,4 +271,52 @@ public sealed class RunCatchAllRoutingTests
             if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task Run_WithConfiguredGenerationRoot_WritesRoutedFilesRelativeToGenerationRoot()
+    {
+        var workspace = MakeTempDir();
+        var docsRoot = Path.Combine(workspace, "docs", "steering");
+        var globalRoot = Path.Combine(docsRoot, "global");
+        var projectRoot = Path.Combine(docsRoot, "project");
+        Directory.CreateDirectory(globalRoot);
+        Directory.CreateDirectory(projectRoot);
+
+        try
+        {
+            await WriteFixtureAsync(Path.Combine(globalRoot, "accessibility-standards.md"), "catch-all-fixture.md");
+
+            var configPath = Path.Combine(workspace, "steergen.config.yaml");
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
+            {
+                GlobalRoot = globalRoot,
+                ProjectRoot = projectRoot,
+                GenerationRoot = workspace,
+                RegisteredTargets = ["kiro"],
+            });
+
+            using var scope = new CurrentDirectoryScope(projectRoot);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: configPath,
+                globalRoot: null,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: [],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var incorrectPath = Path.Combine(projectRoot, ".kiro", "steering", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath));
+            Assert.False(File.Exists(incorrectPath));
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+        }
+    }
 }
