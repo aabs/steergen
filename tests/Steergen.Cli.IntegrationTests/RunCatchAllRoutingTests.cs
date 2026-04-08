@@ -319,4 +319,62 @@ public sealed class RunCatchAllRoutingTests
             if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
         }
     }
+
+    /// <summary>
+    /// Regression test: when steergen.config.yaml uses RELATIVE paths for projectRoot and
+    /// generationRoot (e.g. projectRoot: "docs/steering", generationRoot: "."), the generated
+    /// files must land under generationRoot, not nested inside projectRoot.
+    /// Previously, the relative plan path "docs/steering/.kiro/..." was not stripped of its
+    /// root prefix, causing output to be written inside the source tree.
+    /// </summary>
+    [Fact]
+    public async Task Run_WithRelativeProjectRootAndRelativeGenerationRoot_OutputDoesNotNestUnderProjectRoot()
+    {
+        var workspace = MakeTempDir();
+        var projectDir = Path.Combine(workspace, "docs", "steering");
+        Directory.CreateDirectory(projectDir);
+
+        try
+        {
+            await WriteFixtureAsync(
+                Path.Combine(projectDir, "accessibility-standards.md"),
+                "catch-all-fixture.md");
+
+            var configPath = Path.Combine(workspace, "steergen.config.yaml");
+            // Use relative paths exactly as a user would when running from the solution root.
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
+            {
+                ProjectRoot = Path.Combine("docs", "steering"),  // relative
+                GenerationRoot = ".",                             // relative — solution root
+                RegisteredTargets = ["kiro"],
+            });
+
+            // CWD = workspace (solution root), matching how the user would invoke steergen.
+            using var scope = new CurrentDirectoryScope(workspace);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: configPath,
+                globalRoot: null,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: [],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            // Output must be at <workspace>/.kiro/steering/, NOT inside docs/steering/.kiro/...
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var nestedWrongPath = Path.Combine(workspace, "docs", "steering", ".kiro", "steering", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath),
+                $"File should be at solution root .kiro/steering/, got nothing at {expectedPath}");
+            Assert.False(File.Exists(nestedWrongPath),
+                "File must not be nested under docs/steering/.kiro/ — root prefix was not stripped");
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+        }
+    }
 }

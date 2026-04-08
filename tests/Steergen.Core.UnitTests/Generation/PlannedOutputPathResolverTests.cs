@@ -72,4 +72,51 @@ public sealed class PlannedOutputPathResolverTests
             Path.Combine(outputBase, ".speckit", "memory", "constitution.md"),
             result);
     }
+
+    /// <summary>
+    /// Regression test for the case where both projectRoot and the plan path are relative
+    /// (e.g. projectRoot: "docs/steering" in steergen.config.yaml), causing the plan path
+    /// to be "docs/steering/.kiro/steering/file.md". The resolver must strip the root prefix
+    /// and rebase under outputPath rather than carrying the prefix into the output tree.
+    /// </summary>
+    [Fact]
+    public void Resolve_RelativePlanPathContainingRelativeProjectRootPrefix_StripsRootAndRebasesUnderOutputBase()
+    {
+        var outputBase = Path.Combine(Path.GetTempPath(), $"output-{Guid.NewGuid():N}");
+        var relativeProjectRoot = Path.Combine("docs", "steering");
+        // Plan path as produced when ${projectRoot} = "docs/steering" is substituted in
+        // a layout destination of "${projectRoot}/.kiro/steering/${inputFileStem}.md".
+        var relativePlanPath = Path.Combine("docs", "steering", ".kiro", "steering", "architecture.md");
+
+        // Path.GetFullPath inside TryResolveRelativeToRoot uses the process working directory.
+        // A temp sub-directory that actually exists on disk is required for GetFullPath to work
+        // correctly on all platforms.
+        var cwd = Directory.CreateTempSubdirectory("resolver-cwd-").FullName;
+        try
+        {
+            var savedDir = Directory.GetCurrentDirectory();
+            try
+            {
+                Directory.SetCurrentDirectory(cwd);
+
+                var result = PlannedOutputPathResolver.Resolve(
+                    relativePlanPath,
+                    outputBase,
+                    globalRoot: null,
+                    projectRoot: relativeProjectRoot);
+
+                Assert.Equal(
+                    Path.Combine(outputBase, ".kiro", "steering", "architecture.md"),
+                    result);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(savedDir);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(cwd)) Directory.Delete(cwd, recursive: true);
+        }
+    }
 }
