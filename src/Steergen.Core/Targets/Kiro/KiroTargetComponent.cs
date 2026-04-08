@@ -99,12 +99,12 @@ public sealed class KiroTargetComponent : ITargetComponent
 
     private static KiroDocumentModel EnsureSections(KiroDocumentModel model)
     {
-        if (model.Sections.Count > 0)
+        if (model.Sections is { Count: > 0 })
         {
             return model;
         }
 
-        return model with { Sections = BuildSections(model.Rules) };
+        return model with { Sections = BuildSections(model.Rules ?? []) };
     }
 
     private static IReadOnlyList<KiroRuleSectionModel> BuildSections(IReadOnlyList<KiroRuleProseModel> rules) =>
