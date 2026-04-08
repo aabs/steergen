@@ -108,22 +108,22 @@ public sealed class SpeckitTargetComponent : ITargetComponent
 
     private static SpeckitConstitutionModel EnsureSections(SpeckitConstitutionModel model)
     {
-        if (model.Sections.Count > 0)
+        if (model.Sections is { Count: > 0 })
         {
             return model;
         }
 
-        return model with { Sections = BuildSections(model.Rules) };
+        return model with { Sections = BuildSections(model.Rules ?? []) };
     }
 
     private static SpeckitModuleModel EnsureSections(SpeckitModuleModel model)
     {
-        if (model.Sections.Count > 0)
+        if (model.Sections is { Count: > 0 })
         {
             return model;
         }
 
-        return model with { Sections = BuildSections(model.Rules) };
+        return model with { Sections = BuildSections(model.Rules ?? []) };
     }
 
     private static IReadOnlyList<SpeckitRuleSectionModel> BuildSections(IReadOnlyList<SpeckitRuleModel> rules) =>
