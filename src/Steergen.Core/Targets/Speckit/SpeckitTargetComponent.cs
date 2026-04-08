@@ -11,7 +11,6 @@ public sealed class SpeckitTargetComponent : ITargetComponent
         new("speckit", "Speckit", "Generates Speckit Markdown artefacts: core constitution.md and domain modules.");
 
     private readonly ITemplateProvider _templateProvider;
-    private readonly Generation.CoreGuidancePartitioner _partitioner = new();
 
     public SpeckitTargetComponent(ITemplateProvider templateProvider)
     {
