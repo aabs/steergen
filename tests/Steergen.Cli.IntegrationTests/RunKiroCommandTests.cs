@@ -174,6 +174,37 @@ public sealed class RunKiroCommandTests
     }
 
     [Fact]
+    public async Task Run_OutputFiles_RenderCompactRuleLinesWithoutEmbeddedTitleMetadata()
+    {
+        var outputDir = Path.Combine(Path.GetTempPath(), $"kiro-compact-{Guid.NewGuid():N}");
+        try
+        {
+            var service = new KiroGenerationService();
+            await service.RunAsync(
+                globalRoot: Path.Combine(FixturesRoot, "global"),
+                projectRoot: Path.Combine(FixturesRoot, "project"),
+                activeProfiles: [],
+                outputPath: outputDir,
+                templateProvider: new EmbeddedTemplateProvider());
+
+            var constitutionPath = Directory
+                .EnumerateFiles(outputDir, "constitution.md", SearchOption.AllDirectories)
+                .Single();
+            var content = await File.ReadAllTextAsync(constitutionPath);
+
+            Assert.Contains("## Quality", content);
+            Assert.Contains("- CORE-001: All production code must maintain a minimum of 80% line coverage and 70% branch coverage as reported by the CI pipeline. Coverage thresholds are enforced on every pull request. New code added without accompanying tests will block merge.", content);
+            Assert.DoesNotContain("title:", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("## CORE-001", content, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(outputDir))
+                Directory.Delete(outputDir, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Run_OutputIsDeterministic_SameInputProducesSameOutput()
     {
         var dir1 = Path.Combine(Path.GetTempPath(), $"kiro-det1-{Guid.NewGuid():N}");

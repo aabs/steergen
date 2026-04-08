@@ -10,21 +10,21 @@ public sealed class SpeckitTargetComponentTests
     private static readonly ITemplateProvider FakeTemplates = new InlineTemplateProvider(
         constitutionTemplate: """
             # Constitution
-            {{- for rule in rules }}
-            ## {{ rule.id }}{{ if rule.deprecated }} *(deprecated)*{{ end }}
-            {{ if rule.supersedes }}*Supersedes: {{ rule.supersedes }}*{{ end }}
-            Severity: {{ rule.severity }}
-            {{ rule.primary_text }}
-            {{- end }}
+            {{ for section in sections -}}
+            ## {{ section.heading }}
+            {{ for rule in section.rules -}}
+            - {{ rule.id }}: {{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+            {{ end -}}
+            {{ end -}}
             """,
         moduleTemplate: """
             # Module: {{ domain }}
-            {{- for rule in rules }}
-            ## {{ rule.id }}{{ if rule.deprecated }} *(deprecated)*{{ end }}
-            {{ if rule.supersedes }}*Supersedes: {{ rule.supersedes }}*{{ end }}
-            Severity: {{ rule.severity }}
-            {{ rule.primary_text }}
-            {{- end }}
+            {{ for section in sections -}}
+            ## {{ section.heading }}
+            {{ for rule in section.rules -}}
+            - {{ rule.id }}: {{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+            {{ end -}}
+            {{ end -}}
             """);
 
     [Fact]
@@ -44,6 +44,7 @@ public sealed class SpeckitTargetComponentTests
 
         Assert.Contains("CORE-001", output);
         Assert.Contains("CORE-002", output);
+        Assert.Contains("## General", output);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public sealed class SpeckitTargetComponentTests
 
         var output = await target.RenderConstitutionAsync(model);
 
-        Assert.Contains("*(deprecated)*", output);
+        Assert.Contains("(deprecated)", output);
     }
 
     [Fact]
@@ -151,7 +152,7 @@ public sealed class SpeckitTargetComponentTests
             await target.GenerateWithPlanAsync(model, config, BuildWritePlan(model), CancellationToken.None);
 
             var content = await File.ReadAllTextAsync(Path.Combine(outputDir, "constitution.md"));
-            Assert.Contains("*(deprecated)*", content);
+            Assert.Contains("(deprecated)", content);
             Assert.Contains("CORE-001", content);
         }
         finally
@@ -159,6 +160,31 @@ public sealed class SpeckitTargetComponentTests
             if (Directory.Exists(outputDir))
                 Directory.Delete(outputDir, recursive: true);
         }
+    }
+
+    [Fact]
+    public async Task RenderConstitution_UsesCompactBulletLinesWithoutTitleMetadata()
+    {
+        var target = new SpeckitTargetComponent(FakeTemplates);
+        var model = new SpeckitConstitutionModel
+        {
+            Rules =
+            [
+                new SpeckitRuleModel
+                {
+                    Id = "A11Y-001",
+                    Category = "accessibility",
+                    PrimaryText = "All UI components shall comply with WCAG 2.1 AA standards.",
+                },
+            ],
+        };
+
+        var output = await target.RenderConstitutionAsync(model);
+
+        Assert.Contains("## Accessibility", output);
+        Assert.Contains("- A11Y-001: All UI components shall comply with WCAG 2.1 AA standards.", output);
+        Assert.DoesNotContain("title:", output, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Severity:", output, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class InlineTemplateProvider(string constitutionTemplate, string moduleTemplate) : ITemplateProvider

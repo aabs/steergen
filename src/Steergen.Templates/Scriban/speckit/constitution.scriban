@@ -1,12 +1,7 @@
 # Engineering Constitution
-{{- for rule in rules }}
-
-## {{ rule.id }}{{ if rule.deprecated }} *(deprecated)*{{ end }}
-{{ if rule.supersedes -}}
-*Supersedes: {{ rule.supersedes }}*
-
+{{ for section in sections -}}
+## {{ section.heading }}
+{{ for rule in section.rules -}}
+- {{ rule.id }}: {{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
 {{ end -}}
-**Severity**: {{ rule.severity }}{{ if rule.category }} | **Category**: {{ rule.category }}{{ end }}
-
-{{ rule.primary_text }}
-{{- end }}
+{{ end -}}
