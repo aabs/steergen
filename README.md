@@ -1,44 +1,69 @@
 # Steergen
 
-Steergen is a CLI for maintaining a single set of steering and constitution documents in your repository, then converting that corpus into the formats expected by spec-driven development tools such as Speckit and Kiro.
+**Write your AI steering docs once. Generate for every tool.**
 
-The point of the tool is to let you switch between downstream tools without having to manually reconcile multiple copies of the same guidance.
+[![Build](https://github.com/aabs/steergen/actions/workflows/ci.yml/badge.svg)](https://github.com/aabs/steergen/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/aabs.steergen.svg)](https://www.nuget.org/packages/aabs.steergen)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-The examples below are intended as a guide to using the tool in everyday work:
+Steergen is a .NET CLI tool that maintains a single set of steering and constitution documents, then generates the target-specific formats expected by tools like [Kiro](https://kiro.dev) and [Speckit](https://github.com/aabs/speckit). Change your guidance once; every downstream tool stays in sync.
 
-- initialize a repo for one or more targets
-- write steering docs in Markdown
-- run generation
-- validate or regenerate whenever the source docs change
+> For a full walkthrough — including greenfield setup, CI integration, and writing rules — see the **[Getting Started guide](docs/getting-started.md)**.
 
-For the full onboarding flow, use the Getting Started guide on the wiki:
+---
 
-- <https://github.com/aabs/steergen/wiki/Getting-Started>
+## Table of Contents
 
-## Install
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Supported Targets](#supported-targets)
+- [Command Reference](#command-reference)
+- [Configuration](#configuration)
+- [Exit Codes](#exit-codes)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## Requirements
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later
+
+---
+
+## Installation
 
 ```bash
 dotnet tool install --global aabs.steergen
 ```
 
-## Everyday Usage
+To upgrade an existing installation:
 
-Initialize a repository for the targets you want to generate:
+```bash
+dotnet tool update --global aabs.steergen
+```
+
+Verify the install:
+
+```bash
+steergen --version
+```
+
+---
+
+## Quick Start
+
+**1. Initialise a project** for the targets you want to use:
 
 ```bash
 steergen init . --target kiro --target copilot-agent
 ```
 
-That creates:
+This creates `steering/global/`, `steering/project/`, `steergen.config.yaml`, and the target-native output folders.
 
-- `steering/global/`
-- `steering/project/`
-- `steergen.config.yaml`
-- target-native output folders for the selected targets
-
-Add a steering document under `steering/global/` or `steering/project/`.
-
-Example:
+**2. Write a steering document** under `steering/project/`:
 
 ```md
 ---
@@ -48,147 +73,148 @@ title: Engineering Baseline
 
 # Engineering Baseline
 
-:::rule id="CORE-001" severity="error" category="quality" domain="core"
+:::rule id="CORE-001" severity="error" category="quality" domain="core" tags="quality,reviews"
 Prefer small, composable changes that are easy to review and easy to revert.
-:::
-
-:::rule id="CORE-002" severity="warning" category="testing" domain="core"
-Add or update automated tests when behaviour changes.
 :::
 ```
 
-Generate outputs:
+**3. Generate outputs** for all registered targets:
 
 ```bash
 steergen run
 ```
 
-Validate source documents without generating:
+**4. Validate** source documents without regenerating:
 
 ```bash
 steergen validate
 ```
 
-If `steergen.config.yaml` is present in the current directory, `run` and `validate` will discover it automatically.
+That's it. For more scenarios — shared policy collections, custom output paths, MSBuild integration, CI setup — see the **[Getting Started guide](docs/getting-started.md)**.
 
-## Configuration Roots
+---
 
-Steergen supports separate roots for source discovery and generated output:
+## Supported Targets
 
-- `globalRoot`: global steering source folder
-- `projectRoot`: project steering source folder
-- `generationRoot`: base folder where routed output files are written when `--output` is not provided
+| Target | Default output path |
+|---|---|
+| `kiro` | `.kiro/steering/` |
+| `speckit` | `.specify/memory/` |
+| `copilot-agent` | `.github/` |
+| `kiro-agent` | `.kiro/agents/` |
 
-`steergen run` resolves output base in this order:
-
-1. `--output`
-2. `generationRoot` from `steergen.config.yaml`
-3. current working directory
-
-Example `steergen.config.yaml`:
-
-```yaml
-globalRoot: steering/global
-projectRoot: steering/project
-generationRoot: .
-registeredTargets:
-	- speckit
-	- kiro
-```
-
-## Scenario: Sources Under docs/steering, Output Under Solution Root
-
-If your steering sources live under `docs/steering` but you want generated target files rooted at the solution folder:
-
-```yaml
-globalRoot: docs/steering/global
-projectRoot: docs/steering/project
-generationRoot: .
-registeredTargets:
-	- speckit
-	- kiro
-```
-
-From the solution root, run:
-
-```bash
-steergen run
-```
-
-This keeps source discovery under `docs/steering/*` while writing routed outputs (for example `.kiro/steering/*`, `.speckit/memory/*`) relative to the solution root.
-
-## A Few Common Examples
-
-Generate for a single target:
-
-```bash
-steergen run --target kiro
-```
-
-Generate under an explicit output base:
-
-```bash
-steergen run --output .steergen/out
-```
-
-Validate explicit source roots:
-
-```bash
-steergen validate --global steering/global --project steering/project
-```
-
-Inspect the resolved model as JSON:
-
-```bash
-steergen inspect --global steering/global --project steering/project
-```
-
-Add or remove registered targets later:
+Add or remove targets at any time:
 
 ```bash
 steergen target add speckit
 steergen target remove kiro
 ```
 
-## Supported Built-In Targets
+---
 
-Steergen currently includes built-in support for:
+## Command Reference
 
-- `kiro`
-- `speckit`
-- `copilot-agent`
-- `kiro-agent`
+| Command | Purpose |
+|---|---|
+| `steergen init [root] [--target <id>...]` | Bootstrap config and target folders |
+| `steergen run [options]` | Generate output files for all registered targets |
+| `steergen validate [options]` | Validate source documents; exits non-zero on errors |
+| `steergen inspect [options]` | Print the resolved steering model as JSON |
+| `steergen target add <id>` | Register a new target |
+| `steergen target remove <id>` | Unregister a target |
+| `steergen purge [options]` | Remove generated files managed by steergen |
+| `steergen update [--version <v>] [--preview]` | Update `templatePackVersion` in the config file |
 
-The exact generated folder layout is target-specific. `steergen init` bootstraps the expected target folders, and `steergen run` writes output using the selected target's built-in layout.
+**Commonly used `run` options:**
 
-## Command Summary
-
-```bash
-steergen init [project-root] [--target <id>...]
-steergen run [--config <path>] [--global <dir>] [--project <dir>] [--output <dir>] [--target <id>...]
-steergen validate [--config <path>] [--global <dir>] [--project <dir>]
-steergen inspect [--global <dir>] [--project <dir>]
-steergen target add <id>
-steergen target remove <id>
-steergen update [--version <version>] [--preview]
+```
+--config <path>     Path to steergen.config.yaml
+--global <dir>      Override globalRoot
+--project <dir>     Override projectRoot
+--output <dir>      Override generationRoot
+--target <id>       Generate for one target only (repeatable)
+--quiet             Suppress informational output
+--verbose           Show detailed output
 ```
 
-## More Detail
+---
 
-The README stays focused on basic usage. For deeper material:
+## Configuration
 
-- Getting started and setup walkthrough: <https://github.com/aabs/steergen/wiki/Getting-Started>
-- Developer guide: [docs/development/how-steergen-works.md](docs/development/how-steergen-works.md)
-- Code tour: [docs/development/end-to-end-pipeline.tour](docs/development/end-to-end-pipeline.tour)
+Steergen looks for `steergen.config.yaml` in the current directory (or the path given by `--config`).
 
-## CI Notes
+A minimal config file:
 
-For automation, the most useful commands are:
-
-```bash
-steergen validate
-steergen run --output .steergen/out
+```yaml
+globalRoot: steering/global
+projectRoot: steering/project
+generationRoot: .
+registeredTargets:
+  - kiro
+  - copilot-agent
 ```
 
-`validate` exits non-zero on document errors. `run` can write a deterministic generation manifest alongside output artefacts when an explicit output base is used.
+Key fields:
+
+| Field | Purpose |
+|---|---|
+| `globalRoot` | Source folder for organisation-wide steering docs |
+| `projectRoot` | Source folder for project-specific steering docs |
+| `generationRoot` | Base folder for all generated output |
+| `registeredTargets` | List of targets to generate by default |
+| `activeProfiles` | Profile names used to filter which rules are included |
+| `templatePackVersion` | Template pack version (managed by `steergen update`) |
+
+For full configuration options and advanced routing, see [Section 5](docs/getting-started.md#5-controlling-where-generated-files-end-up-roots) and [Section 6](docs/getting-started.md#6-controlling-which-rules-go-where-routing) of the Getting Started guide.
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Success |
+| `1` | Validation errors in source documents |
+| `2` | Configuration or I/O error |
+| `3` | Generation or purge error |
+| `5` | Output conflict (file already exists with different content) |
+
+---
+
+## Contributing
+
+Contributions are welcome. To get started locally:
+
+```bash
+git clone https://github.com/aabs/steergen.git
+cd steergen
+dotnet build
+dotnet test
+```
+
+For an overview of how the codebase is structured, see the [developer guide](docs/development/how-steergen-works.md) or load the [code tour](docs/development/end-to-end-pipeline.tour) in VS Code with the CodeTour extension.
+
+Please open an issue before submitting a pull request for significant changes.
+
+---
+
+## Troubleshooting
+
+**`steergen` not found after install**
+Ensure `~/.dotnet/tools` (Linux/macOS) or `%USERPROFILE%\.dotnet\tools` (Windows) is on your `PATH`.
+
+**No output files generated**
+Run `steergen validate` first — generation is skipped when source documents contain errors.
+
+**Generated files differ between machines**
+Check that `globalRoot` and `projectRoot` point to the same content on each machine. Use `steergen inspect` to compare the resolved model.
+
+**Something else?**
+Open an issue at <https://github.com/aabs/steergen/issues>.
+
+---
+
+## License
+
+[MIT](LICENSE)
 
