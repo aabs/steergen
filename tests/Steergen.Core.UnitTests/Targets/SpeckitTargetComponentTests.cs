@@ -13,8 +13,7 @@ public sealed class SpeckitTargetComponentTests
             {{ for section in sections -}}
             ## {{ section.heading }}
             {{ for rule in section.rules -}}
-            - {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
-            {{ rule.primary_text }}
+            - {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}: {{ rule.primary_text }}
             {{ end -}}
             {{ end -}}
             """,
@@ -23,8 +22,7 @@ public sealed class SpeckitTargetComponentTests
             {{ for section in sections -}}
             ## {{ section.heading }}
             {{ for rule in section.rules -}}
-            - {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
-            {{ rule.primary_text }}
+            - {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}: {{ rule.primary_text }}
             {{ end -}}
             {{ end -}}
             """);
@@ -184,7 +182,7 @@ public sealed class SpeckitTargetComponentTests
         var output = await target.RenderConstitutionAsync(model);
 
         Assert.Contains("## Accessibility", output);
-        Assert.Contains("- A11Y-001", output);
+        Assert.Contains("- A11Y-001: All UI components shall comply with WCAG 2.1 AA standards.", output);
         Assert.Contains("All UI components shall comply with WCAG 2.1 AA standards.", output);
         Assert.DoesNotContain("title:", output, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Severity:", output, StringComparison.OrdinalIgnoreCase);

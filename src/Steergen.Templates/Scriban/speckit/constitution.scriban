@@ -2,7 +2,6 @@
 {{ for section in sections -}}
 ## {{ section.heading }}
 {{ for rule in section.rules -}}
-- {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
-{{ rule.primary_text }}
+- {{ rule.id }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}: {{ rule.primary_text }}
 {{ end -}}
 {{ end -}}
