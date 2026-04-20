@@ -102,8 +102,8 @@ public sealed class RunSpeckitCommandTests
             foreach (var domain in domains)
             {
                 Assert.True(
-                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"{domain}.md")),
-                    $"Expected domain module file for domain '{domain}' under .specify/memory/");
+                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"project-{domain}.md")),
+                    $"Expected project domain module file for domain '{domain}' under .specify/memory/");
             }
         }
         finally
