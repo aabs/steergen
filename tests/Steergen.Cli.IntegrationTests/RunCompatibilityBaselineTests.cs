@@ -50,7 +50,7 @@ public sealed class RunCompatibilityBaselineTests
                 quiet: true,
                 cancellationToken: default);
 
-            Assert.True(File.Exists(Path.Combine(outputDir, ".speckit", "memory", "constitution.md")),
+            Assert.True(File.Exists(Path.Combine(outputDir, ".specify", "memory", "constitution.md")),
                 "constitution.md must still be produced for domain=core rules");
         }
         finally { Directory.Delete(outputDir, recursive: true); }
@@ -72,7 +72,7 @@ public sealed class RunCompatibilityBaselineTests
                 cancellationToken: default);
 
             var content = await File.ReadAllTextAsync(
-                Path.Combine(outputDir, ".speckit", "memory", "constitution.md"));
+                Path.Combine(outputDir, ".specify", "memory", "constitution.md"));
 
             Assert.Contains("CORE-001", content);
             Assert.Contains("CORE-002", content);
@@ -96,7 +96,7 @@ public sealed class RunCompatibilityBaselineTests
                 quiet: true,
                 cancellationToken: default);
 
-            var memoryDir = Path.Combine(outputDir, ".speckit", "memory");
+            var memoryDir = Path.Combine(outputDir, ".specify", "memory");
             var outputFiles = Directory.GetFiles(memoryDir, "*.md")
                 .Select(Path.GetFileName)
                 .OrderBy(f => f)
@@ -173,8 +173,8 @@ public sealed class RunCompatibilityBaselineTests
             await RunCommand.RunAsync(opts.configPath, opts.globalRoot, opts.projectRoot,
                 outputDir2, opts.explicitTargets, quiet: true, cancellationToken: default);
 
-            var memoryDir1 = Path.Combine(outputDir1, ".speckit", "memory");
-            var memoryDir2 = Path.Combine(outputDir2, ".speckit", "memory");
+            var memoryDir1 = Path.Combine(outputDir1, ".specify", "memory");
+            var memoryDir2 = Path.Combine(outputDir2, ".specify", "memory");
 
             var files1 = Directory.GetFiles(memoryDir1, "*.md").Select(Path.GetFileName).OrderBy(f => f).ToArray();
             var files2 = Directory.GetFiles(memoryDir2, "*.md").Select(Path.GetFileName).OrderBy(f => f).ToArray();

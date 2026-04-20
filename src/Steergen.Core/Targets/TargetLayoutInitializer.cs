@@ -86,7 +86,7 @@ public static class TargetLayoutInitializer
         string projectDocsRoot,
         string workspaceRoot)
     {
-        foreach (var candidate in EnumerateCandidateDirectories(layout, globalDocsRoot, projectDocsRoot))
+        foreach (var candidate in EnumerateCandidateDirectories(layout, globalDocsRoot, projectDocsRoot, workspaceRoot))
         {
             var resolved = RebaseToWorkspace(candidate, globalDocsRoot, projectDocsRoot, workspaceRoot);
             if (resolved is not null)
@@ -97,17 +97,27 @@ public static class TargetLayoutInitializer
     private static IEnumerable<string> EnumerateCandidateDirectories(
         Model.TargetLayoutDefinition layout,
         string globalDocsRoot,
-        string projectDocsRoot)
+        string projectDocsRoot,
+        string workspaceRoot)
     {
+        var resolvedTargetRoot = string.IsNullOrWhiteSpace(layout.Roots.TargetRoot)
+            ? string.Empty
+            : ResolveRootVariables(layout.Roots.TargetRoot, globalDocsRoot, projectDocsRoot, workspaceRoot, targetRoot: null);
+
         if (!string.IsNullOrWhiteSpace(layout.Roots.TargetRoot))
-            yield return ResolveRootVariables(layout.Roots.TargetRoot, globalDocsRoot, projectDocsRoot);
+            yield return resolvedTargetRoot;
 
         foreach (var route in layout.Routes)
         {
             if (string.IsNullOrWhiteSpace(route.Destination.Directory))
                 continue;
 
-            var resolved = ResolveRootVariables(route.Destination.Directory, globalDocsRoot, projectDocsRoot);
+            var resolved = ResolveRootVariables(
+                route.Destination.Directory,
+                globalDocsRoot,
+                projectDocsRoot,
+                workspaceRoot,
+                resolvedTargetRoot);
             if (!ContainsTemplateVariables(resolved))
                 yield return resolved;
         }
@@ -120,16 +130,31 @@ public static class TargetLayoutInitializer
             if (string.IsNullOrWhiteSpace(root))
                 continue;
 
-            var resolved = ResolveRootVariables(root, globalDocsRoot, projectDocsRoot);
+            var resolved = ResolveRootVariables(root, globalDocsRoot, projectDocsRoot, workspaceRoot, resolvedTargetRoot);
             if (!ContainsTemplateVariables(resolved))
                 yield return resolved;
         }
     }
 
-    private static string ResolveRootVariables(string path, string globalDocsRoot, string projectDocsRoot) =>
+    private static string ResolveRootVariables(
+        string path,
+        string globalDocsRoot,
+        string projectDocsRoot,
+        string workspaceRoot,
+        string? targetRoot)
+    {
+        var profileRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var tempRoot = Path.GetTempPath();
+
+        return
         path
             .Replace("${globalRoot}", globalDocsRoot, StringComparison.OrdinalIgnoreCase)
-            .Replace("${projectRoot}", projectDocsRoot, StringComparison.OrdinalIgnoreCase);
+            .Replace("${projectRoot}", projectDocsRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${generationRoot}", workspaceRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${profileRoot}", profileRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${tempRoot}", tempRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${targetRoot}", targetRoot ?? "${targetRoot}", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static string? RebaseToWorkspace(
         string directory,

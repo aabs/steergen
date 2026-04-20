@@ -24,6 +24,7 @@ public sealed class SteergenConfigLoader
         {
             GlobalRoot = yaml.GlobalRoot,
             ProjectRoot = yaml.ProjectRoot,
+            GenerationRoot = yaml.GenerationRoot,
             ActiveProfiles = yaml.ActiveProfiles ?? [],
             Targets = (yaml.Targets ?? [])
                 .Select(t => new TargetConfiguration
@@ -44,6 +45,7 @@ public sealed class SteergenConfigLoader
     {
         public string? GlobalRoot { get; set; }
         public string? ProjectRoot { get; set; }
+        public string? GenerationRoot { get; set; }
         public List<string>? ActiveProfiles { get; set; }
         public List<TargetConfigurationYaml>? Targets { get; set; }
         public List<string>? RegisteredTargets { get; set; }

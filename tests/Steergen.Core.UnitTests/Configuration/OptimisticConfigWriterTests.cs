@@ -18,6 +18,7 @@ public sealed class OptimisticConfigWriterTests
         {
             GlobalRoot = "/global",
             ProjectRoot = projectRoot ?? "/project",
+            GenerationRoot = "/generation",
             ActiveProfiles = ["default"],
             TemplatePackVersion = "1.0.0",
         };
@@ -60,6 +61,7 @@ public sealed class OptimisticConfigWriterTests
 
         Assert.Equal(config.GlobalRoot, loaded.GlobalRoot);
         Assert.Equal(config.ProjectRoot, loaded.ProjectRoot);
+        Assert.Equal(config.GenerationRoot, loaded.GenerationRoot);
         Assert.Equal(config.TemplatePackVersion, loaded.TemplatePackVersion);
     }
 

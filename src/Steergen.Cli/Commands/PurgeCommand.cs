@@ -223,9 +223,14 @@ public static class PurgeCommand
         string? targetRoot)
     {
         var ctx = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var profileRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var tempRoot = Path.GetTempPath();
+
         if (globalRoot is not null) ctx["globalRoot"] = globalRoot;
         if (projectRoot is not null) ctx["projectRoot"] = projectRoot;
         if (targetRoot is not null) ctx["targetRoot"] = targetRoot;
+        if (!string.IsNullOrWhiteSpace(profileRoot)) ctx["profileRoot"] = profileRoot;
+        if (!string.IsNullOrWhiteSpace(tempRoot)) ctx["tempRoot"] = tempRoot;
         return ctx;
     }
 }

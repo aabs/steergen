@@ -36,7 +36,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var constitutionPath = Path.Combine(outputDir, ".speckit", "memory", "constitution.md");
+            var constitutionPath = Path.Combine(outputDir, ".specify", "memory", "constitution.md");
             Assert.True(File.Exists(constitutionPath), "constitution.md must exist — domain=core route beats catch-all");
             Assert.Contains("RLAY-001", await File.ReadAllTextAsync(constitutionPath));
         }
@@ -58,7 +58,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var frontendPath = Path.Combine(outputDir, ".speckit", "memory", "frontend.md");
+            var frontendPath = Path.Combine(outputDir, ".specify", "memory", "frontend.md");
             Assert.True(File.Exists(frontendPath), "frontend.md should exist — catch-all captures domain=frontend rules");
             var content = await File.ReadAllTextAsync(frontendPath);
             Assert.Contains("RLAY-006", content);
@@ -153,7 +153,7 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var otherMd = Path.Combine(outputDir, ".speckit", "memory", "other.md");
+            var otherMd = Path.Combine(outputDir, ".specify", "memory", "other.md");
             Assert.False(File.Exists(otherMd),
                 "other.md should NOT exist — catch-all routes everything, leaving nothing for fallback");
         }
@@ -265,6 +265,112 @@ public sealed class RunCatchAllRoutingTests
             Assert.True(File.Exists(expectedPath));
             Assert.False(File.Exists(incorrectPrefixedPath));
             Assert.False(File.Exists(incorrectFlatPath));
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Run_WithConfiguredGenerationRoot_WritesRoutedFilesRelativeToGenerationRoot()
+    {
+        var workspace = MakeTempDir();
+        var docsRoot = Path.Combine(workspace, "docs", "steering");
+        var globalRoot = Path.Combine(docsRoot, "global");
+        var projectRoot = Path.Combine(docsRoot, "project");
+        Directory.CreateDirectory(globalRoot);
+        Directory.CreateDirectory(projectRoot);
+
+        try
+        {
+            await WriteFixtureAsync(Path.Combine(globalRoot, "accessibility-standards.md"), "catch-all-fixture.md");
+
+            var configPath = Path.Combine(workspace, "steergen.config.yaml");
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
+            {
+                GlobalRoot = globalRoot,
+                ProjectRoot = projectRoot,
+                GenerationRoot = workspace,
+                RegisteredTargets = ["kiro"],
+            });
+
+            using var scope = new CurrentDirectoryScope(projectRoot);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: configPath,
+                globalRoot: null,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: [],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var incorrectPath = Path.Combine(projectRoot, ".kiro", "steering", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath));
+            Assert.False(File.Exists(incorrectPath));
+        }
+        finally
+        {
+            if (Directory.Exists(workspace)) Directory.Delete(workspace, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Regression test: when steergen.config.yaml uses RELATIVE paths for projectRoot and
+    /// generationRoot (e.g. projectRoot: "docs/steering", generationRoot: "."), the generated
+    /// files must land under generationRoot, not nested inside projectRoot.
+    /// Previously, the relative plan path "docs/steering/.kiro/..." was not stripped of its
+    /// root prefix, causing output to be written inside the source tree.
+    /// </summary>
+    [Fact]
+    public async Task Run_WithRelativeProjectRootAndRelativeGenerationRoot_OutputDoesNotNestUnderProjectRoot()
+    {
+        var workspace = MakeTempDir();
+        var projectDir = Path.Combine(workspace, "docs", "steering");
+        Directory.CreateDirectory(projectDir);
+
+        try
+        {
+            await WriteFixtureAsync(
+                Path.Combine(projectDir, "accessibility-standards.md"),
+                "catch-all-fixture.md");
+
+            var configPath = Path.Combine(workspace, "steergen.config.yaml");
+            // Use relative paths exactly as a user would when running from the solution root.
+            await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
+            {
+                ProjectRoot = Path.Combine("docs", "steering"),  // relative
+                GenerationRoot = ".",                             // relative — solution root
+                RegisteredTargets = ["kiro"],
+            });
+
+            // CWD = workspace (solution root), matching how the user would invoke steergen.
+            using var scope = new CurrentDirectoryScope(workspace);
+
+            var exitCode = await RunCommand.RunAsync(
+                configPath: configPath,
+                globalRoot: null,
+                projectRoot: null,
+                outputBase: null,
+                explicitTargets: [],
+                quiet: true,
+                cancellationToken: default);
+
+            Assert.Equal(0, exitCode);
+
+            // Output must be at <workspace>/.kiro/steering/, NOT inside docs/steering/.kiro/...
+            var expectedPath = Path.Combine(workspace, ".kiro", "steering", "accessibility-standards.md");
+            var nestedWrongPath = Path.Combine(workspace, "docs", "steering", ".kiro", "steering", "accessibility-standards.md");
+
+            Assert.True(File.Exists(expectedPath),
+                $"File should be at solution root .kiro/steering/, got nothing at {expectedPath}");
+            Assert.False(File.Exists(nestedWrongPath),
+                "File must not be nested under docs/steering/.kiro/ — root prefix was not stripped");
         }
         finally
         {

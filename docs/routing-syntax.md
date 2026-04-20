@@ -142,6 +142,8 @@ destination:
 | `${globalRoot}`    | Configured global steering docs root. |
 | `${projectRoot}`   | Configured project steering docs root. |
 | `${targetRoot}`    | Per-target output root. |
+| `${profileRoot}`   | User profile/home directory on the current platform. |
+| `${tempRoot}`      | System temporary directory on the current platform. |
 | `${scope}`         | Rule scope (`global` or `project`). |
 | `${targetId}`      | ID of the target being generated. |
 | `${domain}`        | Rule domain value. |

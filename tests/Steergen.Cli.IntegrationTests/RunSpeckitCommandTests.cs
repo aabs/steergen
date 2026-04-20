@@ -15,9 +15,9 @@ public sealed class RunSpeckitCommandTests
             "..", "..", "..", "..", "..", "tests", "Fixtures", "RealisticGovernance"));
 
     // SpeckitGenerationService sets OutputPath = outputDir directly,
-    // so layout produces files under outputDir/.speckit/memory/
+    // so layout produces files under outputDir/.specify/memory/
     private static string SpeckitMemoryDir(string outputDir) =>
-        Path.Combine(outputDir, ".speckit", "memory");
+        Path.Combine(outputDir, ".specify", "memory");
 
     [Fact]
     public async Task Run_WithRealisticFixtures_ProducesConstitutionFile()
@@ -36,7 +36,7 @@ public sealed class RunSpeckitCommandTests
             Assert.True(result.Success, $"Generation failed: {string.Join("; ", result.Diagnostics.Select(d => d.Message))}");
             Assert.True(
                 File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md")),
-                "constitution.md should be created under .speckit/memory/");
+                "constitution.md should be created under .specify/memory/");
         }
         finally
         {
@@ -102,8 +102,8 @@ public sealed class RunSpeckitCommandTests
             foreach (var domain in domains)
             {
                 Assert.True(
-                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"{domain}.md")),
-                    $"Expected domain module file for domain '{domain}' under .speckit/memory/");
+                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"project-{domain}.md")),
+                    $"Expected project domain module file for domain '{domain}' under .specify/memory/");
             }
         }
         finally
