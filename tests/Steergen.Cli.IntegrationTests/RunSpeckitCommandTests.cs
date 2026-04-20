@@ -199,7 +199,7 @@ public sealed class RunSpeckitCommandTests
     }
 
     [Fact]
-    public async Task Run_ConstitutionUsesCompactSectionedFormat()
+    public async Task Run_ConstitutionPreservesMultilineRuleBodies()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-compact-{Guid.NewGuid():N}");
         try
@@ -216,8 +216,9 @@ public sealed class RunSpeckitCommandTests
                 Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
 
             Assert.Contains("## Quality", constitution);
-            Assert.Contains("- CORE-001: All production code must maintain a minimum of 80% line coverage and 70% branch coverage as reported by the CI pipeline. Coverage thresholds are enforced on every pull request. New code added without accompanying tests will block merge.", constitution);
-            Assert.DoesNotContain("title:", constitution, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("- CORE-001", constitution);
+            Assert.Contains("All production code must maintain a minimum of 80% line coverage", constitution);
+            Assert.Contains("title:", constitution, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("**Severity**", constitution, StringComparison.OrdinalIgnoreCase);
         }
         finally

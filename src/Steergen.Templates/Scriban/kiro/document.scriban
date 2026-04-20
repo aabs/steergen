@@ -8,6 +8,7 @@ fileMatchPattern: {{ file_match_pattern }}
 {{ for section in sections -}}
 ## {{ section.heading }}
 {{ for rule in section.rules -}}
-- {{ if rule.id }}{{ rule.id }}: {{ end }}{{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+- {{ if rule.id }}{{ rule.id }}{{ end }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+{{ rule.primary_text }}
 {{ end -}}
 {{ end -}}

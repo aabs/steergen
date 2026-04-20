@@ -34,25 +34,17 @@ internal static class CompactMarkdownFormatter
 
     public static string FormatRuleText(string? primaryText, string? explanatoryText)
     {
-        var primaryLines = ReadLines(primaryText).ToList();
-        string? title = null;
-
-        if (primaryLines.Count > 0 && primaryLines[0].StartsWith("title:", StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(primaryText) && !string.IsNullOrEmpty(explanatoryText))
         {
-            title = primaryLines[0]["title:".Length..].Trim();
-            primaryLines.RemoveAt(0);
+            return string.Concat(primaryText, "\n\n", explanatoryText);
         }
 
-        var bodyLines = primaryLines
-            .Concat(ReadLines(explanatoryText))
-            .ToList();
-
-        if (bodyLines.Count > 0)
+        if (!string.IsNullOrEmpty(primaryText))
         {
-            return string.Join(" ", bodyLines);
+            return primaryText;
         }
 
-        return title ?? string.Empty;
+        return explanatoryText ?? string.Empty;
     }
 
     public static string FormatSectionHeading(string? category)
@@ -68,22 +60,6 @@ internal static class CompactMarkdownFormatter
             .ToList();
 
         return tokens.Count == 0 ? "General" : string.Join(" ", tokens);
-    }
-
-    private static IEnumerable<string> ReadLines(string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            yield break;
-        }
-
-        foreach (var rawLine in text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (!string.IsNullOrWhiteSpace(rawLine))
-            {
-                yield return rawLine.Trim();
-            }
-        }
     }
 
     private static string FormatToken(string token)

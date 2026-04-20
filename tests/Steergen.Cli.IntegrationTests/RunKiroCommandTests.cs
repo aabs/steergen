@@ -174,7 +174,7 @@ public sealed class RunKiroCommandTests
     }
 
     [Fact]
-    public async Task Run_OutputFiles_RenderCompactRuleLinesWithoutEmbeddedTitleMetadata()
+    public async Task Run_OutputFiles_PreserveMultilineRuleBodiesWithEmbeddedTitleMetadata()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"kiro-compact-{Guid.NewGuid():N}");
         try
@@ -193,8 +193,9 @@ public sealed class RunKiroCommandTests
             var content = await File.ReadAllTextAsync(constitutionPath);
 
             Assert.Contains("## Quality", content);
-            Assert.Contains("- CORE-001: All production code must maintain a minimum of 80% line coverage and 70% branch coverage as reported by the CI pipeline. Coverage thresholds are enforced on every pull request. New code added without accompanying tests will block merge.", content);
-            Assert.DoesNotContain("title:", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("- CORE-001", content);
+            Assert.Contains("All production code must maintain a minimum of 80% line coverage", content);
+            Assert.Contains("title:", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("## CORE-001", content, StringComparison.Ordinal);
         }
         finally

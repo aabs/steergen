@@ -69,4 +69,20 @@ public sealed class SteeringParserProperties
         Assert.True(rule.Deprecated);
         Assert.Equal("Check something.", rule.PrimaryText);
     }
+
+    [Fact]
+    public void Parse_RuleBody_PreservesNewlinesAndIndentation()
+    {
+        const string body = "# Product Overview\n\n- Controller\n  - Runs workflows\n- Supervisor";
+        var content = $"""
+            :::rule id="PROD-OVERVIEW" severity="info" category="contextual-information" domain="core"
+            {body}
+            :::
+            """;
+
+        var doc = SteeringMarkdownParser.Parse(content, "test.md");
+        var rule = Assert.Single(doc.Rules);
+
+        Assert.Equal(body, rule.PrimaryText);
+    }
 }

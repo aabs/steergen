@@ -92,10 +92,14 @@ public static class SteeringMarkdownParser
                 i++;
                 while (i < lines.Length && lines[i].TrimEnd() != ":::")
                 {
-                    bodyBuilder.AppendLine(lines[i]);
+                    bodyBuilder.Append(lines[i]);
+                    if (i + 1 < lines.Length && lines[i + 1].TrimEnd() != ":::")
+                    {
+                        bodyBuilder.Append('\n');
+                    }
                     i++;
                 }
-                var primaryText = bodyBuilder.ToString().Trim();
+                var primaryText = bodyBuilder.ToString();
                 var rule = ParseRuleAttributes(attrString, primaryText);
                 rules.Add(rule);
             }

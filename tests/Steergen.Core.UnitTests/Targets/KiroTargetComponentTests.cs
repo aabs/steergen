@@ -17,7 +17,8 @@ public sealed class KiroTargetComponentTests
         {{ for section in sections -}}
         ## {{ section.heading }}
         {{ for rule in section.rules -}}
-        - {{ if rule.id }}{{ rule.id }}: {{ end }}{{ rule.primary_text }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+        - {{ if rule.id }}{{ rule.id }}{{ end }}{{ if rule.supersedes }} [Supersedes: {{ rule.supersedes }}]{{ end }}{{ if rule.deprecated }} (deprecated){{ end }}
+        {{ rule.primary_text }}
         {{ end -}}
         {{ end -}}
         """;
@@ -95,8 +96,10 @@ public sealed class KiroTargetComponentTests
 
         Assert.Contains("## Quality", output);
         Assert.Contains("## API Design", output);
-        Assert.Contains("- CODE-001: Write clean code.", output);
-        Assert.Contains("- API-002: Document all APIs.", output);
+        Assert.Contains("- CODE-001", output);
+        Assert.Contains("Write clean code.", output);
+        Assert.Contains("- API-002", output);
+        Assert.Contains("Document all APIs.", output);
         Assert.Contains("Write clean code.", output);
         Assert.Contains("Document all APIs.", output);
     }
@@ -122,7 +125,7 @@ public sealed class KiroTargetComponentTests
     }
 
     [Fact]
-    public async Task RenderDocument_StripsEmbeddedTitleLines_FromCompactOutput()
+    public async Task RenderDocument_PreservesRuleBodyWithoutInjectingMetadata()
     {
         var target = new KiroTargetComponent(FakeTemplates);
         var model = new KiroDocumentModel
@@ -142,8 +145,35 @@ public sealed class KiroTargetComponentTests
 
         var output = await target.RenderDocumentAsync(model);
 
-        Assert.Contains("- A11Y-001: All UI components shall comply with WCAG 2.1 AA standards.", output);
+        Assert.Contains("- A11Y-001", output);
+        Assert.Contains("All UI components shall comply with WCAG 2.1 AA standards.", output);
         Assert.DoesNotContain("title:", output, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RenderDocument_PreservesMultilineMarkdownRuleBody()
+    {
+        var target = new KiroTargetComponent(FakeTemplates);
+        var body = "# Product Overview\n\n- Controller\n- Supervisor\n\n## Core Concepts\n- Decision Tree";
+        var model = new KiroDocumentModel
+        {
+            Description = "Context",
+            Inclusion = "always",
+            Rules =
+            [
+                new KiroRuleProseModel
+                {
+                    Id = "PROD-OVERVIEW",
+                    Category = "contextual-information",
+                    PrimaryText = body,
+                },
+            ],
+        };
+
+        var output = await target.RenderDocumentAsync(model);
+
+        Assert.Contains("- PROD-OVERVIEW", output);
+        Assert.Contains(body, output);
     }
 
     [Fact]
