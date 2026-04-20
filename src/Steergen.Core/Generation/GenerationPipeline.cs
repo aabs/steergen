@@ -200,6 +200,9 @@ public sealed class GenerationPipeline
         string? generationRoot)
     {
         var context = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var profileRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var tempRoot = Path.GetTempPath();
+
         if (!string.IsNullOrWhiteSpace(globalRoot)) context["globalRoot"] = globalRoot;
         // Layout compatibility: when only a global source root is provided, projectRoot-token
         // destinations can still resolve for targets that anchor output under ${projectRoot}.
@@ -208,8 +211,11 @@ public sealed class GenerationPipeline
         else if (!string.IsNullOrWhiteSpace(globalRoot))
             context["projectRoot"] = globalRoot;
         if (!string.IsNullOrWhiteSpace(generationRoot)) context["generationRoot"] = generationRoot;
+        if (!string.IsNullOrWhiteSpace(profileRoot)) context["profileRoot"] = profileRoot;
+        if (!string.IsNullOrWhiteSpace(tempRoot)) context["tempRoot"] = tempRoot;
 
-        // targetRoot can reference globalRoot/projectRoot/generationRoot and is then reused
+        // targetRoot can reference globalRoot/projectRoot/generationRoot/profileRoot/tempRoot
+        // and is then reused
         // by route destinations and purge roots as ${targetRoot}.
         if (!string.IsNullOrWhiteSpace(layout.Roots.TargetRoot))
         {

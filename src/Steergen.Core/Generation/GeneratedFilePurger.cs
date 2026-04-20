@@ -170,7 +170,9 @@ public sealed class GeneratedFilePurger
         Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
 
     /// <summary>
-    /// Resolves template variables (<c>${globalRoot}</c>, <c>${projectRoot}</c>, <c>${targetRoot}</c>)
+    /// Resolves template variables
+    /// (<c>${globalRoot}</c>, <c>${projectRoot}</c>, <c>${targetRoot}</c>,
+    /// <c>${profileRoot}</c>, <c>${tempRoot}</c>)
     /// in a path template string using the provided context.
     /// </summary>
     public static string ResolvePathTemplate(string template, IReadOnlyDictionary<string, string>? context)

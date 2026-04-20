@@ -192,6 +192,27 @@ public sealed class GeneratedFilePurgerTests : IDisposable
     }
 
     [Fact]
+    public void ResolvePolicy_ResolvesProfileAndTempRootTemplates()
+    {
+        var policy = new PurgePolicyDefinition
+        {
+            Enabled = true,
+            Roots = ["${profileRoot}/.steergen", "${tempRoot}/steergen"],
+            Globs = ["*.md"],
+        };
+        var context = new Dictionary<string, string>
+        {
+            ["profileRoot"] = "/home/test-user",
+            ["tempRoot"] = "/tmp",
+        };
+
+        var resolved = GeneratedFilePurger.ResolvePolicy(policy, context);
+
+        Assert.Equal("/home/test-user/.steergen", resolved.Roots[0]);
+        Assert.Equal("/tmp/steergen", resolved.Roots[1]);
+    }
+
+    [Fact]
     public void ResolvePolicy_NullContext_LeavesTemplatesUnchanged()
     {
         var policy = new PurgePolicyDefinition

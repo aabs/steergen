@@ -97,6 +97,8 @@ public sealed class RoutePathSafetyTests
     [InlineData("rules/security")]
     [InlineData("")]
     [InlineData("${targetRoot}/rules")]
+    [InlineData("${profileRoot}/rules")]
+    [InlineData("${tempRoot}/rules")]
     public void Validate_ValidRelativeDirectory_NoPathError(string directory)
     {
         var layout = MakeLayout(CoreRoute(directory, "core.md"));

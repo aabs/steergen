@@ -8,7 +8,7 @@ version: "1.0"
 roots:
   globalRoot: "${globalRoot}"
   projectRoot: "${projectRoot}"
-  targetRoot: "${projectRoot}/.specify"
+  targetRoot: "${generationRoot}/.specify/memory"
 
 routes:
   # --- Global scope routes ---
@@ -22,7 +22,7 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${targetRoot}/memory"
+      directory: "${targetRoot}"
       fileName: "constitution"
       extension: ".md"
 
@@ -34,7 +34,7 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${targetRoot}/memory"
+      directory: "${targetRoot}"
       fileName: "${domain}"
       extension: ".md"
 
@@ -49,8 +49,8 @@ routes:
     match:
       domain: core
     destination:
-      directory: "${targetRoot}/memory"
-      fileName: "constitution"
+      directory: "${targetRoot}"
+      fileName: "project-constitution"
       extension: ".md"
 
   # Project domain module: one file per domain for non-core project rules
@@ -61,8 +61,8 @@ routes:
     match:
       domain: "*"
     destination:
-      directory: "${targetRoot}/memory"
-      fileName: "${domain}"
+      directory: "${targetRoot}"
+      fileName: "project-${domain}"
       extension: ".md"
 
 fallback:
@@ -71,6 +71,6 @@ fallback:
 
 purge:
   roots:
-    - "${targetRoot}/memory"
+    - "${targetRoot}"
   globs:
     - "**/*.md"

@@ -71,7 +71,6 @@ fallback:
 
 purge:
   roots:
-    - "${globalRoot}/.kiro/steering"
     - "${targetRoot}"
   globs:
     - "**/*.md"

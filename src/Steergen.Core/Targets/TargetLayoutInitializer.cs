@@ -141,12 +141,20 @@ public static class TargetLayoutInitializer
         string globalDocsRoot,
         string projectDocsRoot,
         string workspaceRoot,
-        string? targetRoot) =>
+        string? targetRoot)
+    {
+        var profileRoot = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var tempRoot = Path.GetTempPath();
+
+        return
         path
             .Replace("${globalRoot}", globalDocsRoot, StringComparison.OrdinalIgnoreCase)
             .Replace("${projectRoot}", projectDocsRoot, StringComparison.OrdinalIgnoreCase)
             .Replace("${generationRoot}", workspaceRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${profileRoot}", profileRoot, StringComparison.OrdinalIgnoreCase)
+            .Replace("${tempRoot}", tempRoot, StringComparison.OrdinalIgnoreCase)
             .Replace("${targetRoot}", targetRoot ?? "${targetRoot}", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static string? RebaseToWorkspace(
         string directory,
