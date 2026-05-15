@@ -192,15 +192,15 @@ public sealed class KiroTargetComponentTests
                         SourcePath = "test-doc.md",
                         Rules =
                         [
-                            new SteeringRule { Id = "R-001", Severity = "error", PrimaryText = "Active rule." },
-                            new SteeringRule { Id = "R-002", Severity = "warning", PrimaryText = "Deprecated rule.", Deprecated = true },
+                            new SteeringRule { Id = "R-001", Mandatory = true, PrimaryText = "Active rule." },
+                            new SteeringRule { Id = "R-002", PrimaryText = "Deprecated rule.", Deprecated = true },
                         ],
                     },
                 ],
                 Rules =
                 [
-                    new SteeringRule { Id = "R-001", Severity = "error", PrimaryText = "Active rule.", InputFileStem = "test-doc" },
-                    new SteeringRule { Id = "R-002", Severity = "warning", PrimaryText = "Deprecated rule.", Deprecated = true, InputFileStem = "test-doc" },
+                    new SteeringRule { Id = "R-001", Mandatory = true, PrimaryText = "Active rule.", InputFileStem = "test-doc" },
+                    new SteeringRule { Id = "R-002", PrimaryText = "Deprecated rule.", Deprecated = true, InputFileStem = "test-doc" },
                 ],
                 ActiveProfiles = [],
             };

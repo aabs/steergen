@@ -17,8 +17,8 @@
 #       # no layoutOverridePath — uses built-in default
 #
 # This fixture (used for the speckit target in mixed-scope scenarios) routes
-# domain=core to constitution.md, domain=security to security.md, and catches
-# all other domains via a category-bucketed catch-all.
+# category=core to constitution.md, category=security to security.md, and catches
+# all other categories via a category-bucketed catch-all.
 version: "1.0"
 
 roots:
@@ -33,7 +33,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "constitution"
@@ -44,7 +44,7 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "security"
@@ -56,7 +56,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "constitution"
@@ -67,7 +67,7 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "security"
@@ -84,15 +84,15 @@ routes:
       fileName: "${category}-rules"
       extension: ".md"
 
-  - id: domain-catch-all-project
+  - id: catch-all-project
     scope: project
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${projectRoot}/.speckit"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
 fallback:

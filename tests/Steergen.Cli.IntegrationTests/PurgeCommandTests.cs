@@ -33,97 +33,111 @@ public sealed class PurgeCommandTests : IDisposable
         return dir;
     }
 
-    private static string MakePurgeLayoutYaml(string purgeRoot) => $"""
-        version: "1.0"
-        roots:
-          globalRoot: "{purgeRoot}"
-          projectRoot: "{purgeRoot}"
-          targetRoot: "{purgeRoot}"
-        routes:
-          - id: core-anchor
-            scope: both
-            explicit: true
-            anchor: core
-            order: 10
-            match:
-              domain: core
-            destination:
-              directory: "{purgeRoot}"
-              fileName: "constitution"
-              extension: ".md"
-          - id: catch-all
-            scope: both
-            explicit: false
-            order: 99
-            match:
-              domain: "*"
-            destination:
-              directory: "{purgeRoot}"
-              fileName: "other"
-              extension: ".md"
-        fallback:
-          mode: other-at-core-anchor
-          fileBaseName: other
-        purge:
-          enabled: true
-          roots:
-            - "{purgeRoot}"
-          globs:
-            - "*.md"
-        """;
+    private static string MakePurgeLayoutYaml(string purgeRoot)
+    {
+        var root = purgeRoot.Replace("\\", "/");
+        return $"""
+            version: "1.0"
+            roots:
+              globalRoot: "{root}"
+              projectRoot: "{root}"
+              targetRoot: "{root}"
+            routes:
+              - id: core-anchor
+                scope: both
+                explicit: true
+                anchor: core
+                order: 10
+                match:
+                  category: core
+                destination:
+                  directory: "{root}"
+                  fileName: "constitution"
+                  extension: ".md"
+              - id: catch-all
+                scope: both
+                explicit: false
+                order: 99
+                match:
+                  category: "*"
+                destination:
+                  directory: "{root}"
+                  fileName: "other"
+                  extension: ".md"
+            fallback:
+              mode: other-at-core-anchor
+              fileBaseName: other
+            purge:
+              enabled: true
+              roots:
+                - "{root}"
+              globs:
+                - "*.md"
+            """;
+    }
 
-    private static string MakeNoGlobLayoutYaml(string purgeRoot) => $"""
-        version: "1.0"
-        roots:
-          globalRoot: "{purgeRoot}"
-          projectRoot: "{purgeRoot}"
-          targetRoot: "{purgeRoot}"
-        routes:
-          - id: core-anchor
-            scope: both
-            explicit: true
-            anchor: core
-            order: 10
-            match:
-              domain: core
-            destination:
-              directory: "{purgeRoot}"
-              fileName: "constitution"
-              extension: ".md"
-          - id: catch-all
-            scope: both
-            explicit: false
-            order: 99
-            match:
-              domain: "*"
-            destination:
-              directory: "{purgeRoot}"
-              fileName: "other"
-              extension: ".md"
-        fallback:
-          mode: other-at-core-anchor
-          fileBaseName: other
-        purge:
-          enabled: true
-          roots:
-            - "{purgeRoot}"
-          globs: []
-        """;
+    private static string MakeNoGlobLayoutYaml(string purgeRoot)
+    {
+        var root = purgeRoot.Replace("\\", "/");
+        return $"""
+            version: "1.0"
+            roots:
+              globalRoot: "{root}"
+              projectRoot: "{root}"
+              targetRoot: "{root}"
+            routes:
+              - id: core-anchor
+                scope: both
+                explicit: true
+                anchor: core
+                order: 10
+                match:
+                  category: core
+                destination:
+                  directory: "{root}"
+                  fileName: "constitution"
+                  extension: ".md"
+              - id: catch-all
+                scope: both
+                explicit: false
+                order: 99
+                match:
+                  category: "*"
+                destination:
+                  directory: "{root}"
+                  fileName: "other"
+                  extension: ".md"
+            fallback:
+              mode: other-at-core-anchor
+              fileBaseName: other
+            purge:
+              enabled: true
+              roots:
+                - "{root}"
+              globs: []
+            """;
+    }
 
     private static string MakeConfigYaml(
         string targetId,
         string globalRoot,
         string outputPath,
-        string overridePath) => $"""
-        globalRoot: "{globalRoot}"
-        registeredTargets:
-          - {targetId}
-        targets:
-          - id: {targetId}
-            enabled: true
-            outputPath: "{outputPath}"
-            layoutOverridePath: "{overridePath}"
-        """;
+        string overridePath)
+    {
+        var gRoot = globalRoot.Replace("\\", "/");
+        var oPath = outputPath.Replace("\\", "/");
+        var ovPath = overridePath.Replace("\\", "/");
+        return $"""
+            globalRoot: "{gRoot}"
+            registeredTargets:
+              - {targetId}
+            targets:
+              - id: {targetId}
+                enabled: true
+                outputPath: "{oPath}"
+                layoutOverridePath: "{ovPath}"
+            """;
+    }
 
     // ── Purge removes matching files ─────────────────────────────────────────
 
@@ -268,19 +282,19 @@ public sealed class PurgeCommandTests : IDisposable
         await File.WriteAllTextAsync(kiroOverridePath, MakePurgeLayoutYaml(kiroRoot));
 
         var configYaml = $"""
-            globalRoot: "{globalRoot}"
+            globalRoot: "{globalRoot.Replace("\\", "/")}"
             registeredTargets:
               - speckit
               - kiro
             targets:
               - id: speckit
                 enabled: true
-                outputPath: "{speckitRoot}"
-                layoutOverridePath: "{speckitOverridePath}"
+                outputPath: "{speckitRoot.Replace("\\", "/")}"
+                layoutOverridePath: "{speckitOverridePath.Replace("\\", "/")}"
               - id: kiro
                 enabled: true
-                outputPath: "{kiroRoot}"
-                layoutOverridePath: "{kiroOverridePath}"
+                outputPath: "{kiroRoot.Replace("\\", "/")}"
+                layoutOverridePath: "{kiroOverridePath.Replace("\\", "/")}"
             """;
         var configPath = Path.Combine(configDir, "steergen.config.yaml");
         await File.WriteAllTextAsync(configPath, configYaml);

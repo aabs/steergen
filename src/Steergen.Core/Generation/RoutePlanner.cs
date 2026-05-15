@@ -73,10 +73,10 @@ public sealed class RoutePlanner
     private static IReadOnlyDictionary<string, string> BuildRuleVariables(SteeringRule rule) =>
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["domain"] = rule.Domain ?? "core",
+            ["domain"] = "",       // legacy — always empty
             ["category"] = rule.Category ?? "",
-            ["severity"] = rule.Severity ?? "info",
-            ["profile"] = rule.Profile ?? "",
+            ["severity"] = "",     // legacy — always empty
+            ["profile"] = "",      // legacy — always empty
             ["ruleId"] = rule.Id ?? "",
         };
 }

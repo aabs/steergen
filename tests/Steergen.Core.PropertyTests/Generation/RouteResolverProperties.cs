@@ -177,15 +177,15 @@ public sealed class RouteResolverProperties
             Explicit = isExplicit,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Domain = [domain] },
+            Match = new RouteMatchExpression { Category = [domain] },
             Destination = new DestinationTemplate
             {
-                Directory = "output/${domain}",
+                Directory = "output/${category}",
                 FileName = "rules",
                 Extension = ".md",
             },
         };
 
     private static SteeringRule MakeRule(string id, string domain) =>
-        new() { Id = id, Domain = domain, Severity = "info" };
+        new() { Id = id, Category = domain };
 }

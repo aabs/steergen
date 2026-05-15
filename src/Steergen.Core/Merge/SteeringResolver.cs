@@ -54,7 +54,6 @@ public sealed class SteeringResolver
         }
 
         var filteredRules = ruleMap.Values
-            .Where(r => profiles.Count == 0 || r.Profile is null || profiles.Contains(r.Profile))
             .OrderBy(r => r.Id, StringComparer.Ordinal)
             .ToList();
 

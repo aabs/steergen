@@ -9,8 +9,8 @@
 #       enabled: true
 #       layoutOverridePath: layouts/workspace-local-layout.yaml  # relative to config file
 #
-# This fixture routes domain=core rules to constitution.md (global and project), routes
-# known domain-specific rules to domain modules, and catches unknown domains via catch-all.
+# This fixture routes category=core rules to constitution.md (global and project), routes
+# known category-specific rules to category modules, and catches unknown categories via catch-all.
 version: "1.0"
 
 roots:
@@ -25,7 +25,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "constitution"
@@ -36,7 +36,7 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "security"
@@ -47,10 +47,10 @@ routes:
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${globalRoot}/.speckit"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
   - id: core-project
@@ -59,7 +59,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "constitution"
@@ -70,7 +70,7 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "security"
@@ -81,10 +81,10 @@ routes:
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
-      directory: "${projectRoot}/.speckit/${domain}"
-      fileName: "${domain}-rules"
+      directory: "${projectRoot}/.speckit/${category}"
+      fileName: "${category}-rules"
       extension: ".md"
 
 fallback:

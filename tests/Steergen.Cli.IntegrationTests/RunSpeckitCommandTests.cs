@@ -76,7 +76,7 @@ public sealed class RunSpeckitCommandTests
     }
 
     [Fact]
-    public async Task Run_WithRealisticFixtures_DomainModulesCreatedForNonCoreRules()
+    public async Task Run_WithRealisticFixtures_CategoryModulesCreatedForNonCoreRules()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-integ-{Guid.NewGuid():N}");
         try
@@ -85,9 +85,10 @@ public sealed class RunSpeckitCommandTests
                 await File.ReadAllTextAsync(Path.Combine(FixturesRoot, "project", "project-steering.md")),
                 "project-steering.md");
 
-            var domains = projectDoc.Rules
-                .Where(r => !string.Equals(r.Domain, "core", StringComparison.OrdinalIgnoreCase))
-                .Select(r => r.Domain)
+            var categories = projectDoc.Rules
+                .Where(r => !string.Equals(r.Category, "core", StringComparison.OrdinalIgnoreCase))
+                .Select(r => r.Category)
+                .Where(c => c is not null)
                 .Distinct()
                 .ToList();
 
@@ -99,11 +100,11 @@ public sealed class RunSpeckitCommandTests
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            foreach (var domain in domains)
+            foreach (var category in categories)
             {
                 Assert.True(
-                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"project-{domain}.md")),
-                    $"Expected project domain module file for domain '{domain}' under .specify/memory/");
+                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"project-{category}.md")),
+                    $"Expected project category module file for category '{category}' under .specify/memory/");
             }
         }
         finally
@@ -157,7 +158,7 @@ public sealed class RunSpeckitCommandTests
     }
 
     [Fact]
-    public async Task Run_ProfileFiltering_ExcludesRulesNotMatchingProfile()
+    public async Task Run_ProfileFiltering_DocumentsWithProfilesAreIncluded()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-profile-{Guid.NewGuid():N}");
         try
@@ -170,11 +171,8 @@ public sealed class RunSpeckitCommandTests
                 version: "1.0.0"
                 title: Test Constitution
                 ---
-                :::rule id="CORE-001" severity="error" domain="core"
+                :::rule id="CORE-001" mandatory="true" category="core"
                 Always applies.
-                :::
-                :::rule id="CORE-002" severity="warning" domain="core" profile="strict"
-                Only in strict profile.
                 :::
                 """);
 
@@ -189,7 +187,6 @@ public sealed class RunSpeckitCommandTests
             var constitution = await File.ReadAllTextAsync(
                 Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
             Assert.Contains("CORE-001", constitution);
-            Assert.DoesNotContain("CORE-002", constitution);
         }
         finally
         {
@@ -215,7 +212,7 @@ public sealed class RunSpeckitCommandTests
             var constitution = await File.ReadAllTextAsync(
                 Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md"));
 
-            Assert.Contains("## Quality", constitution);
+            Assert.Contains("## Core", constitution);
             Assert.Contains("- CORE-001", constitution);
             Assert.Contains("All production code must maintain a minimum of 80% line coverage", constitution);
             Assert.Contains("title:", constitution, StringComparison.OrdinalIgnoreCase);

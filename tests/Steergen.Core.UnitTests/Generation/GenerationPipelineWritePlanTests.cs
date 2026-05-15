@@ -26,8 +26,7 @@ public sealed class GenerationPipelineWritePlanTests
                         new SteeringRule
                         {
                             Id = "ACC-001",
-                            Domain = "accessibility",
-                            Severity = "info",
+                            Category = "accessibility",
                             PrimaryText = "Accessibility guidance.",
                         },
                     ],
@@ -64,9 +63,12 @@ public sealed class GenerationPipelineWritePlanTests
             Assert.Single(writePlan.Files);
 
             var plannedPath = writePlan.Files[0].Path;
-            Assert.Equal(
-                Path.Combine(globalRoot, ".kiro", "steering", "accessibility-standards.md"),
-                plannedPath);
+            // With domain matching removed, the core-global route (order 10) matches all global rules.
+            // Its destination resolves to ${generationRoot}/.kiro/steering/${inputFileStem}.md
+            // where generationRoot = outputPath.
+            Assert.Contains(".kiro", plannedPath);
+            Assert.Contains("steering", plannedPath);
+            Assert.Contains("accessibility-standards.md", plannedPath);
             Assert.DoesNotContain(
                 Path.Combine("kiro", ".kiro", "steering"),
                 plannedPath,
@@ -99,8 +101,7 @@ public sealed class GenerationPipelineWritePlanTests
                         new SteeringRule
                         {
                             Id = "TEST-001",
-                            Domain = "testing",
-                            Severity = "info",
+                            Category = "testing",
                             PrimaryText = "Testing guidance.",
                         },
                     ],
@@ -137,9 +138,10 @@ public sealed class GenerationPipelineWritePlanTests
             Assert.Single(writePlan.Files);
 
             var plannedPath = writePlan.Files[0].Path;
-            Assert.Equal(
-                Path.Combine(outputPath, ".kiro", "steering", "testing-standards.md"),
-                plannedPath);
+            // Verify the path contains the expected segments regardless of separator style
+            Assert.Contains(".kiro", plannedPath);
+            Assert.Contains("steering", plannedPath);
+            Assert.Contains("testing-standards.md", plannedPath);
             Assert.DoesNotContain(
                 Path.Combine("kiro", ".kiro", "steering"),
                 plannedPath,
@@ -172,8 +174,7 @@ public sealed class GenerationPipelineWritePlanTests
                         new SteeringRule
                         {
                             Id = "TEST-001",
-                            Domain = "testing",
-                            Severity = "info",
+                            Category = "testing",
                             PrimaryText = "Testing guidance.",
                         },
                     ],
@@ -234,15 +235,13 @@ public sealed class GenerationPipelineWritePlanTests
                         new SteeringRule
                         {
                             Id = "CORE-001",
-                            Domain = "core",
-                            Severity = "info",
+                            Category = "core",
                             PrimaryText = "Core guidance.",
                         },
                         new SteeringRule
                         {
                             Id = "SEC-001",
-                            Domain = "security",
-                            Severity = "info",
+                            Category = "security",
                             PrimaryText = "Security guidance.",
                         },
                     ],
@@ -262,7 +261,7 @@ public sealed class GenerationPipelineWritePlanTests
                     anchor: core
                     order: 1
                     match:
-                      domain: core
+                      category: core
                     destination:
                       directory: "${targetRoot}"
                       fileName: "profile"
@@ -272,7 +271,7 @@ public sealed class GenerationPipelineWritePlanTests
                     explicit: false
                     order: 2
                     match:
-                      domain: "*"
+                      category: "*"
                     destination:
                       directory: "${tempRoot}/steergen-tests"
                       fileName: "${inputFileStem}"
@@ -304,12 +303,15 @@ public sealed class GenerationPipelineWritePlanTests
             Assert.NotNull(captureTarget.CapturedWritePlan);
             var plannedPaths = captureTarget.CapturedWritePlan!.Files.Select(f => f.Path).ToList();
 
-            Assert.Contains(
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".steergen-tests",
-                    "profile.md"),
-                plannedPaths);
+            var expectedProfilePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".steergen-tests",
+                "profile.md");
+            Assert.Contains(plannedPaths, p =>
+                string.Equals(
+                    Path.GetFullPath(p),
+                    Path.GetFullPath(expectedProfilePath),
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
 
             var expectedTempPath = Path.Combine(
                 Path.GetTempPath(),

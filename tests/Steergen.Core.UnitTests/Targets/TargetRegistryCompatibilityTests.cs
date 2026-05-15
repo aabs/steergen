@@ -18,8 +18,7 @@ public sealed class TargetRegistryCompatibilityTests
                 .Select(i => new SteeringRule
                 {
                     Id = $"RULE-{i:D3}",
-                    Severity = "error",
-                    Domain = "core",
+                    Category = "core",
                     PrimaryText = $"Rule {i} prose text.",
                 })
                 .ToList(),
@@ -87,9 +86,9 @@ public sealed class TargetRegistryCompatibilityTests
             {
                 Rules =
                 [
-                    new SteeringRule { Id = "ZZRULE", Severity = "error", Domain = "core", PrimaryText = "Z rule." },
-                    new SteeringRule { Id = "AARULE", Severity = "error", Domain = "core", PrimaryText = "A rule." },
-                    new SteeringRule { Id = "MMRULE", Severity = "error", Domain = "core", PrimaryText = "M rule." },
+                    new SteeringRule { Id = "ZZRULE", Category = "core", PrimaryText = "Z rule." },
+                    new SteeringRule { Id = "AARULE", Category = "core", PrimaryText = "A rule." },
+                    new SteeringRule { Id = "MMRULE", Category = "core", PrimaryText = "M rule." },
                 ],
             };
 
@@ -122,8 +121,8 @@ public sealed class TargetRegistryCompatibilityTests
             {
                 Rules =
                 [
-                    new SteeringRule { Id = "ACTIVE-001", Severity = "error", Domain = "core", PrimaryText = "Active." },
-                    new SteeringRule { Id = "OLD-001", Severity = "error", Domain = "core", PrimaryText = "Old.", Deprecated = true },
+                    new SteeringRule { Id = "ACTIVE-001", Category = "core", PrimaryText = "Active." },
+                    new SteeringRule { Id = "OLD-001", Category = "core", PrimaryText = "Old.", Deprecated = true },
                 ],
             };
 
@@ -245,9 +244,9 @@ public sealed class TargetRegistryCompatibilityTests
     {
         TargetId = "speckit",
         Files = model.Rules
-            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+            .GroupBy(rule => string.Equals(rule.Category, "core", StringComparison.OrdinalIgnoreCase)
                 ? "constitution.md"
-                : $"{rule.Domain}.md",
+                : $"{rule.Category}.md",
                 StringComparer.OrdinalIgnoreCase)
             .Select(group => new WritePlanFile
             {

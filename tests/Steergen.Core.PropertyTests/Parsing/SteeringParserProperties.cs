@@ -12,7 +12,7 @@ public sealed class SteeringParserProperties
         foreach (var id in ids)
         {
             var content = $"""
-                :::rule id="{id}" severity="info" domain="core"
+                :::rule id="{id}" category="core"
                 Some text.
                 :::
                 """;
@@ -29,7 +29,7 @@ public sealed class SteeringParserProperties
         foreach (var count in ruleCounts)
         {
             var content = string.Join('\n', Enumerable.Range(1, count).Select(i =>
-                $":::rule id=\"R{i:D3}\" severity=\"info\" domain=\"core\"\nText {i}.\n:::"));
+                $":::rule id=\"R{i:D3}\" category=\"core\"\nText {i}.\n:::"));
             var doc = SteeringMarkdownParser.Parse(content, "test.md");
             Assert.Equal(count, doc.Rules.Count);
         }
@@ -63,9 +63,8 @@ public sealed class SteeringParserProperties
         var doc = SteeringMarkdownParser.Parse(content, "test.md");
         var rule = Assert.Single(doc.Rules);
         Assert.Equal("R001", rule.Id);
-        Assert.Equal("error", rule.Severity);
+        // Legacy attributes (severity, domain) are silently ignored
         Assert.Equal("security", rule.Category);
-        Assert.Equal("core", rule.Domain);
         Assert.True(rule.Deprecated);
         Assert.Equal("Check something.", rule.PrimaryText);
     }
@@ -75,7 +74,7 @@ public sealed class SteeringParserProperties
     {
         const string body = "# Product Overview\n\n- Controller\n  - Runs workflows\n- Supervisor";
         var content = $"""
-            :::rule id="PROD-OVERVIEW" severity="info" category="contextual-information" domain="core"
+            :::rule id="PROD-OVERVIEW" category="contextual-information"
             {body}
             :::
             """;

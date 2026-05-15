@@ -22,10 +22,9 @@ public record SpeckitRuleSectionModel
 public record SpeckitRuleModel
 {
     public string Id { get; init; } = "";
-    public string Severity { get; init; } = "info";
+    public bool Mandatory { get; init; } = false;
     public string? Category { get; init; }
     public bool Deprecated { get; init; }
-    public string? Supersedes { get; init; }
     public string PrimaryText { get; init; } = "";
     public string? ExplanatoryText { get; init; }
 }

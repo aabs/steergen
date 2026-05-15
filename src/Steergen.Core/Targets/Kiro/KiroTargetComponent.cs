@@ -80,9 +80,6 @@ public sealed class KiroTargetComponent : ITargetComponent
     {
         return rules
             .Where(r => !r.Deprecated)
-            .Where(r => activeProfiles.Count == 0
-                || r.Profile is null
-                || activeProfiles.Contains(r.Profile, StringComparer.Ordinal))
             .OrderBy(r => r.Id, StringComparer.Ordinal)
             .ToList();
     }
@@ -92,8 +89,8 @@ public sealed class KiroTargetComponent : ITargetComponent
         {
             Id = r.Id,
             Category = r.Category,
+            Mandatory = r.Mandatory,
             Deprecated = r.Deprecated,
-            Supersedes = r.Supersedes,
             PrimaryText = CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText),
         }).ToList();
 

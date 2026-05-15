@@ -14,7 +14,7 @@ services. These rules encode baseline security requirements derived from industr
 NIST CSF 2.0, SOC 2 Type II). They complement the global constitution and may not be weakened at the
 project level.
 
-:::rule id="SEC-001" severity="error" category="security" domain="core"
+:::rule id="SEC-001" mandatory="true" category="security"
 title: Dependency Vulnerability Scanning
 
 All production dependencies must be scanned for known CVEs on every CI build. Any dependency with a
@@ -23,7 +23,7 @@ Dependabot, Snyk, or equivalent) must be active on every repository. Suppression
 exception with an expiry date not exceeding 30 days.
 :::
 
-:::rule id="SEC-002" severity="error" category="security" domain="core"
+:::rule id="SEC-002" mandatory="true" category="security"
 title: Secure Communication — TLS Minimum Version
 
 All network communication carrying sensitive data or authentication tokens must use TLS 1.2 or
@@ -32,7 +32,7 @@ communication in the production cluster. Certificate expiry must be monitored wi
 triggering at least 14 days before expiry.
 :::
 
-:::rule id="SEC-003" severity="error" category="security" domain="core"
+:::rule id="SEC-003" mandatory="true" category="security"
 title: Authentication — Short-Lived Credentials
 
 Access tokens must have a maximum lifetime of 1 hour. Refresh tokens may not exceed 24 hours for
@@ -41,7 +41,7 @@ RS256 or ES256. HS256 is prohibited for any token crossing a service boundary. T
 endpoints must be implemented and tested.
 :::
 
-:::rule id="SEC-004" severity="warning" category="security" domain="core"
+:::rule id="SEC-004" category="security"
 title: Security Event Logging
 
 All authentication events (success, failure, lockout), privilege escalations, and access to PII
@@ -50,7 +50,7 @@ must be logged to the centralised SIEM. Logs must be tamper-evident and retained
 application-level logging pipelines that developers have write access to.
 :::
 
-:::rule id="SEC-005" severity="error" category="security" domain="core"
+:::rule id="SEC-005" mandatory="true" category="security"
 title: Supply-Chain Integrity — Package Provenance
 
 All published packages and container images must include SLSA provenance attestations (SLSA Level 2

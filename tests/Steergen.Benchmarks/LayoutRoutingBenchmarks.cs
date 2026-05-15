@@ -12,7 +12,6 @@ namespace Steergen.Benchmarks;
 public class LayoutRoutingBenchmarks
 {
     private const int RuleCount = 1_000;
-    private static readonly string[] Domains = ["core", "security", "performance", "observability", "compliance", "frontend", "infrastructure"];
     private static readonly string[] Categories = ["quality", "security", "performance", "observability", "compliance", "accessibility", "build"];
     private static readonly string[] TargetIds = ["speckit", "kiro", "copilot-agent", "kiro-agent"];
 
@@ -75,8 +74,7 @@ public class LayoutRoutingBenchmarks
             .Select(i => new SteeringRule
             {
                 Id = $"BENCH-{i:D4}",
-                Severity = "info",
-                Domain = Domains[i % Domains.Length],
+                Mandatory = i % 5 == 0,
                 Category = Categories[i % Categories.Length],
             })
             .ToArray();
@@ -100,7 +98,7 @@ public class LayoutRoutingBenchmarks
                 Explicit = true,
                 Anchor = RouteAnchor.Core,
                 Order = 10,
-                Match = new RouteMatchExpression { Domain = ["core"] },
+                Match = new RouteMatchExpression { Category = ["core"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/global/.speckit", FileName = "constitution", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -109,7 +107,7 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Global,
                 Explicit = true,
                 Order = 20,
-                Match = new RouteMatchExpression { Domain = ["security"] },
+                Match = new RouteMatchExpression { Category = ["security"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/global/.speckit", FileName = "security", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -118,8 +116,8 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Global,
                 Explicit = false,
                 Order = 100,
-                Match = new RouteMatchExpression { Domain = ["*"] },
-                Destination = new DestinationTemplate { Directory = "/tmp/global/.speckit", FileName = "${domain}", Extension = ".md" },
+                Match = new RouteMatchExpression { Category = ["*"] },
+                Destination = new DestinationTemplate { Directory = "/tmp/global/.speckit", FileName = "${category}", Extension = ".md" },
             },
             new RouteRuleDefinition
             {
@@ -128,7 +126,7 @@ public class LayoutRoutingBenchmarks
                 Explicit = true,
                 Anchor = RouteAnchor.Core,
                 Order = 10,
-                Match = new RouteMatchExpression { Domain = ["core"] },
+                Match = new RouteMatchExpression { Category = ["core"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "constitution", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -137,7 +135,7 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Project,
                 Explicit = true,
                 Order = 20,
-                Match = new RouteMatchExpression { Domain = ["security"] },
+                Match = new RouteMatchExpression { Category = ["security"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "security", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -146,7 +144,7 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Project,
                 Explicit = true,
                 Order = 30,
-                Match = new RouteMatchExpression { Domain = ["performance"] },
+                Match = new RouteMatchExpression { Category = ["performance"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "performance", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -155,7 +153,7 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Project,
                 Explicit = true,
                 Order = 40,
-                Match = new RouteMatchExpression { Domain = ["observability"] },
+                Match = new RouteMatchExpression { Category = ["observability"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "observability", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -164,7 +162,7 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Project,
                 Explicit = true,
                 Order = 50,
-                Match = new RouteMatchExpression { Domain = ["compliance"] },
+                Match = new RouteMatchExpression { Category = ["compliance"] },
                 Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "compliance", Extension = ".md" },
             },
             new RouteRuleDefinition
@@ -173,8 +171,8 @@ public class LayoutRoutingBenchmarks
                 Scope = RouteScope.Project,
                 Explicit = false,
                 Order = 100,
-                Match = new RouteMatchExpression { Domain = ["*"] },
-                Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "${domain}", Extension = ".md" },
+                Match = new RouteMatchExpression { Category = ["*"] },
+                Destination = new DestinationTemplate { Directory = "/tmp/project/.speckit", FileName = "${category}", Extension = ".md" },
             },
         ],
         Fallback = new FallbackRuleDefinition

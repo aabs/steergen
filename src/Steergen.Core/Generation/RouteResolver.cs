@@ -70,13 +70,17 @@ public sealed class RouteResolver
     {
         if (expr.IsEmpty) return true;
 
-        if (!MatchesField(expr.Domain, rule.Domain)) return false;
         if (!MatchesField(expr.Category, rule.Category)) return false;
-        if (!MatchesField(expr.Severity, rule.Severity)) return false;
-        if (!MatchesField(expr.Profile, rule.Profile)) return false;
+        if (!MatchesMandatory(expr.Mandatory, rule.Mandatory)) return false;
         if (!MatchesTagsAny(expr.TagsAny, rule.Tags)) return false;
 
         return true;
+    }
+
+    private static bool MatchesMandatory(bool? filter, bool ruleValue)
+    {
+        if (filter is null) return true;
+        return filter.Value == ruleValue;
     }
 
     internal static bool ScopeMatches(RouteScope routeScope, RouteScope ruleScope) =>
@@ -101,11 +105,9 @@ public sealed class RouteResolver
 
     internal static int ConditionSpecificity(RouteMatchExpression expr)
     {
-        return FieldSpecificity(expr.Domain)
-             + FieldSpecificity(expr.Category)
-             + FieldSpecificity(expr.Severity)
-             + FieldSpecificity(expr.Profile)
-             + FieldSpecificity(expr.TagsAny);
+        return FieldSpecificity(expr.Category)
+             + FieldSpecificity(expr.TagsAny)
+             + (expr.Mandatory is not null ? 1 : 0);
     }
 
     private static int FieldSpecificity(IReadOnlyList<string> field)
@@ -121,10 +123,10 @@ public sealed class RouteResolver
     {
         var vars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["domain"] = rule.Domain ?? "core",
+            ["domain"] = "",       // legacy — always empty
             ["category"] = rule.Category ?? "",
-            ["severity"] = rule.Severity ?? "info",
-            ["profile"] = rule.Profile ?? "",
+            ["severity"] = "",     // legacy — always empty
+            ["profile"] = "",      // legacy — always empty
             ["ruleId"] = rule.Id ?? "",
             ["inputFileStem"] = rule.InputFileStem ?? rule.Id ?? "",
         };

@@ -35,8 +35,8 @@ public sealed class SpeckitTargetComponentTests
         {
             Rules =
             [
-                new SpeckitRuleModel { Id = "CORE-001", Severity = "error", PrimaryText = "Must have tests." },
-                new SpeckitRuleModel { Id = "CORE-002", Severity = "warning", PrimaryText = "Document public APIs." },
+                new SpeckitRuleModel { Id = "CORE-001", Mandatory = true, PrimaryText = "Must have tests." },
+                new SpeckitRuleModel { Id = "CORE-002", PrimaryText = "Document public APIs." },
             ],
         };
 
@@ -55,7 +55,7 @@ public sealed class SpeckitTargetComponentTests
         {
             Rules =
             [
-                new SpeckitRuleModel { Id = "CORE-OLD", Severity = "info", Deprecated = true, PrimaryText = "Old rule." },
+                new SpeckitRuleModel { Id = "CORE-OLD", Deprecated = true, PrimaryText = "Old rule." },
             ],
         };
 
@@ -72,13 +72,13 @@ public sealed class SpeckitTargetComponentTests
         {
             Rules =
             [
-                new SpeckitRuleModel { Id = "CORE-002", Severity = "error", Supersedes = "CORE-001", PrimaryText = "New rule." },
+                new SpeckitRuleModel { Id = "CORE-002", Mandatory = true, PrimaryText = "New rule." },
             ],
         };
 
         var output = await target.RenderConstitutionAsync(model);
 
-        Assert.Contains("CORE-001", output);
+        Assert.Contains("CORE-002", output);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class SpeckitTargetComponentTests
         var model = new SpeckitModuleModel
         {
             Domain = "api-design",
-            Rules = [new SpeckitRuleModel { Id = "API-001", Severity = "error", PrimaryText = "Use versioned URIs." }],
+            Rules = [new SpeckitRuleModel { Id = "API-001", Mandatory = true, PrimaryText = "Use versioned URIs." }],
         };
 
         var output = await target.RenderModuleAsync(model);
@@ -105,8 +105,8 @@ public sealed class SpeckitTargetComponentTests
         {
             Rules =
             [
-                new SteeringRule { Id = "CORE-001", Domain = "core", Severity = "error", PrimaryText = "Core rule." },
-                new SteeringRule { Id = "API-001", Domain = "api", Severity = "warning", PrimaryText = "API rule." },
+                new SteeringRule { Id = "CORE-001", Category = "core", Mandatory = true, PrimaryText = "Core rule." },
+                new SteeringRule { Id = "API-001", Category = "api", PrimaryText = "API rule." },
             ],
         };
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-test-{Guid.NewGuid():N}");
@@ -141,8 +141,8 @@ public sealed class SpeckitTargetComponentTests
         {
             Rules =
             [
-                new SteeringRule { Id = "CORE-002", Domain = "core", Severity = "error", Supersedes = "CORE-001", PrimaryText = "New rule." },
-                new SteeringRule { Id = "CORE-001", Domain = "core", Severity = "info", Deprecated = true, PrimaryText = "Old rule." },
+                new SteeringRule { Id = "CORE-002", Category = "core", Mandatory = true, PrimaryText = "New rule." },
+                new SteeringRule { Id = "CORE-001", Category = "core", Deprecated = true, PrimaryText = "Old rule." },
             ],
         };
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-test-{Guid.NewGuid():N}");
@@ -203,9 +203,9 @@ public sealed class SpeckitTargetComponentTests
     {
         TargetId = "speckit",
         Files = model.Rules
-            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+            .GroupBy(rule => string.Equals(rule.Category, "core", StringComparison.OrdinalIgnoreCase)
                 ? "constitution.md"
-                : $"{rule.Domain}.md",
+                : $"{rule.Category}.md",
                 StringComparer.OrdinalIgnoreCase)
             .Select(group => new WritePlanFile
             {

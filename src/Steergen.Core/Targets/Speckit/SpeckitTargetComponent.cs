@@ -51,7 +51,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
             var ruleModels = ToRuleModels(rules);
 
             if (string.Equals(fileName, "constitution", StringComparison.OrdinalIgnoreCase)
-                || rules.All(r => r.Domain == "core"))
+                || rules.All(r => string.Equals(r.Category, "core", StringComparison.OrdinalIgnoreCase)))
             {
                 var constitutionModel = new SpeckitConstitutionModel
                 {
@@ -62,7 +62,7 @@ public sealed class SpeckitTargetComponent : ITargetComponent
             }
             else
             {
-                var domain = rules[0].Domain ?? fileName;
+                var domain = rules[0].Category ?? fileName;
                 var moduleModel = new SpeckitModuleModel
                 {
                     Domain = domain,
@@ -98,10 +98,9 @@ public sealed class SpeckitTargetComponent : ITargetComponent
         rules.Select(r => new SpeckitRuleModel
         {
             Id = r.Id ?? "",
-            Severity = r.Severity,
+            Mandatory = r.Mandatory,
             Category = r.Category,
             Deprecated = r.Deprecated,
-            Supersedes = r.Supersedes,
             PrimaryText = CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText),
         }).ToList();
 

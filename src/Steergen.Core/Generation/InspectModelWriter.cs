@@ -27,12 +27,9 @@ public static partial class InspectModelWriter
                 .OrderBy(r => r.Id, StringComparer.Ordinal)
                 .Select(r => new InspectRuleDto(
                     Id: r.Id,
-                    Severity: r.Severity,
-                    Domain: r.Domain,
+                    Mandatory: r.Mandatory,
                     Category: r.Category,
-                    Profile: r.Profile,
                     Deprecated: r.Deprecated ? true : null,
-                    Supersedes: r.Supersedes,
                     AppliesTo: r.AppliesTo.OrderBy(a => a, StringComparer.Ordinal).ToList(),
                     Tags: r.Tags.OrderBy(t => t, StringComparer.Ordinal).ToList(),
                     PrimaryText: r.PrimaryText))
@@ -59,12 +56,9 @@ public static partial class InspectModelWriter
 
     private sealed record InspectRuleDto(
         string? Id,
-        string Severity,
-        string Domain,
+        bool Mandatory,
         string? Category,
-        string? Profile,
         bool? Deprecated,
-        string? Supersedes,
         IReadOnlyList<string> AppliesTo,
         IReadOnlyList<string> Tags,
         string? PrimaryText);

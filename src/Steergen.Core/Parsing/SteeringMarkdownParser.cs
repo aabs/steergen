@@ -114,6 +114,12 @@ public static class SteeringMarkdownParser
         foreach (Match m in AttributeRegex.Matches(attrString))
             attrs[m.Groups[1].Value] = m.Groups[2].Value;
 
+        // Parse mandatory flag: only exact "true" (case-insensitive) sets Mandatory = true
+        attrs.TryGetValue("mandatory", out var mandatoryRaw);
+        var mandatory = string.Equals(mandatoryRaw, "true", StringComparison.OrdinalIgnoreCase);
+
+        // Legacy attributes (severity, domain, profile, supersedes) are silently ignored
+
         attrs.TryGetValue("appliesTo", out var appliesToRaw);
         attrs.TryGetValue("tags", out var tagsRaw);
 
@@ -131,14 +137,11 @@ public static class SteeringMarkdownParser
         return new SteeringRule
         {
             Id = attrs.TryGetValue("id", out var id) ? id : null,
-            Severity = attrs.TryGetValue("severity", out var sev) ? sev : "info",
+            Mandatory = mandatory,
             Category = attrs.TryGetValue("category", out var cat) ? cat : null,
-            Domain = attrs.TryGetValue("domain", out var dom) ? dom : "core",
-            Profile = attrs.TryGetValue("profile", out var prof) ? prof : null,
             AppliesTo = appliesTo,
             Tags = tags,
             Deprecated = deprecated,
-            Supersedes = attrs.TryGetValue("supersedes", out var sup) ? sup : null,
             PrimaryText = primaryText,
         };
     }

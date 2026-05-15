@@ -35,9 +35,9 @@ public sealed class AgentTargetSemanticParityTests
 
     private static readonly IReadOnlyList<SteeringRule> SampleRules =
     [
-        new SteeringRule { Id = "A-001", Severity = "error", PrimaryText = "Write tests for all public APIs." },
-        new SteeringRule { Id = "A-002", Severity = "warning", PrimaryText = "Document every module entry point.", ExplanatoryText = "Include examples where helpful." },
-        new SteeringRule { Id = "A-003", Severity = "info", PrimaryText = "Old guidance.", Deprecated = true },
+        new SteeringRule { Id = "A-001", Mandatory = true, PrimaryText = "Write tests for all public APIs." },
+        new SteeringRule { Id = "A-002", PrimaryText = "Document every module entry point.", ExplanatoryText = "Include examples where helpful." },
+        new SteeringRule { Id = "A-003", PrimaryText = "Old guidance.", Deprecated = true },
     ];
 
     private static readonly IReadOnlyList<SteeringDocument> SampleDocuments =

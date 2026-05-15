@@ -20,7 +20,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${targetRoot}"
       fileName: "${inputFileStem}"
@@ -32,7 +32,7 @@ routes:
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${globalRoot}/.kiro/steering"
       fileName: "${inputFileStem}"
@@ -47,7 +47,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${targetRoot}"
       fileName: "${inputFileStem}"
@@ -59,7 +59,7 @@ routes:
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${targetRoot}"
       fileName: "${inputFileStem}"

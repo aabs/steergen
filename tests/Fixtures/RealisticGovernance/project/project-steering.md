@@ -13,7 +13,7 @@ This document extends the global constitution with domain-specific steering rule
 API service. Rules defined here narrow, clarify, or add to the global constitution for this project.
 They do not override CORE rules but may add stricter constraints.
 
-:::rule id="API-001" severity="error" category="api-design" domain="api" supersedes="CORE-005"
+:::rule id="API-001" mandatory="true" category="api-design"
 title: Versioning Strategy — URI Prefix
 
 All REST API endpoints must include an explicit version prefix in the URI path (e.g. `/v1/`, `/v2/`).
@@ -22,7 +22,7 @@ previous version must remain available for a minimum of 90 days. Semver patch an
 within a version must be backward compatible.
 :::
 
-:::rule id="API-002" severity="error" category="security" domain="api"
+:::rule id="API-002" mandatory="true" category="security"
 title: Input Validation at API Boundary
 
 Every API endpoint must validate all incoming request payloads at the boundary using a strongly-typed
@@ -31,7 +31,7 @@ failures. Raw database or internal error messages must never be surfaced to call
 must be unit-tested with at least boundary-value and invalid-type cases.
 :::
 
-:::rule id="API-003" severity="warning" category="observability" domain="api"
+:::rule id="API-003" category="observability"
 title: Structured Logging and Correlation IDs
 
 All log statements must use structured logging (key-value pairs, JSON output in production). Every
@@ -41,7 +41,7 @@ request. Log levels must be appropriate: DEBUG for diagnostics, INFO for lifecyc
 recoverable anomalies, ERROR for unhandled failures.
 :::
 
-:::rule id="API-004" severity="error" category="privacy" domain="api"
+:::rule id="API-004" mandatory="true" category="privacy"
 title: Data Classification and PII Handling
 
 Personally Identifiable Information (PII) fields must be identified in the data model with a

@@ -13,56 +13,56 @@ roots:
 routes:
   # --- Global scope routes ---
 
-  # Core anchor: global constitution (domain=core, global scope)
+  # Core anchor: global constitution (category=core, global scope)
   - id: core-global
     scope: global
     explicit: true
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${targetRoot}"
       fileName: "constitution"
       extension: ".md"
 
-  # Global domain module: one file per domain for non-core global rules
-  - id: domain-module-global
+  # Global category module: one file per category for non-core global rules
+  - id: category-module-global
     scope: global
     explicit: false
     order: 20
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${targetRoot}"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
   # --- Project scope routes ---
 
-  # Core anchor: project constitution (domain=core, project scope)
+  # Core anchor: project constitution (category=core, project scope)
   - id: core-project
     scope: project
     explicit: true
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${targetRoot}"
       fileName: "project-constitution"
       extension: ".md"
 
-  # Project domain module: one file per domain for non-core project rules
-  - id: domain-module-project
+  # Project category module: one file per category for non-core project rules
+  - id: category-module-project
     scope: project
     explicit: false
     order: 20
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${targetRoot}"
-      fileName: "project-${domain}"
+      fileName: "project-${category}"
       extension: ".md"
 
 fallback:

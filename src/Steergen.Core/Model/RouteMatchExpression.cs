@@ -7,11 +7,9 @@ namespace Steergen.Core.Model;
 /// </summary>
 public record RouteMatchExpression
 {
-    public IReadOnlyList<string> Domain { get; init; } = [];
     public IReadOnlyList<string> TagsAny { get; init; } = [];
     public IReadOnlyList<string> Category { get; init; } = [];
-    public IReadOnlyList<string> Severity { get; init; } = [];
-    public IReadOnlyList<string> Profile { get; init; } = [];
+    public bool? Mandatory { get; init; } = null;
     public IReadOnlyDictionary<string, string> SourceContext { get; init; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -19,10 +17,8 @@ public record RouteMatchExpression
     /// Returns true when the expression has no constraints (matches everything).
     /// </summary>
     public bool IsEmpty =>
-        Domain.Count == 0 &&
         TagsAny.Count == 0 &&
         Category.Count == 0 &&
-        Severity.Count == 0 &&
-        Profile.Count == 0 &&
+        Mandatory is null &&
         SourceContext.Count == 0;
 }

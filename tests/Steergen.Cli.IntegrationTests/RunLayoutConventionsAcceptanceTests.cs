@@ -16,41 +16,45 @@ public sealed class RunLayoutConventionsAcceptanceTests
         Directory.CreateTempSubdirectory("layout-conventions-test-").FullName;
 
     /// Routes everything to "override-output.md" in the given directory.
-    private static string SingleFileLayoutYaml(string dir) => $"""
-        version: "1.0"
-        roots:
-          globalRoot: "{dir}"
-          projectRoot: "{dir}"
-          targetRoot: "{dir}"
-        routes:
-          - id: core-anchor
-            scope: both
-            explicit: true
-            anchor: core
-            order: 10
-            match:
-              domain: core
-            destination:
-              directory: "{dir}"
-              fileName: "override-output"
-              extension: ".md"
-          - id: catch-all
-            scope: both
-            explicit: false
-            order: 99
-            match:
-              domain: "*"
-            destination:
-              directory: "{dir}"
-              fileName: "override-output"
-              extension: ".md"
-        fallback:
-          mode: other-at-core-anchor
-          fileBaseName: other
-        purge:
-          roots: []
-          globs: []
-        """;
+    private static string SingleFileLayoutYaml(string dir)
+    {
+        var d = dir.Replace("\\", "/");
+        return $"""
+            version: "1.0"
+            roots:
+              globalRoot: "{d}"
+              projectRoot: "{d}"
+              targetRoot: "{d}"
+            routes:
+              - id: core-anchor
+                scope: both
+                explicit: true
+                anchor: core
+                order: 10
+                match:
+                  category: core
+                destination:
+                  directory: "{d}"
+                  fileName: "override-output"
+                  extension: ".md"
+              - id: catch-all
+                scope: both
+                explicit: false
+                order: 99
+                match:
+                  category: "*"
+                destination:
+                  directory: "{d}"
+                  fileName: "override-output"
+                  extension: ".md"
+            fallback:
+              mode: other-at-core-anchor
+              fileBaseName: other
+            purge:
+              roots: []
+              globs: []
+            """;
+    }
 
     [Fact]
     public async Task WorkspaceLocal_OverrideYamlInProjectDir_AppliesCustomRouting()
@@ -188,7 +192,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
 
             Assert.Equal(0, exitCode);
             Assert.True(File.Exists(Path.Combine(outputDir, ".specify", "memory", "constitution.md")),
-                "Default layout should route domain=core rules to .specify/memory/constitution.md");
+                "Default layout should route category=core rules to .specify/memory/constitution.md");
         }
         finally
         {

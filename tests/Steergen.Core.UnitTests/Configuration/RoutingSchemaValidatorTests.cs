@@ -32,17 +32,17 @@ public sealed class RoutingSchemaValidatorTests
             Anchor = RouteAnchor.Core,
             Explicit = true,
             Order = 0,
-            Match = new RouteMatchExpression { Domain = ["core"] },
+            Match = new RouteMatchExpression { Category = ["core"] },
             Destination = new DestinationTemplate { Directory = "rules", FileName = "constitution", Extension = ".md" },
         };
 
-    private static RouteRuleDefinition ExtraRoute(string id, string domain = "*") =>
+    private static RouteRuleDefinition ExtraRoute(string id, string category = "*") =>
         new()
         {
             Id = id,
             Scope = RouteScope.Both,
             Order = 10,
-            Match = new RouteMatchExpression { Domain = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate { Directory = "rules", FileName = id, Extension = ".md" },
         };
 

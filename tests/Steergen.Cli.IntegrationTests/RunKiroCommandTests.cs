@@ -192,7 +192,7 @@ public sealed class RunKiroCommandTests
                 .Single();
             var content = await File.ReadAllTextAsync(constitutionPath);
 
-            Assert.Contains("## Quality", content);
+            Assert.Contains("## Core", content);
             Assert.Contains("- CORE-001", content);
             Assert.Contains("All production code must maintain a minimum of 80% line coverage", content);
             Assert.Contains("title:", content, StringComparison.OrdinalIgnoreCase);

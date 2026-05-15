@@ -4,9 +4,6 @@ namespace Steergen.Core.Validation;
 
 public sealed class SteeringValidator
 {
-    private static readonly HashSet<string> ValidSeverities =
-        new(StringComparer.OrdinalIgnoreCase) { "error", "warning", "info", "hint" };
-
     /// <summary>
     /// Validates a single document in isolation.
     /// </summary>
@@ -18,7 +15,7 @@ public sealed class SteeringValidator
     }
 
     /// <summary>
-    /// Validates a corpus of documents, including cross-document checks (duplicate IDs, supersedes references).
+    /// Validates a corpus of documents, including cross-document checks (duplicate IDs).
     /// Diagnostics are returned in deterministic order: sorted by source path then diagnostic code.
     /// </summary>
     public IReadOnlyList<Diagnostic> ValidateCorpus(IEnumerable<SteeringDocument> documents)
@@ -30,7 +27,6 @@ public sealed class SteeringValidator
             ValidateDocument(doc, diagnostics);
 
         CheckDuplicateRuleIds(docList, diagnostics);
-        CheckSupersededRuleReferences(docList, diagnostics);
 
         return diagnostics
             .OrderBy(d => d.Location?.FilePath ?? string.Empty, StringComparer.Ordinal)
@@ -56,20 +52,6 @@ public sealed class SteeringValidator
         if (string.IsNullOrWhiteSpace(rule.Id))
         {
             diagnostics.Add(new Diagnostic("V002", "Rule is missing an 'id'.", DiagnosticSeverity.Error, location));
-        }
-
-        if (!ValidSeverities.Contains(rule.Severity))
-        {
-            diagnostics.Add(new Diagnostic("V003",
-                $"Rule '{rule.Id}' has invalid severity '{rule.Severity}'. Valid: error, warning, info, hint.",
-                DiagnosticSeverity.Error, location));
-        }
-
-        if (string.IsNullOrWhiteSpace(rule.Domain))
-        {
-            diagnostics.Add(new Diagnostic("V004",
-                $"Rule '{rule.Id}' is missing a 'domain'.",
-                DiagnosticSeverity.Error, location));
         }
 
         if (string.IsNullOrWhiteSpace(rule.PrimaryText))
@@ -105,30 +87,6 @@ public sealed class SteeringValidator
                 else
                 {
                     seen[rule.Id] = doc.SourcePath ?? string.Empty;
-                }
-            }
-        }
-    }
-
-    private static void CheckSupersededRuleReferences(IReadOnlyList<SteeringDocument> documents, List<Diagnostic> diagnostics)
-    {
-        var allIds = documents
-            .SelectMany(d => d.Rules)
-            .Where(r => r.Id is not null)
-            .Select(r => r.Id!)
-            .ToHashSet(StringComparer.Ordinal);
-
-        foreach (var doc in documents)
-        {
-            foreach (var rule in doc.Rules)
-            {
-                if (rule.Supersedes is null) continue;
-                var location = doc.SourcePath is not null ? new SourceLocation(doc.SourcePath, 0) : null;
-                if (!allIds.Contains(rule.Supersedes))
-                {
-                    diagnostics.Add(new Diagnostic("V008",
-                        $"Rule '{rule.Id}' supersedes '{rule.Supersedes}', but that rule ID does not exist in the corpus.",
-                        DiagnosticSeverity.Warning, location));
                 }
             }
         }

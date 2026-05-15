@@ -141,11 +141,10 @@ public sealed class LayoutOverrideLoader
         if (m is null) return new RouteMatchExpression();
         return new RouteMatchExpression
         {
-            Domain = m.Domain ?? [],
+            // Domain, Severity, Profile fields in YAML are silently ignored
             TagsAny = m.TagsAny ?? [],
             Category = m.Category ?? [],
-            Severity = m.Severity ?? [],
-            Profile = m.Profile ?? [],
+            Mandatory = m.Mandatory,
         };
     }
 
@@ -267,11 +266,13 @@ public sealed class LayoutOverrideLoader
     internal sealed class RouteMatchYamlDto
     {
         // These are List<string> but the YAML may supply a bare string; handled by StringOrListConverter.
+        // Legacy fields retained for backward-compatible deserialization
         public List<string>? Domain { get; set; }
         public List<string>? TagsAny { get; set; }
         public List<string>? Category { get; set; }
         public List<string>? Severity { get; set; }
         public List<string>? Profile { get; set; }
+        public bool? Mandatory { get; set; }
         public Dictionary<string, string>? SourceContext { get; set; }
     }
 

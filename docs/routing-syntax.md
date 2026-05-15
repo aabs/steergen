@@ -6,6 +6,8 @@ This document describes the framework-agnostic routing syntax used in `default-l
 
 A layout YAML file defines how steering rules are routed to output files. Each rule is matched against a list of route definitions and assigned to exactly one destination path. If no route matches, the rule falls back to an `other.*` file colocated with the `core` anchor route.
 
+**Primary routing discriminator:** `category` is the primary field used to route rules to output files. Routes match rules by category, mandatory status, and tags.
+
 ## Top-Level Structure
 
 ```yaml
@@ -54,7 +56,7 @@ routes:
     explicit: true            # explicit routes win over non-explicit
     anchor: core              # core | none  (at least one core per scope)
     match:
-      domain: core            # match on rule metadata fields
+      category: core          # match on rule metadata fields
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "constitution"
@@ -92,24 +94,33 @@ Routes are sorted by this stable tuple (lower = higher priority):
 
 ## Match Expressions
 
-A match expression filters rules by their metadata. All specified fields must match (logical AND).
+A match expression filters rules by their metadata. All specified fields must match (logical AND). The primary routing discriminator is `category`.
 
 ```yaml
 match:
-  domain: core                  # string or list of strings
   category: security            # string or list of strings
-  severity: error               # string or list of strings
+  mandatory: true               # nullable bool: null (omit) = match all, true = mandatory only, false = advisory only
   tagsAny:                      # any of these tags present (OR)
     - pii
     - compliance
-  profile: strict               # string or list of strings
   sourceContext:                 # arbitrary key-value metadata from source doc
     team: platform
 ```
 
+### Match Expression Fields
+
+| Field           | Type                    | Default | Description |
+|---|---|---|---|
+| `category`      | string or list          | (empty) | Match rules whose category is in this list. Primary routing discriminator. |
+| `mandatory`     | bool (nullable)         | `null`  | Filter by mandatory status. `null` (omitted) = match all rules regardless of mandatory status. `true` = match only mandatory rules. `false` = match only advisory (non-mandatory) rules. |
+| `tagsAny`       | list of strings         | (empty) | Match if the rule has any of these tags (OR within field). |
+| `sourceContext` | map of key-value pairs  | (empty) | Match arbitrary key-value metadata from the source document. |
+
+Fields are ANDed: all specified fields must match for the route to apply. An empty or absent field imposes no constraint (matches any value).
+
 ### Wildcard Catch-All
 
-Any match field supports `"*"` as a wildcard to match all values of that field.
+The `category` field supports `"*"` as a wildcard to match all values.
 
 ```yaml
 match:
@@ -146,14 +157,24 @@ destination:
 | `${tempRoot}`      | System temporary directory on the current platform. |
 | `${scope}`         | Rule scope (`global` or `project`). |
 | `${targetId}`      | ID of the target being generated. |
-| `${domain}`        | Rule domain value. |
 | `${category}`      | Rule category value. |
-| `${severity}`      | Rule severity value. |
-| `${profile}`       | Active profile name (when profile-scoped). |
+| `${ruleId}`        | Rule identifier. |
 | `${inputFileName}` | Source document file name (without extension). |
 | `${inputFileStem}` | Source document file name stem. |
 
 Variables defined in the `variables` section may also be referenced.
+
+### Legacy Template Variables
+
+The following variables are retained for backward compatibility with existing user override YAMLs. They always resolve to an empty string:
+
+| Variable        | Description |
+|---|---|
+| `${domain}`     | Legacy. Always resolves to empty string. |
+| `${severity}`   | Legacy. Always resolves to empty string. |
+| `${profile}`    | Legacy. Always resolves to empty string. |
+
+> **Note:** If your override YAML references `${domain}`, `${severity}`, or `${profile}` in destination templates, the tokens will resolve to empty string. Update your templates to use `${category}` as the primary routing variable.
 
 ### Path Safety
 
@@ -266,7 +287,7 @@ Example verbose output:
 The following examples show the distinction between **catch-all** routing (a wildcard route) and
 **fallback** routing (the `other-at-core-anchor` fallback when no route matches at all).
 
-### Example 1: Domain-specific + catch-all
+### Example 1: Category-specific + catch-all
 
 ```yaml
 routes:
@@ -276,7 +297,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "constitution"
@@ -287,7 +308,7 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "security"
@@ -298,10 +319,10 @@ routes:
     explicit: false
     order: 100
     match:
-      domain: "*"           # matches any domain not already matched above
+      category: "*"           # matches any category not already matched above
     destination:
       directory: "${globalRoot}/.speckit"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
 fallback:
@@ -310,9 +331,9 @@ fallback:
 ```
 
 **Routing outcome**:
-- `domain: core` → `constitution.md` (matched by `core-global`, explicit = higher priority).
-- `domain: security` → `security.md` (matched by `security-module`, explicit = higher priority).
-- `domain: performance` → `performance.md` (matched by `catch-all-global` via `domain: "*"`).
+- `category: core` → `constitution.md` (matched by `core-global`, explicit = higher priority).
+- `category: security` → `security.md` (matched by `security-module`, explicit = higher priority).
+- `category: performance` → `performance.md` (matched by `catch-all-global` via `category: "*"`).
 - A rule with no matching route at all → `other.md` in `.speckit/` (fallback, colocated with `core-global`).
 
 ### Example 2: Fallback only (no catch-all)
@@ -328,7 +349,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "constitution"
@@ -340,13 +361,64 @@ fallback:
 ```
 
 **Routing outcome**:
-- `domain: core` → `constitution.md`.
-- Any other rule (e.g., `domain: security`, `domain: frontend`) → `other.md` in `${projectRoot}/.speckit/`
+- `category: core` → `constitution.md`.
+- Any other rule (e.g., `category: security`, `category: frontend`) → `other.md` in `${projectRoot}/.speckit/`
   (fallback; same directory and extension as the `core-project` anchor).
+
+### Example 3: Mandatory segregation
+
+Routes can use the `mandatory` filter to segregate mandatory rules into dedicated output files:
+
+```yaml
+routes:
+  - id: core-global
+    scope: global
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      category: core
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "constitution"
+      extension: ".md"
+
+  - id: mandatory-global
+    scope: global
+    explicit: false
+    order: 50
+    match:
+      category: "*"
+      mandatory: true         # only mandatory rules
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "${category}-mandatory"
+      extension: ".md"
+
+  - id: catch-all-global
+    scope: global
+    explicit: false
+    order: 100
+    match:
+      category: "*"           # mandatory is omitted = matches all remaining rules
+    destination:
+      directory: "${globalRoot}/.speckit"
+      fileName: "${category}"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: other
+```
+
+**Routing outcome**:
+- `category: core` → `constitution.md` (matched by `core-global`, explicit = higher priority).
+- `category: security, mandatory: true` → `security-mandatory.md` (matched by `mandatory-global`; more specific than catch-all because `mandatory` adds specificity).
+- `category: security, mandatory: false` → `security.md` (matched by `catch-all-global`; `mandatory-global` does not match because the rule is not mandatory).
 
 ### Catch-all prevents fallback
 
-The fallback only fires when *no route* (including catch-all routes) matches. A `domain: "*"` catch-all
+The fallback only fires when *no route* (including catch-all routes) matches. A `category: "*"` catch-all
 consumes all otherwise-unmatched rules and prevents the fallback from applying.
 
 ---
@@ -369,22 +441,22 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${globalRoot}/.speckit"
       fileName: "constitution"
       extension: ".md"
 
-  # Domain-specific global route
-  - id: domain-global
+  # Category-specific global route
+  - id: category-global
     scope: global
     explicit: false
     order: 20
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${globalRoot}/.speckit"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
   # Core anchor for project scope
@@ -394,7 +466,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${projectRoot}/.speckit"
       fileName: "constitution"

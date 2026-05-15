@@ -83,9 +83,6 @@ public sealed class KiroAgentTargetComponent : ITargetComponent
     {
         return rules
             .Where(r => !r.Deprecated)
-            .Where(r => activeProfiles.Count == 0
-                || r.Profile is null
-                || activeProfiles.Contains(r.Profile, StringComparer.Ordinal))
             .OrderBy(r => r.Id, StringComparer.Ordinal)
             .ToList();
     }

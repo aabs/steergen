@@ -16,9 +16,9 @@ public sealed class InspectJsonProperties
     {
         var model = MakeModel(
             rules: [
-                MakeRule("Z-001", "error", "core"),
-                MakeRule("A-001", "info", "security"),
-                MakeRule("M-001", "warning", "quality"),
+                MakeRule("Z-001", "core"),
+                MakeRule("A-001", "security"),
+                MakeRule("M-001", "quality"),
             ],
             profiles: ["alpha", "beta"]);
 
@@ -34,9 +34,9 @@ public sealed class InspectJsonProperties
     public void Write_Rules_AreSortedByIdInOutput()
     {
         var model = MakeModel(rules: [
-            MakeRule("C-003", "info", "core"),
-            MakeRule("A-001", "warning", "core"),
-            MakeRule("B-002", "error", "core"),
+            MakeRule("C-003", "core"),
+            MakeRule("A-001", "core"),
+            MakeRule("B-002", "core"),
         ]);
 
         var json = InspectModelWriter.Write(model);
@@ -106,9 +106,8 @@ public sealed class InspectJsonProperties
         var rule = new SteeringRule
         {
             Id = "R001",
-            Severity = "info",
-            Domain = "core",
-            // Category, Profile, Supersedes, PrimaryText all null
+            Category = "core",
+            // PrimaryText null
         };
         var model = MakeModel(rules: [rule]);
 
@@ -116,9 +115,9 @@ public sealed class InspectJsonProperties
         using var doc = JsonDocument.Parse(json);
         var ruleEl = doc.RootElement.GetProperty("rules").EnumerateArray().First();
 
-        Assert.False(ruleEl.TryGetProperty("category", out _));
-        Assert.False(ruleEl.TryGetProperty("profile", out _));
-        Assert.False(ruleEl.TryGetProperty("supersedes", out _));
+        Assert.False(ruleEl.TryGetProperty("category", out _) && ruleEl.GetProperty("category").ValueKind == JsonValueKind.Null);
+        // mandatory should always be present as a boolean
+        Assert.True(ruleEl.TryGetProperty("mandatory", out _));
     }
 
     // ── Deprecated flag is omitted when false ─────────────────────────────
@@ -126,7 +125,7 @@ public sealed class InspectJsonProperties
     [Fact]
     public void Write_DeprecatedFalse_IsOmittedFromOutput()
     {
-        var rule = new SteeringRule { Id = "R001", Severity = "info", Domain = "core", Deprecated = false };
+        var rule = new SteeringRule { Id = "R001", Category = "core", Deprecated = false };
         var model = MakeModel(rules: [rule]);
 
         var json = InspectModelWriter.Write(model);
@@ -152,8 +151,8 @@ public sealed class InspectJsonProperties
         };
     }
 
-    private static SteeringRule MakeRule(string id, string severity, string domain) =>
-        new() { Id = id, Severity = severity, Domain = domain };
+    private static SteeringRule MakeRule(string id, string category) =>
+        new() { Id = id, Category = category };
 
     private static SteeringDocument MakeDoc(string id, string path) =>
         new() { Id = id, SourcePath = path };

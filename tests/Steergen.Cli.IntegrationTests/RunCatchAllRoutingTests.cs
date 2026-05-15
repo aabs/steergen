@@ -58,11 +58,10 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var frontendPath = Path.Combine(outputDir, ".specify", "memory", "frontend.md");
-            Assert.True(File.Exists(frontendPath), "frontend.md should exist — catch-all captures domain=frontend rules");
-            var content = await File.ReadAllTextAsync(frontendPath);
+            var accessibilityPath = Path.Combine(outputDir, ".specify", "memory", "accessibility.md");
+            Assert.True(File.Exists(accessibilityPath), "accessibility.md should exist — catch-all captures category=accessibility rules");
+            var content = await File.ReadAllTextAsync(accessibilityPath);
             Assert.Contains("RLAY-006", content);
-            Assert.Contains("RLAY-007", content);
         }
         finally
         {
@@ -80,13 +79,13 @@ public sealed class RunCatchAllRoutingTests
         {
             await WriteFixtureAsync(Path.Combine(globalRoot, "fallback.md"), "fallback-fixture.md");
 
-            // Custom layout: only domain=core route, no catch-all — unmatched rules fall back to other.md
+            // Custom layout: only category=core route, no catch-all — unmatched rules fall back to other.md
             var layoutYaml = $"""
                 version: "1.0"
                 roots:
-                  globalRoot: "{globalRoot}"
-                  projectRoot: "{globalRoot}"
-                  targetRoot: "{globalRoot}"
+                  globalRoot: "{globalRoot.Replace("\\", "/")}"
+                  projectRoot: "{globalRoot.Replace("\\", "/")}"
+                  targetRoot: "{globalRoot.Replace("\\", "/")}"
                 routes:
                   - id: core-anchor
                     scope: both
@@ -94,9 +93,9 @@ public sealed class RunCatchAllRoutingTests
                     anchor: core
                     order: 10
                     match:
-                      domain: core
+                      category: core
                     destination:
-                      directory: "{globalRoot}"
+                      directory: "{globalRoot.Replace("\\", "/")}"
                       fileName: "constitution"
                       extension: ".md"
                 fallback:

@@ -65,8 +65,6 @@ public sealed class MaliciousInputValidationTests
         var rule = new SteeringRule
         {
             Id = "R001",
-            Severity = "info",
-            Domain = "core",
             PrimaryText = "Valid text\0with null byte",
         };
         var doc = new SteeringDocument { Id = "DOC-001", Rules = [rule] };

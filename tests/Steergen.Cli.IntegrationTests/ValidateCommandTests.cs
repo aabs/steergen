@@ -72,7 +72,7 @@ public sealed class ValidateCommandTests
     // ── Severity validation ─────────────────────────────────────────────────
 
     [Fact]
-    public async Task Validate_InvalidSeverity_ReturnsExitCode1()
+    public async Task Validate_LegacySeverityAttribute_IsIgnoredReturnsExitCode0()
     {
         var dir = CreateTempDir();
         try
@@ -82,15 +82,15 @@ public sealed class ValidateCommandTests
                 ---
                 id: doc-bad-sev
                 ---
-                :::rule id="R001" severity="critical" domain="core"
-                A rule with an invalid severity level.
+                :::rule id="R001" severity="critical" category="core"
+                A rule with a legacy severity attribute that is now silently ignored.
                 :::
                 """);
 
             var result = await ValidateCommand.RunAsync(
                 globalRoot: dir, projectRoot: null, quiet: true);
 
-            Assert.Equal(1, result);
+            Assert.Equal(0, result);
         }
         finally { Directory.Delete(dir, recursive: true); }
     }

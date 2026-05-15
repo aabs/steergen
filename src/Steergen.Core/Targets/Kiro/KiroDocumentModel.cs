@@ -19,8 +19,8 @@ public record KiroRuleProseModel
 {
     public string? Id { get; init; }
     public string? Category { get; init; }
+    public bool Mandatory { get; init; } = false;
     public bool Deprecated { get; init; }
-    public string? Supersedes { get; init; }
     public string PrimaryText { get; init; } = "";
     public string? ExplanatoryText { get; init; }
 }

@@ -248,15 +248,14 @@ public sealed class ConstitutionReferenceResolutionTests
     // ── Helper: build a minimal ResolvedSteeringModel ────────────────────
 
     private static ResolvedSteeringModel BuildModel(
-        IEnumerable<(string id, string domain, string text)> coreRules,
-        IEnumerable<(string id, string domain, string text)> domainRules)
+        IEnumerable<(string id, string category, string text)> coreRules,
+        IEnumerable<(string id, string category, string text)> domainRules)
     {
         var rules = coreRules.Concat(domainRules)
             .Select(r => new SteeringRule
             {
                 Id = r.id,
-                Domain = r.domain,
-                Severity = "info",
+                Category = r.category,
                 PrimaryText = r.text,
             })
             .ToList();
@@ -268,9 +267,9 @@ public sealed class ConstitutionReferenceResolutionTests
     {
         TargetId = "speckit",
         Files = model.Rules
-            .GroupBy(rule => string.Equals(rule.Domain, "core", StringComparison.OrdinalIgnoreCase)
+            .GroupBy(rule => string.Equals(rule.Category, "core", StringComparison.OrdinalIgnoreCase)
                 ? "constitution.md"
-                : $"{rule.Domain}.md",
+                : $"{rule.Category}.md",
                 StringComparer.OrdinalIgnoreCase)
             .Select(group => new WritePlanFile
             {

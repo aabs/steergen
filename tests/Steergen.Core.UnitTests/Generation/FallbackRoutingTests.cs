@@ -35,7 +35,7 @@ public sealed class FallbackRoutingTests
             Scope = RouteScope.Both,
             Anchor = RouteAnchor.Core,
             Order = 10,
-            Match = new RouteMatchExpression { Domain = ["core"] },
+            Match = new RouteMatchExpression { Category = ["core"] },
             Destination = new DestinationTemplate
             {
                 Directory = dir,
@@ -44,24 +44,24 @@ public sealed class FallbackRoutingTests
             },
         };
 
-    private static RouteRuleDefinition SpecificRoute(string id, string domain) =>
+    private static RouteRuleDefinition SpecificRoute(string id, string category) =>
         new()
         {
             Id = id,
             Scope = RouteScope.Both,
             Anchor = RouteAnchor.None,
             Order = 20,
-            Match = new RouteMatchExpression { Domain = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
                 Directory = "modules",
-                FileName = domain,
+                FileName = category,
                 Extension = ".md",
             },
         };
 
-    private static SteeringRule MakeRule(string id, string domain = "core") =>
-        new() { Id = id, Domain = domain };
+    private static SteeringRule MakeRule(string id, string category = "core") =>
+        new() { Id = id, Category = category };
 
     // ── Fallback when no route matches ─────────────────────────────────────────
 
@@ -69,7 +69,7 @@ public sealed class FallbackRoutingTests
     public void Plan_UnmatchedRule_FallsBackToOtherAtCoreAnchorDir()
     {
         var layout = MakeLayout([CoreRoute("core-dir")]);
-        var rule = MakeRule("UNKNOWN-001", domain: "unknown");
+        var rule = MakeRule("UNKNOWN-001", category: "unknown");
 
         var results = _planner.Plan([rule], layout);
 
@@ -84,7 +84,7 @@ public sealed class FallbackRoutingTests
     public void Plan_UnmatchedRule_FallbackUsesExtensionFromCoreAnchor()
     {
         var layout = MakeLayout([CoreRoute(dir: "rules", ext: ".yaml")]);
-        var rule = MakeRule("X-001", domain: "unknown");
+        var rule = MakeRule("X-001", category: "unknown");
 
         var results = _planner.Plan([rule], layout);
 
@@ -95,7 +95,7 @@ public sealed class FallbackRoutingTests
     public void Plan_UnmatchedRule_FallbackUsesLayoutFileBaseName()
     {
         var layout = MakeLayout([CoreRoute()], fallbackBaseName: "misc");
-        var rule = MakeRule("X-001", domain: "unknown");
+        var rule = MakeRule("X-001", category: "unknown");
 
         var results = _planner.Plan([rule], layout);
 
@@ -113,7 +113,7 @@ public sealed class FallbackRoutingTests
             Scope = RouteScope.Both,
             Anchor = RouteAnchor.None,
             Order = 100,
-            Match = new RouteMatchExpression { Domain = ["*"] },
+            Match = new RouteMatchExpression { Category = ["*"] },
             Destination = new DestinationTemplate
             {
                 Directory = "catch",
@@ -122,7 +122,7 @@ public sealed class FallbackRoutingTests
             },
         };
         var layout = MakeLayout([CoreRoute(), catchAll]);
-        var rule = MakeRule("X-001", domain: "unknown");
+        var rule = MakeRule("X-001", category: "unknown");
 
         var results = _planner.Plan([rule], layout);
 
@@ -137,7 +137,7 @@ public sealed class FallbackRoutingTests
     public void Plan_NoCoreAnchorAndNoMatch_ReturnsUnresolvedWithDiagnosticMessage()
     {
         var layout = MakeLayout([SpecificRoute("api-route", "api")]);
-        var rule = MakeRule("X-001", domain: "security");
+        var rule = MakeRule("X-001", category: "security");
 
         var results = _planner.Plan([rule], layout);
 
@@ -154,9 +154,9 @@ public sealed class FallbackRoutingTests
         var layout = MakeLayout([CoreRoute("base")]);
         var rules = new[]
         {
-            MakeRule("X-001", domain: "unknown-a"),
-            MakeRule("X-002", domain: "unknown-b"),
-            MakeRule("X-003", domain: "unknown-c"),
+            MakeRule("X-001", category: "unknown-a"),
+            MakeRule("X-002", category: "unknown-b"),
+            MakeRule("X-003", category: "unknown-c"),
         };
 
         var results = _planner.Plan(rules, layout);
@@ -178,9 +178,9 @@ public sealed class FallbackRoutingTests
         var layout = MakeLayout([CoreRoute(), SpecificRoute("api-route", "api")]);
         var rules = new[]
         {
-            MakeRule("CORE-001", domain: "core"),
-            MakeRule("API-001", domain: "api"),
-            MakeRule("X-001", domain: "security"),
+            MakeRule("CORE-001", category: "core"),
+            MakeRule("API-001", category: "api"),
+            MakeRule("X-001", category: "security"),
         };
 
         var results = _planner.Plan(rules, layout);
@@ -196,7 +196,7 @@ public sealed class FallbackRoutingTests
     public void Plan_FallbackPath_IsColocatedWithCoreAnchorDirectory()
     {
         var layout = MakeLayout([CoreRoute(dir: "my-team/speckit")]);
-        var rule = MakeRule("X-001", domain: "anything");
+        var rule = MakeRule("X-001", category: "anything");
 
         var results = _planner.Plan([rule], layout);
 

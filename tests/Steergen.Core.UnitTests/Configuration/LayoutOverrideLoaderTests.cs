@@ -174,12 +174,12 @@ public sealed class LayoutOverrideLoaderTests
     // ── StringOrList YAML format tests ───────────────────────────────────────
 
     [Fact]
-    public void LoadDefault_Speckit_DomainWildcardRouteHasSingleWildcard()
+    public void LoadDefault_Speckit_CategoryModuleGlobalRouteUsesWildcardCategory()
     {
         var layout = new LayoutOverrideLoader().LoadDefault("speckit");
-        var catchAll = layout.Routes.FirstOrDefault(r => r.Id == "domain-module-global");
+        var catchAll = layout.Routes.FirstOrDefault(r => r.Id == "category-module-global");
         Assert.NotNull(catchAll);
-        Assert.Single(catchAll!.Match.Domain);
-        Assert.Equal("*", catchAll.Match.Domain[0]);
+        // Category should contain the wildcard "*"
+        Assert.Contains("*", catchAll!.Match.Category);
     }
 }

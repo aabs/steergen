@@ -10,7 +10,7 @@
 #       enabled: true
 #       layoutOverridePath: /home/user/.config/steergen/speckit-layout.yaml  # absolute path
 #
-# This fixture routes all rules to a flat single-directory layout (one file per domain),
+# This fixture routes all rules to a flat single-directory layout (one file per category),
 # suitable for a global cross-project governance baseline.
 version: "1.0"
 
@@ -26,21 +26,21 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${globalRoot}/.speckit-global"
       fileName: "constitution"
       extension: ".md"
 
-  - id: domain-module
+  - id: category-module
     scope: both
     explicit: false
     order: 50
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${globalRoot}/.speckit-global"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
 fallback:

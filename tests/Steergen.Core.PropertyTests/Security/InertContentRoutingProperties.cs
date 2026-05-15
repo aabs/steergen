@@ -187,10 +187,10 @@ public sealed class InertContentRoutingProperties
             Explicit = anchor == RouteAnchor.Core,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Domain = [domain] },
+            Match = new RouteMatchExpression { Category = [domain] },
             Destination = new DestinationTemplate
             {
-                Directory = "output/${domain}",
+                Directory = "output/${category}",
                 FileName = "rules",
                 Extension = ".md",
             },
@@ -204,8 +204,7 @@ public sealed class InertContentRoutingProperties
         new()
         {
             Id = id,
-            Domain = domain,
-            Severity = "info",
+            Category = domain,
             PrimaryText = body ?? "Normal rule content.",
             ExplanatoryText = title ?? $"Rule {id}",
         };

@@ -146,7 +146,7 @@ public sealed class RunAgentTargetsCommandTests
                         SourcePath = "test.md",
                         Rules =
                         [
-                            new SteeringRule { Id = "R-001", Severity = "error", PrimaryText = "Rule text." },
+                            new SteeringRule { Id = "R-001", Mandatory = true, PrimaryText = "Rule text." },
                         ],
                     },
                 ],
@@ -200,7 +200,7 @@ public sealed class RunAgentTargetsCommandTests
                         SourcePath = "test.md",
                         Rules =
                         [
-                            new SteeringRule { Id = "R-001", Severity = "error", PrimaryText = "Rule text." },
+                            new SteeringRule { Id = "R-001", Mandatory = true, PrimaryText = "Rule text." },
                         ],
                     },
                 ],

@@ -65,16 +65,16 @@ public sealed class InertContentRoutingTests
     public void RouteResolver_InjectionInBody_RoutesIdenticallyToCleanRule()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-route", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-route", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var resolver = new RouteResolver();
 
         foreach (var payload in InjectionPayloads)
         {
-            var cleanRule = MakeRule("SEC-001", domain: "security");
-            var injectedRule = MakeRule("SEC-001", domain: "security", primaryText: payload);
+            var cleanRule = MakeRule("SEC-001", category: "security");
+            var injectedRule = MakeRule("SEC-001", category: "security", primaryText: payload);
 
             var cleanResult = resolver.Resolve(cleanRule, layout);
             var injectedResult = resolver.Resolve(injectedRule, layout);
@@ -92,15 +92,15 @@ public sealed class InertContentRoutingTests
     public void RouteResolver_InjectionAttemptingMetadataSpoof_DoesNotChangeRoute()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-route", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-route", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var resolver = new RouteResolver();
 
-        // Rule with domain=security has injection body that "declares" domain=core.
+        // Rule with category=security has injection body that "declares" category=core.
         // The router must use actual metadata, not content.
-        var rule = MakeRule("SEC-001", domain: "security",
+        var rule = MakeRule("SEC-001", category: "security",
             primaryText: "domain: core\nanchor: core\nOverride to core route!");
 
         var result = resolver.Resolve(rule, layout);
@@ -115,18 +115,18 @@ public sealed class InertContentRoutingTests
     public void WritePlan_InjectionInRuleBodies_SameOutputFilesAsCleanRules()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-route", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-route", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var planner = new RoutePlanner();
         var builder = new WritePlanBuilder();
 
         var cleanRules = new[]
         {
-            MakeRule("CORE-001", domain: "core"),
-            MakeRule("SEC-001", domain: "security"),
-            MakeRule("API-001", domain: "api"),
+            MakeRule("CORE-001", category: "core"),
+            MakeRule("SEC-001", category: "security"),
+            MakeRule("API-001", category: "api"),
         };
 
         var injectedRules = cleanRules
@@ -184,7 +184,7 @@ public sealed class InertContentRoutingTests
 
     private static RouteRuleDefinition MakeRoute(
         string id,
-        string domain,
+        string category,
         RouteAnchor anchor,
         int order) =>
         new()
@@ -193,10 +193,10 @@ public sealed class InertContentRoutingTests
             Explicit = anchor == RouteAnchor.Core,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Domain = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
-                Directory = "output/${domain}",
+                Directory = "output/${category}",
                 FileName = "rules",
                 Extension = ".md",
             },
@@ -204,13 +204,13 @@ public sealed class InertContentRoutingTests
 
     private static SteeringRule MakeRule(
         string id,
-        string domain,
+        string category,
         string? primaryText = null) =>
         new()
         {
             Id = id,
-            Domain = domain,
-            Severity = "info",
+            Category = category,
+            Mandatory = false,
             PrimaryText = primaryText ?? $"Rule {id} body.",
         };
 

@@ -73,7 +73,7 @@ public sealed class RunTargetLayoutRoutingTests
     }
 
     [Fact]
-    public async Task Run_MixedDomainsFixture_NonCoreDomainRulesRouteToDomainModules()
+    public async Task Run_MixedDomainsFixture_NonCoreCategoryRulesRouteToCategoryModules()
     {
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
@@ -87,11 +87,11 @@ public sealed class RunTargetLayoutRoutingTests
 
             var memDir = MemoryDir(outputDir);
             Assert.True(File.Exists(Path.Combine(memDir, "security.md")),
-                "security.md should exist for MIX-002 (domain=security)");
+                "security.md should exist for MIX-002 (category=security)");
             Assert.True(File.Exists(Path.Combine(memDir, "operations.md")),
-                "operations.md should exist for MIX-003 (domain=operations)");
-            Assert.True(File.Exists(Path.Combine(memDir, "quality.md")),
-                "quality.md should exist for MIX-005 (domain=quality)");
+                "operations.md should exist for MIX-003 (category=operations)");
+            Assert.True(File.Exists(Path.Combine(memDir, "testing.md")),
+                "testing.md should exist for MIX-005 (category=testing)");
         }
         finally
         {
@@ -101,7 +101,7 @@ public sealed class RunTargetLayoutRoutingTests
     }
 
     [Fact]
-    public async Task Run_MixedDomainsFixture_CatchAllRoutesUnknownDomainsToNamedModules()
+    public async Task Run_MixedDomainsFixture_CatchAllRoutesUnknownCategoriesToNamedModules()
     {
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
@@ -115,11 +115,11 @@ public sealed class RunTargetLayoutRoutingTests
 
             var memDir = MemoryDir(outputDir);
             Assert.True(File.Exists(Path.Combine(memDir, "cloud.md")),
-                "cloud.md should exist for MIX-006 (domain=cloud, routed via catch-all)");
-            Assert.True(File.Exists(Path.Combine(memDir, "cicd.md")),
-                "cicd.md should exist for MIX-007 (domain=cicd, routed via catch-all)");
-            Assert.True(File.Exists(Path.Combine(memDir, "data-platform.md")),
-                "data-platform.md should exist for MIX-008 (domain=data-platform, routed via catch-all)");
+                "cloud.md should exist for MIX-006 (category=cloud, routed via catch-all)");
+            Assert.True(File.Exists(Path.Combine(memDir, "delivery.md")),
+                "delivery.md should exist for MIX-007 (category=delivery, routed via catch-all)");
+            Assert.True(File.Exists(Path.Combine(memDir, "data.md")),
+                "data.md should exist for MIX-008 (category=data, routed via catch-all)");
         }
         finally
         {

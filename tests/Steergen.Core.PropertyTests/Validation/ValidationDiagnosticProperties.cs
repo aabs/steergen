@@ -76,16 +76,17 @@ public sealed class ValidationDiagnosticProperties
     public void Validate_SingleDocument_DiagnosticsHaveLocationWhenSourcePathSet()
     {
         const string path = "/steering/rules.md";
-        var rule = MakeRule("R-001", "bogus-sev", "core");
+        // Use a rule with empty body to trigger V005 (which carries location)
+        var rule = new SteeringRule { Id = "R-001", Category = "core", PrimaryText = null };
         var doc = MakeDoc(path, "doc-valid-id", [rule]);
 
         var validator = new SteeringValidator();
         var diagnostics = validator.Validate(doc);
 
-        // V003 (invalid severity) should carry location
-        var v003 = diagnostics.SingleOrDefault(d => d.Code == "V003");
-        Assert.NotNull(v003);
-        Assert.Equal(path, v003!.Location?.FilePath);
+        // V005 (empty body) should carry location
+        var v005 = diagnostics.SingleOrDefault(d => d.Code == "V005");
+        Assert.NotNull(v005);
+        Assert.Equal(path, v005!.Location?.FilePath);
     }
 
     // ── Duplicate ID cross-document detection ──────────────────────────────
@@ -139,17 +140,16 @@ public sealed class ValidationDiagnosticProperties
     }
 
     [Fact]
-    public void ValidateCorpus_SupersedesUnknownRule_ProducesV008Warning()
+    public void ValidateCorpus_SupersedesUnknownRule_NoLongerProducesV008()
     {
+        // V008 was removed as part of simplify-rule-attributes
         var doc = MakeDoc("a.md", "doc-a",
             [MakeRuleWithSupersedes("NEW-001", "info", "core", "GHOST-999")]);
 
         var validator = new SteeringValidator();
         var diagnostics = validator.ValidateCorpus([doc]);
 
-        var warning = diagnostics.SingleOrDefault(d => d.Code == "V008");
-        Assert.NotNull(warning);
-        Assert.Equal(DiagnosticSeverity.Warning, warning!.Severity);
+        Assert.DoesNotContain(diagnostics, d => d.Code == "V008");
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
@@ -161,8 +161,8 @@ public sealed class ValidationDiagnosticProperties
         new() { Id = null, SourcePath = path, Rules = [] };
 
     private static SteeringRule MakeRule(string? id, string severity, string domain) =>
-        new() { Id = id, Severity = severity, Domain = domain, PrimaryText = "Some text." };
+        new() { Id = id, Category = domain, PrimaryText = "Some text." };
 
     private static SteeringRule MakeRuleWithSupersedes(string id, string severity, string domain, string supersedes) =>
-        new() { Id = id, Severity = severity, Domain = domain, PrimaryText = "Some text.", Supersedes = supersedes };
+        new() { Id = id, Category = domain, PrimaryText = "Some text." };
 }

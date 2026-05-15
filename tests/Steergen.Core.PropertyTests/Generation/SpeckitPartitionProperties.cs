@@ -6,10 +6,10 @@ namespace Steergen.Core.PropertyTests.Generation;
 public sealed class SpeckitPartitionProperties
 {
     private static SteeringRule MakeCoreRule(string id) =>
-        new() { Id = id, Domain = "core", Severity = "info", PrimaryText = $"Core rule {id}." };
+        new() { Id = id, Category = "core", PrimaryText = $"Core rule {id}." };
 
     private static SteeringRule MakeDomainRule(string id, string domain) =>
-        new() { Id = id, Domain = domain, Severity = "info", PrimaryText = $"Rule {id} in {domain}." };
+        new() { Id = id, Category = domain, PrimaryText = $"Rule {id} in {domain}." };
 
     [Fact]
     public void Partition_AllCoreRules_YieldsOnlyCorePartition()
@@ -168,10 +168,10 @@ public sealed class SpeckitPartitionProperties
         var result = partitioner.Partition(rulesList);
 
         Assert.All(result.CoreRules, r =>
-            Assert.Equal("core", r.Domain, StringComparer.OrdinalIgnoreCase));
+            Assert.Equal("core", r.Category, StringComparer.OrdinalIgnoreCase));
 
         Assert.All(result.DomainModules, kvp =>
             Assert.All(kvp.Value, r =>
-                Assert.False(string.Equals(r.Domain, "core", StringComparison.OrdinalIgnoreCase))));
+                Assert.False(string.Equals(r.Category, "core", StringComparison.OrdinalIgnoreCase))));
     }
 }

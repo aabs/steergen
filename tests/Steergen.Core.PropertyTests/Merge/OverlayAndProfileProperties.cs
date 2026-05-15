@@ -10,7 +10,7 @@ public sealed class OverlayAndProfileProperties
         new() { Id = id, Rules = rules };
 
     private static SteeringRule MakeRule(string id, string? profile = null) =>
-        new() { Id = id, Domain = "core", Severity = "info", Profile = profile };
+        new() { Id = id, Category = "core" };
 
     [Fact]
     public void Resolve_SameInputsTwice_YieldsIdenticalOutput()
@@ -44,19 +44,19 @@ public sealed class OverlayAndProfileProperties
     }
 
     [Fact]
-    public void Resolve_FilterByProfile_OnlyReturnsMatchingRules()
+    public void Resolve_AllRulesReturned_WhenNoProfileFiltering()
     {
         var resolver = new SteeringResolver();
-        var r1 = MakeRule("R001", profile: "strict");
-        var r2 = MakeRule("R002", profile: "default");
-        var r3 = MakeRule("R003", profile: null);
+        var r1 = MakeRule("R001");
+        var r2 = MakeRule("R002");
+        var r3 = MakeRule("R003");
 
         var global = new[] { MakeDoc("doc-A", r1, r2, r3) };
-        var result = resolver.Resolve(global, [], ["strict"]);
+        var result = resolver.Resolve(global, [], []);
 
         var ruleIds = result.Rules.Select(r => r.Id).ToHashSet();
         Assert.Contains("R001", ruleIds);
-        Assert.DoesNotContain("R002", ruleIds);
+        Assert.Contains("R002", ruleIds);
         Assert.Contains("R003", ruleIds);
     }
 

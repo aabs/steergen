@@ -14,7 +14,7 @@ Domain-specific steering rules for the Data Platform service. Extends and refine
 for batch ingestion, streaming pipelines, and data lake management. These rules do not override
 CORE or SEC rules.
 
-:::rule id="DATA-001" severity="error" category="data-quality" domain="data"
+:::rule id="DATA-001" mandatory="true" category="data-quality"
 title: Schema Contract Enforcement
 
 All data pipeline inputs and outputs must have a registered schema in the central schema registry
@@ -24,7 +24,7 @@ downstream consumers. Schema validation must run at ingestion boundaries; malfor
 routed to a dead-letter queue, never silently dropped.
 :::
 
-:::rule id="DATA-002" severity="error" category="security" domain="data"
+:::rule id="DATA-002" mandatory="true" category="security"
 title: PII Classification and Handling
 
 All data assets must be classified at creation time using the four-tier classification scheme
@@ -34,7 +34,7 @@ in any analytics store accessible to more than three named principals. Classific
 be stored in the data catalogue and reviewed quarterly.
 :::
 
-:::rule id="DATA-003" severity="warning" category="reliability" domain="data"
+:::rule id="DATA-003" category="reliability"
 title: Idempotent Processing and Exactly-Once Semantics
 
 Batch and streaming jobs must be idempotent: re-running a job with the same input watermark must
@@ -43,7 +43,7 @@ pipeline manifest. Exactly-once semantics are required for all jobs writing to f
 compliance datasets. For other datasets, at-least-once with idempotent sinks is acceptable.
 :::
 
-:::rule id="DATA-004" severity="warning" category="observability" domain="data"
+:::rule id="DATA-004" category="observability"
 title: Pipeline Health Metrics and SLOs
 
 Every production pipeline must publish the following metrics: records-in, records-out, records-DLQ,
@@ -52,7 +52,7 @@ before production deployment: maximum acceptable lag, minimum throughput, and al
 SLO breaches must trigger PagerDuty alerts within 5 minutes of breach onset.
 :::
 
-:::rule id="DATA-005" severity="error" category="compliance" domain="data"
+:::rule id="DATA-005" mandatory="true" category="compliance"
 title: Data Retention and Right-to-Erasure
 
 All data stores must implement a documented retention policy registered in the data catalogue. For
