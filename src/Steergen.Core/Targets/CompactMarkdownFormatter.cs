@@ -47,6 +47,35 @@ internal static class CompactMarkdownFormatter
         return explanatoryText ?? string.Empty;
     }
 
+    /// <summary>
+    /// Indents continuation lines (all lines after the first) so that multiline
+    /// content renders correctly inside a Markdown list item.
+    /// </summary>
+    public static string IndentContinuationLines(string text, int indent = 2)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var newlineIndex = text.IndexOf('\n');
+        if (newlineIndex < 0)
+            return text;
+
+        var prefix = new string(' ', indent);
+        var lines = text.Split('\n');
+        var builder = new System.Text.StringBuilder(text.Length + (lines.Length * indent));
+        builder.Append(lines[0]);
+        for (var i = 1; i < lines.Length; i++)
+        {
+            builder.Append('\n');
+            if (lines[i].Length > 0)
+            {
+                builder.Append(prefix);
+            }
+            builder.Append(lines[i]);
+        }
+        return builder.ToString();
+    }
+
     public static string FormatSectionHeading(string? category)
     {
         if (string.IsNullOrWhiteSpace(category))

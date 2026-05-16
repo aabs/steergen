@@ -101,7 +101,8 @@ public sealed class SpeckitTargetComponent : ITargetComponent
             Mandatory = r.Mandatory,
             Category = r.Category,
             Deprecated = r.Deprecated,
-            PrimaryText = CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText),
+            PrimaryText = CompactMarkdownFormatter.IndentContinuationLines(
+                CompactMarkdownFormatter.FormatRuleText(r.PrimaryText, r.ExplanatoryText)),
         }).ToList();
 
     private static SpeckitConstitutionModel EnsureSections(SpeckitConstitutionModel model)
