@@ -76,7 +76,7 @@ public sealed class RunSpeckitCommandTests
     }
 
     [Fact]
-    public async Task Run_WithRealisticFixtures_CategoryModulesCreatedForNonCoreRules()
+    public async Task Run_WithRealisticFixtures_AllRulesRoutedToConstitution()
     {
         var outputDir = Path.Combine(Path.GetTempPath(), $"speckit-integ-{Guid.NewGuid():N}");
         try
@@ -85,11 +85,10 @@ public sealed class RunSpeckitCommandTests
                 await File.ReadAllTextAsync(Path.Combine(FixturesRoot, "project", "project-steering.md")),
                 "project-steering.md");
 
-            var categories = projectDoc.Rules
+            var ruleIds = projectDoc.Rules
                 .Where(r => !string.Equals(r.Category, "core", StringComparison.OrdinalIgnoreCase))
-                .Select(r => r.Category)
-                .Where(c => c is not null)
-                .Distinct()
+                .Select(r => r.Id)
+                .Where(id => id is not null)
                 .ToList();
 
             var service = new SpeckitGenerationService();
@@ -100,11 +99,17 @@ public sealed class RunSpeckitCommandTests
                 outputPath: outputDir,
                 templateProvider: new EmbeddedTemplateProvider());
 
-            foreach (var category in categories)
+            // With the single-file layout, all rules (including non-core) route to constitution.md
+            var constitutionPath = Path.Combine(SpeckitMemoryDir(outputDir), "constitution.md");
+            Assert.True(File.Exists(constitutionPath), "constitution.md should exist");
+            var content = await File.ReadAllTextAsync(constitutionPath);
+
+            // All non-core rule IDs should be present in the single constitution file
+            foreach (var ruleId in ruleIds)
             {
                 Assert.True(
-                    File.Exists(Path.Combine(SpeckitMemoryDir(outputDir), $"project-{category}.md")),
-                    $"Expected project category module file for category '{category}' under .specify/memory/");
+                    content.Contains(ruleId!, StringComparison.Ordinal),
+                    $"Expected rule '{ruleId}' to be present in constitution.md");
             }
         }
         finally

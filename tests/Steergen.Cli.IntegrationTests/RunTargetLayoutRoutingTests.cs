@@ -73,7 +73,7 @@ public sealed class RunTargetLayoutRoutingTests
     }
 
     [Fact]
-    public async Task Run_MixedDomainsFixture_NonCoreCategoryRulesRouteToCategoryModules()
+    public async Task Run_MixedDomainsFixture_NonCoreCategoryRulesRouteToConstitution()
     {
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
@@ -85,13 +85,14 @@ public sealed class RunTargetLayoutRoutingTests
                 configPath: null, globalRoot: globalRoot, projectRoot: null,
                 outputBase: outputDir, explicitTargets: ["speckit"], quiet: true, cancellationToken: default);
 
-            var memDir = MemoryDir(outputDir);
-            Assert.True(File.Exists(Path.Combine(memDir, "security.md")),
-                "security.md should exist for MIX-002 (category=security)");
-            Assert.True(File.Exists(Path.Combine(memDir, "operations.md")),
-                "operations.md should exist for MIX-003 (category=operations)");
-            Assert.True(File.Exists(Path.Combine(memDir, "testing.md")),
-                "testing.md should exist for MIX-005 (category=testing)");
+            var constitutionPath = Path.Combine(MemoryDir(outputDir), "constitution.md");
+            Assert.True(File.Exists(constitutionPath), "constitution.md should exist");
+            var content = await File.ReadAllTextAsync(constitutionPath);
+
+            // All rules route to constitution.md with the single-file layout
+            Assert.Contains("MIX-002", content); // security
+            Assert.Contains("MIX-003", content); // operations
+            Assert.Contains("MIX-005", content); // testing
         }
         finally
         {
@@ -101,7 +102,7 @@ public sealed class RunTargetLayoutRoutingTests
     }
 
     [Fact]
-    public async Task Run_MixedDomainsFixture_CatchAllRoutesUnknownCategoriesToNamedModules()
+    public async Task Run_MixedDomainsFixture_AllCategoriesRouteToSingleConstitutionFile()
     {
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
@@ -113,13 +114,14 @@ public sealed class RunTargetLayoutRoutingTests
                 configPath: null, globalRoot: globalRoot, projectRoot: null,
                 outputBase: outputDir, explicitTargets: ["speckit"], quiet: true, cancellationToken: default);
 
-            var memDir = MemoryDir(outputDir);
-            Assert.True(File.Exists(Path.Combine(memDir, "cloud.md")),
-                "cloud.md should exist for MIX-006 (category=cloud, routed via catch-all)");
-            Assert.True(File.Exists(Path.Combine(memDir, "delivery.md")),
-                "delivery.md should exist for MIX-007 (category=delivery, routed via catch-all)");
-            Assert.True(File.Exists(Path.Combine(memDir, "data.md")),
-                "data.md should exist for MIX-008 (category=data, routed via catch-all)");
+            var constitutionPath = Path.Combine(MemoryDir(outputDir), "constitution.md");
+            Assert.True(File.Exists(constitutionPath), "constitution.md should exist");
+            var content = await File.ReadAllTextAsync(constitutionPath);
+
+            // All categories (including cloud, delivery, data) route to constitution.md
+            Assert.Contains("MIX-006", content); // cloud
+            Assert.Contains("MIX-007", content); // delivery
+            Assert.Contains("MIX-008", content); // data
         }
         finally
         {

@@ -102,8 +102,7 @@ public sealed class RunCompatibilityBaselineTests
                 .OrderBy(f => f)
                 .ToArray();
 
-            Assert.True(outputFiles.Length >= 2,
-                $"Expected constitution.md plus domain modules; got: {string.Join(", ", outputFiles)}");
+            // With the single-file layout, all rules route to constitution.md
             Assert.Contains("constitution.md", outputFiles);
         }
         finally { Directory.Delete(outputDir, recursive: true); }

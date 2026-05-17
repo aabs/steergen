@@ -48,7 +48,7 @@ public sealed class RunCatchAllRoutingTests
     }
 
     [Fact]
-    public async Task Run_CatchAllFixture_UnrecognizedDomainsLandInNamedCatchAllFiles()
+    public async Task Run_CatchAllFixture_AllCategoriesRouteToConstitution()
     {
         var globalRoot = MakeTempDir();
         var outputDir = MakeTempDir();
@@ -58,10 +58,14 @@ public sealed class RunCatchAllRoutingTests
 
             await RunCommand.RunAsync(null, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
-            var accessibilityPath = Path.Combine(outputDir, ".specify", "memory", "accessibility.md");
-            Assert.True(File.Exists(accessibilityPath), "accessibility.md should exist — catch-all captures category=accessibility rules");
-            var content = await File.ReadAllTextAsync(accessibilityPath);
-            Assert.Contains("RLAY-006", content);
+            var constitutionPath = Path.Combine(outputDir, ".specify", "memory", "constitution.md");
+            Assert.True(File.Exists(constitutionPath), "constitution.md should exist");
+            var content = await File.ReadAllTextAsync(constitutionPath);
+
+            // With the single-file layout, all categories route to constitution.md
+            Assert.Contains("RLAY-006", content); // accessibility
+            Assert.Contains("RLAY-002", content); // security
+            Assert.Contains("RLAY-003", content); // performance
         }
         finally
         {
