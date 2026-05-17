@@ -39,7 +39,8 @@ routes:
 
 fallback:
   mode: other-at-core-anchor
-  fileBaseName: other
+  fileBaseName: constitution
+  directory: "${targetRoot}"
 
 purge:
   roots:
