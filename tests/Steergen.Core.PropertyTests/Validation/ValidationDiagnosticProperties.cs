@@ -160,9 +160,9 @@ public sealed class ValidationDiagnosticProperties
     private static SteeringDocument MakeDocNoId(string path) =>
         new() { Id = null, SourcePath = path, Rules = [] };
 
-    private static SteeringRule MakeRule(string? id, string severity, string domain) =>
-        new() { Id = id, Category = domain, PrimaryText = "Some text." };
+    private static SteeringRule MakeRule(string? id, string _severity, string category) =>
+        new() { Id = id, Category = category, PrimaryText = "Some text." };
 
-    private static SteeringRule MakeRuleWithSupersedes(string id, string severity, string domain, string supersedes) =>
-        new() { Id = id, Category = domain, PrimaryText = "Some text." };
+    private static SteeringRule MakeRuleWithSupersedes(string id, string _severity, string category, string _supersedes) =>
+        new() { Id = id, Category = category, PrimaryText = "Some text." };
 }

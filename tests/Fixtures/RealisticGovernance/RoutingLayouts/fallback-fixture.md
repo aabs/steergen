@@ -19,28 +19,24 @@ This fixture is used to verify:
 - No duplicate placement occurs.
 
 :::rule id="FALL-001" category="uncategorised"
-title: Unmatched Routing Rule Alpha
 
 This rule has category=uncategorised. No specific route or catch-all covers this value.
 It should fall back to other.md in the same directory as the core anchor.
 :::
 
 :::rule id="FALL-002" category="experimental"
-title: Unmatched Routing Rule Beta
 
 This rule has category=experimental. No route definition covers this value.
 It should be placed in other.md alongside FALL-001.
 :::
 
 :::rule id="FALL-003" mandatory="true" category="unknown"
-title: Unmatched Routing Rule Gamma
 
 This rule uses category=unknown. Fallback placement verifies that even mandatory rules
 without matching routes are safely written to other.md.
 :::
 
 :::rule id="CORE-FALLBACK-001" mandatory="true" category="core"
-title: Core Anchor Rule for Fallback Test
 
 This rule has category=core and routes to the core anchor (constitution.md). It establishes
 the directory and extension used for the other.md fallback destination. The presence of this

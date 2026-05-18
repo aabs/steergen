@@ -7,8 +7,8 @@ namespace Steergen.Core.PropertyTests.Security;
 /// Property tests proving that instruction-like and prompt-injection-style content
 /// in rule body, title, or ID is treated as inert data during route selection.
 ///
-/// Route selection is driven exclusively by rule metadata (domain, category, severity,
-/// profile, tags). Content fields (body text, title) are opaque strings — the router
+/// Route selection is driven exclusively by rule metadata (category, mandatory,
+/// tags). Content fields (body text, title) are opaque strings — the router
 /// never evaluates or executes them.
 /// </summary>
 public sealed class InertContentRoutingProperties
@@ -23,7 +23,7 @@ public sealed class InertContentRoutingProperties
         "<script>alert('xss')</script>",
         "${globalRoot}/../../etc/passwd",
         "\\x00\\x01 NUL byte injection",
-        "route: core\ndomain: core\nanchor: core",
+        "route: core\ncategory: core\nanchor: core",
     ];
 
     // ── Property: injection content does not change resolved route ────────────────
@@ -32,15 +32,15 @@ public sealed class InertContentRoutingProperties
     public void Resolve_InjectionLikeBody_ProducesSameRouteAsCleanRule()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var resolver = new RouteResolver();
 
         foreach (var payload in InjectionPayloads)
         {
-            var cleanRule = MakeRule("SEC-001", domain: "security", body: "Normal clean content.");
-            var injectedRule = MakeRule("SEC-001", domain: "security", body: payload);
+            var cleanRule = MakeRule("SEC-001", category: "security", body: "Normal clean content.");
+            var injectedRule = MakeRule("SEC-001", category: "security", body: payload);
 
             var cleanResult = resolver.Resolve(cleanRule, layout);
             var injectedResult = resolver.Resolve(injectedRule, layout);
@@ -56,15 +56,15 @@ public sealed class InertContentRoutingProperties
     public void Resolve_InjectionLikeTitle_ProducesSameRouteAsCleanRule()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-route", domain: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-route", category: "security", anchor: RouteAnchor.None, order: 20),
         ]);
         var resolver = new RouteResolver();
 
         foreach (var payload in InjectionPayloads)
         {
-            var cleanRule = MakeRule("SEC-001", domain: "security", title: "Secure Communication");
-            var injectedRule = MakeRule("SEC-001", domain: "security", title: payload);
+            var cleanRule = MakeRule("SEC-001", category: "security", title: "Secure Communication");
+            var injectedRule = MakeRule("SEC-001", category: "security", title: payload);
 
             var cleanResult = resolver.Resolve(cleanRule, layout);
             var injectedResult = resolver.Resolve(injectedRule, layout);
@@ -79,16 +79,16 @@ public sealed class InertContentRoutingProperties
     public void Plan_InjectionInOneRule_DoesNotAffectOtherRuleRoutes()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("api-route", domain: "api", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("api-route", category: "api", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
 
         var rules = new[]
         {
-            MakeRule("CORE-001", domain: "core"),
-            MakeRule("API-001", domain: "api", body: InjectionPayloads[0]),
-            MakeRule("SEC-001", domain: "security"),
+            MakeRule("CORE-001", category: "core"),
+            MakeRule("API-001", category: "api", body: InjectionPayloads[0]),
+            MakeRule("SEC-001", category: "security"),
         };
 
         var planner = new RoutePlanner();
@@ -113,19 +113,19 @@ public sealed class InertContentRoutingProperties
     public void Resolve_AnyBodyContent_NeverChangesRouteForSameMetadata()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-route", domain: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-route", category: "security", anchor: RouteAnchor.None, order: 20),
         ]);
         var resolver = new RouteResolver();
 
-        var baseRule = MakeRule("CORE-001", domain: "core");
+        var baseRule = MakeRule("CORE-001", category: "core");
         var baseResult = resolver.Resolve(baseRule, layout);
 
         // Vary body only — route should never change
-        var bodies = InjectionPayloads.Append("domain: security\n\nroute: security-route").ToArray();
+        var bodies = InjectionPayloads.Append("category: security\n\nroute: security-route").ToArray();
         foreach (var body in bodies)
         {
-            var variedRule = MakeRule("CORE-001", domain: "core", body: body);
+            var variedRule = MakeRule("CORE-001", category: "core", body: body);
             var result = resolver.Resolve(variedRule, layout);
 
             Assert.Equal(baseResult.SelectedRouteId, result.SelectedRouteId);
@@ -139,22 +139,22 @@ public sealed class InertContentRoutingProperties
     public void WritePlan_InjectionInRuleBody_DoesNotAlterDestinationPath()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var planner = new RoutePlanner();
         var builder = new WritePlanBuilder();
 
         var cleanRules = new[]
         {
-            MakeRule("SEC-001", domain: "security"),
-            MakeRule("API-001", domain: "api"),
+            MakeRule("SEC-001", category: "security"),
+            MakeRule("API-001", category: "api"),
         };
 
         var injectedRules = new[]
         {
-            MakeRule("SEC-001", domain: "security", body: InjectionPayloads[0]),
-            MakeRule("API-001", domain: "api", body: InjectionPayloads[3]),
+            MakeRule("SEC-001", category: "security", body: InjectionPayloads[0]),
+            MakeRule("API-001", category: "api", body: InjectionPayloads[3]),
         };
 
         var cleanPlan = builder.Build("test", planner.Plan(cleanRules, layout));
@@ -178,7 +178,7 @@ public sealed class InertContentRoutingProperties
 
     private static RouteRuleDefinition MakeRoute(
         string id,
-        string domain,
+        string category,
         RouteAnchor anchor,
         int order) =>
         new()
@@ -187,7 +187,7 @@ public sealed class InertContentRoutingProperties
             Explicit = anchor == RouteAnchor.Core,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Category = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
                 Directory = "output/${category}",
@@ -198,13 +198,13 @@ public sealed class InertContentRoutingProperties
 
     private static SteeringRule MakeRule(
         string id,
-        string domain,
+        string category,
         string? body = null,
         string? title = null) =>
         new()
         {
             Id = id,
-            Category = domain,
+            Category = category,
             PrimaryText = body ?? "Normal rule content.",
             ExplanatoryText = title ?? $"Rule {id}",
         };

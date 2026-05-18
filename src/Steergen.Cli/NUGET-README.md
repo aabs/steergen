@@ -48,11 +48,11 @@ title: Engineering Baseline
 
 # Engineering Baseline
 
-:::rule id="CORE-001" severity="error" category="quality" domain="core"
+:::rule id="CORE-001" mandatory="true" category="quality" tags="quality,reviews"
 Prefer small, composable changes that are easy to review and easy to revert.
 :::
 
-:::rule id="CORE-002" severity="warning" category="testing" domain="core"
+:::rule id="CORE-002" category="testing" tags="testing,regression,ci"
 Add or update automated tests when behaviour changes.
 :::
 ```

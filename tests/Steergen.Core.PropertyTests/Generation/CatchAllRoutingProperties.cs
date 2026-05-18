@@ -12,19 +12,19 @@ public sealed class CatchAllRoutingProperties
     // ── Property: catch-all wildcard matches any rule ────────────────────────────
 
     [Fact]
-    public void Resolve_CatchAllRoute_MatchesAnyDomain()
+    public void Resolve_CatchAllRoute_MatchesAnyCategory()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var resolver = new RouteResolver();
 
-        foreach (var domain in new[] { "security", "api", "quality", "unknown-domain" })
+        foreach (var category in new[] { "security", "api", "quality", "unknown-category" })
         {
-            var rule = MakeRule($"X-001", domain: domain);
+            var rule = MakeRule($"X-001", category: category);
             var result = resolver.Resolve(rule, layout);
-            Assert.True(result.IsResolved, $"Catch-all should match domain='{domain}'");
+            Assert.True(result.IsResolved, $"Catch-all should match category='{category}'");
         }
     }
 
@@ -34,11 +34,11 @@ public sealed class CatchAllRoutingProperties
     public void Resolve_SpecificRouteAndCatchAll_SpecificRouteWins()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("api-specific", domain: "api", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("api-specific", category: "api", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("API-001", domain: "api");
+        var rule = MakeRule("API-001", category: "api");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -48,14 +48,14 @@ public sealed class CatchAllRoutingProperties
     // ── Property: catch-all is selected when no specific route matches ────────────
 
     [Fact]
-    public void Resolve_NoCatchAllCandidateForSpecificDomain_CatchAllSelectedForUnknown()
+    public void Resolve_NoCatchAllCandidateForSpecificCategory_CatchAllSelectedForUnknown()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("api-specific", domain: "api", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("api-specific", category: "api", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security"); // no specific "security" route
+        var rule = MakeRule("SEC-001", category: "security"); // no specific "security" route
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -68,14 +68,14 @@ public sealed class CatchAllRoutingProperties
     public void Plan_WhenCatchAllExists_FallbackNeverApplied()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var rules = new[]
         {
-            MakeRule("SEC-001", domain: "security"),
-            MakeRule("API-001", domain: "api"),
-            MakeRule("MISC-001", domain: "misc"),
+            MakeRule("SEC-001", category: "security"),
+            MakeRule("API-001", category: "api"),
+            MakeRule("MISC-001", category: "misc"),
         };
 
         var planner = new RoutePlanner();
@@ -95,10 +95,10 @@ public sealed class CatchAllRoutingProperties
     public void Plan_WhenNoRouteMatches_FallbackAppliedAtCoreAnchorDirectory()
     {
         var layout = MakeLayoutWithCoreAnchorDirectory([
-            MakeRouteWithDir("core", domain: "core", anchor: RouteAnchor.Core, order: 10, dir: ".kiro/steering"),
-            // No catch-all; only core domain routed explicitly
+            MakeRouteWithDir("core", category: "core", anchor: RouteAnchor.Core, order: 10, dir: ".kiro/steering"),
+            // No catch-all; only core category routed explicitly
         ]);
-        var rule = MakeRule("SEC-001", domain: "security"); // won't match core route
+        var rule = MakeRule("SEC-001", category: "security"); // won't match core route
 
         var planner = new RoutePlanner();
         var results = planner.Plan([rule], layout);
@@ -119,10 +119,10 @@ public sealed class CatchAllRoutingProperties
     public void Resolve_CatchAllRoute_ProducesNonNullDestinationPath()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("UNKNOWN-001", domain: "unknown");
+        var rule = MakeRule("UNKNOWN-001", category: "unknown");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -136,14 +136,14 @@ public sealed class CatchAllRoutingProperties
     public void WritePlanBuilder_CatchAllResolutions_GroupedByDestination()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
         var rules = new[]
         {
-            MakeRule("SEC-001", domain: "security"),
-            MakeRule("SEC-002", domain: "security"),
-            MakeRule("API-001", domain: "api"),
+            MakeRule("SEC-001", category: "security"),
+            MakeRule("SEC-002", category: "security"),
+            MakeRule("API-001", category: "api"),
         };
 
         var planner = new RoutePlanner();
@@ -177,7 +177,7 @@ public sealed class CatchAllRoutingProperties
 
     private static RouteRuleDefinition MakeRoute(
         string id,
-        string domain,
+        string category,
         RouteAnchor anchor,
         int order) =>
         new()
@@ -186,7 +186,7 @@ public sealed class CatchAllRoutingProperties
             Explicit = anchor == RouteAnchor.Core,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Category = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
                 Directory = "output/${category}",
@@ -197,7 +197,7 @@ public sealed class CatchAllRoutingProperties
 
     private static RouteRuleDefinition MakeRouteWithDir(
         string id,
-        string domain,
+        string category,
         RouteAnchor anchor,
         int order,
         string dir) =>
@@ -207,7 +207,7 @@ public sealed class CatchAllRoutingProperties
             Explicit = anchor == RouteAnchor.Core,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Category = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
                 Directory = dir,
@@ -216,6 +216,6 @@ public sealed class CatchAllRoutingProperties
             },
         };
 
-    private static SteeringRule MakeRule(string id, string domain) =>
-        new() { Id = id, Category = domain };
+    private static SteeringRule MakeRule(string id, string category) =>
+        new() { Id = id, Category = category };
 }

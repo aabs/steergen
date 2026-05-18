@@ -112,11 +112,11 @@ scope: global
 
 # Engineering Baseline
 
-:::rule id="CORE-001" severity="error" category="quality" domain="core" tags="baseline,quality,reviewability"
+:::rule id="CORE-001" mandatory="true" category="quality" tags="baseline,quality,reviewability"
 Prefer small, composable changes that are easy to review and revert.
 :::
 
-:::rule id="CORE-002" severity="warning" category="testing" domain="core" tags="testing,regression,ci"
+:::rule id="CORE-002" category="testing" tags="testing,regression,ci"
 Add or update automated tests whenever observable behaviour changes.
 :::
 ```
@@ -291,10 +291,10 @@ These can be useful in layout override files (see [section 6](#6-controlling-whi
 
 By default steergen uses a built-in routing layout for each target. For example, the Speckit target routes:
 
-- Global rules with `domain: core` → `constitution.md`
-- All other global rules → `{domain}.md` (one file per domain)
-- Project rules with `domain: core` → `project-constitution.md`
-- All other project rules → `project-{domain}.md`
+- Global rules with `category: core` → `constitution.md`
+- All other global rules → `{category}.md` (one file per category)
+- Project rules with `category: core` → `project-constitution.md`
+- All other project rules → `project-{category}.md`
 
 You can override this layout for any target without affecting others.
 
@@ -313,7 +313,7 @@ routes:
     anchor: core
     order: 10
     match:
-      domain: core
+      category: core
     destination:
       directory: "${targetRoot}"
       fileName: "constitution"
@@ -325,22 +325,22 @@ routes:
     explicit: true
     order: 20
     match:
-      domain: security
+      category: security
     destination:
       directory: "${targetRoot}"
       fileName: "security"
       extension: ".md"
 
-  # Everything else falls into domain-named files
+  # Everything else falls into category-named files
   - id: catch-all-global
     scope: global
     explicit: false
     order: 100
     match:
-      domain: "*"
+      category: "*"
     destination:
       directory: "${targetRoot}"
-      fileName: "${domain}"
+      fileName: "${category}"
       extension: ".md"
 
 fallback:
@@ -364,36 +364,26 @@ Routes match on rule metadata. All specified fields must match (logical AND):
 
 ```yaml
 match:
-  domain: api               # exact domain value
-  category: security        # exact category value
-  severity: error           # exact severity value
+  category: security        # exact category value (primary routing discriminator)
+  mandatory: true           # only mandatory rules (null/omitted = match all)
   tagsAny:                  # any of these tags present (OR)
     - pii
     - compliance
-  profile: strict           # only for rules with profile="strict"
+  sourceContext:            # arbitrary key-value metadata from source doc
+    team: platform
 ```
 
 Use `"*"` to match any value of a field. A more specific route always wins over a wildcard route.
 
-### Profile-gated rules
+### Using `appliesTo` for target-specific rules
 
-A rule can include a `profile` attribute in the source document:
+A rule can include an `appliesTo` attribute to indicate which targets or contexts it is relevant to:
 
 ```markdown
-:::rule id="SEC-010" severity="error" category="security" domain="core" profile="strict" tags="security,strict,token-lifecycle"
+:::rule id="SEC-010" mandatory="true" category="security" tags="security,token-lifecycle" appliesTo="production,staging"
 Token lifetime must not exceed 15 minutes in production environments.
 :::
 ```
-
-Profiles can be activated by setting `activeProfiles` in `steergen.config.yaml`:
-
-```yaml
-activeProfiles:
-  - default
-  - strict
-```
-
-Rules with no `profile` attribute are included by default. Rules with a `profile` attribute are included only when that profile is active.
 
 ---
 
@@ -553,20 +543,20 @@ status: active
 
 These rules extend the organisation baseline for the Platform API service.
 
-:::rule id="API-001" category="api-design" domain="api" tags="api,versioning"
+:::rule id="API-001" mandatory="true" category="api-design" tags="api,versioning"
 All REST endpoints must include an explicit version prefix (e.g. `/v1/`).
 :::
 
-:::rule id="API-002" category="api-design" domain="api" tags="api,versioning"
+:::rule id="API-002" mandatory="true" category="api-design" tags="api,versioning"
 Header-based version negotiation is not permitted.
 :::
 
-:::rule id="API-003" category="api-design" domain="api" tags="api,versioning,backward-compatibility"
+:::rule id="API-003" category="api-design" tags="api,versioning,backward-compatibility"
 When introducing a new major version, the previous version must remain
 available for a minimum of 90 days.
 :::
 
-:::rule id="API-004" severity="warning" category="observability" domain="api" tags="observability,structured-logging,correlation-id"
+:::rule id="API-004" category="observability" tags="observability,structured-logging,correlation-id"
 All log statements must use structured logging with JSON output in production.
 Every request must carry a `X-Correlation-Id` that is propagated to all
 downstream calls and included in every log entry.
@@ -578,13 +568,13 @@ downstream calls and included in every log entry.
 | Attribute    | Required | Description                                                     |
 |--------------|----------|-----------------------------------------------------------------|
 | `id`         | Yes      | Unique rule identifier (e.g. `API-001`)                         |
-| `severity`   | No       | `error`, `warning`, `info`, or `hint`                           |
-| `category`   | No       | Logical grouping (e.g. `security`, `testing`, `api-design`)     |
-| `domain`     | No       | Routing domain — controls which file the rule ends up in        |
-| `title`      | No       | Short human-readable label shown in generated output            |
-| `profile`    | No       | Profile name — rule only included when that profile is active   |
+| `mandatory`  | No       | `true` or `false` (default). Marks the rule as non-negotiable   |
+| `category`   | No       | Logical grouping and primary routing discriminator (e.g. `security`, `testing`, `api-design`) |
 | `tags`       | No       | Comma-separated labels (e.g. `tags="pii,compliance"`)           |
-| `supersedes` | No       | ID of a global rule this project rule overrides or supersedes   |
+| `appliesTo`  | No       | Comma-separated list of targets or contexts this rule applies to |
+| `deprecated` | No       | `true` to mark the rule as deprecated                           |
+
+> **Legacy attributes:** `severity`, `domain`, `profile`, `supersedes`, and `title` (inline body line) are accepted by the parser for backward compatibility but are silently ignored or treated as plain body text. They have no effect on routing or output. Update your documents to use `category` as the primary routing discriminator and `mandatory` for enforcement level.
 
 ### Where project documents live
 
@@ -621,14 +611,14 @@ steergen inspect
 
 ### Treat steering documents like code
 
-You can review steering documents using the same process you use for code. Pull requests that change rules may benefit from consistency and completeness checks, especially when they touch domain boundaries or severity levels that downstream tooling enforces.
+You can review steering documents using the same process you use for code. Pull requests that change rules may benefit from consistency and completeness checks, especially when they touch category boundaries or mandatory status that downstream tooling enforces.
 
 ### Use `steergen inspect` in code review
 
 Reviewers can run `steergen inspect` on a branch to view the resolved rule set as JSON, which can make regressions or conflicts between global and project rules easier to spot:
 
 ```bash
-steergen inspect | jq '.rules[] | {id, severity, domain}'
+steergen inspect | jq '.rules[] | {id, category, mandatory}'
 ```
 
 ### Pin the tool version in version control
@@ -642,34 +632,17 @@ If you want contributors and CI runs to use the same version, you can use `.conf
 
 Consider avoiding per-project copies of the global corpus. A shared global corpus can reduce drift and make policy changes easier to keep consistent across projects.
 
-### Use profiles for environment-specific rules
+### Use `appliesTo` for context-specific rules
 
-If certain rules apply only in production or in a hardened security posture, the `profile` attribute can be used instead of maintaining separate document sets:
+If certain rules apply only in specific contexts (e.g. production, a particular service, or a specific team), the `appliesTo` attribute can be used instead of maintaining separate document sets:
 
 ```markdown
-:::rule id="SEC-010" severity="error" domain="core" profile="strict" tags="security,strict,production"
+:::rule id="SEC-010" mandatory="true" category="security" tags="security,production,token-lifecycle" appliesTo="production,staging"
 Token lifetime must not exceed 15 minutes in production deployments.
 :::
 ```
 
-The profile can be activated by setting it in `steergen.config.yaml` before running generation:
-
-```yaml
-activeProfiles:
-  - strict
-```
-
-Alternatively, a separate config file can be maintained for each posture and passed explicitly:
-
-```bash
-steergen run --config steergen.strict.config.yaml
-```
-
-> **Note — `steergen run` has no `--profile` flag.** Profiles for `run` must be set via
-> `activeProfiles` in the config file. The `steergen inspect` command does accept `--profile`
-> flags for ad-hoc inspection: `steergen inspect --profile strict`.
-
-Builds without active profiles include only rules with no `profile` attribute, which can keep the day-to-day development experience less cluttered.
+The `appliesTo` attribute is informational metadata that downstream targets can use to filter or annotate rules. It does not affect routing.
 
 ### Check generated files into source control
 

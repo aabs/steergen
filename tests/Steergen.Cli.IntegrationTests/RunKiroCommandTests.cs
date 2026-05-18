@@ -195,7 +195,7 @@ public sealed class RunKiroCommandTests
             Assert.Contains("## Core", content);
             Assert.Contains("- CORE-001", content);
             Assert.Contains("All production code must maintain a minimum of 80% line coverage", content);
-            Assert.Contains("title:", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("title:", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("## CORE-001", content, StringComparison.Ordinal);
         }
         finally

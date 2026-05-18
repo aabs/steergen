@@ -73,7 +73,7 @@ title: Engineering Baseline
 
 # Engineering Baseline
 
-:::rule id="CORE-001" severity="error" category="quality" domain="core" tags="quality,reviews"
+:::rule id="CORE-001" mandatory="true" category="quality" tags="quality,reviews"
 Prefer small, composable changes that are easy to review and easy to revert.
 :::
 ```
@@ -162,7 +162,7 @@ Key fields:
 | `projectRoot` | Source folder for project-specific steering docs |
 | `generationRoot` | Base folder for all generated output |
 | `registeredTargets` | List of targets to generate by default |
-| `activeProfiles` | Profile names used to filter which rules are included |
+| `activeProfiles` | Profile names (legacy; retained for backward compatibility) |
 | `templatePackVersion` | Template pack version (managed by `steergen update`) |
 
 For full configuration options and advanced routing, see [Section 5](docs/getting-started.md#5-controlling-where-generated-files-end-up-roots) and [Section 6](docs/getting-started.md#6-controlling-which-rules-go-where-routing) of the Getting Started guide.

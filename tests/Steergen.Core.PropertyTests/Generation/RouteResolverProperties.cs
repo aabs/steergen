@@ -14,15 +14,15 @@ public sealed class RouteResolverProperties
     public void Resolve_WithMatchingRoute_ReturnsExactlyOneDestinationPath()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
 
         var rules = new[]
         {
-            MakeRule("CORE-001", domain: "core"),
-            MakeRule("SEC-001", domain: "security"),
-            MakeRule("API-001", domain: "api"),
+            MakeRule("CORE-001", category: "core"),
+            MakeRule("SEC-001", category: "security"),
+            MakeRule("API-001", category: "api"),
         };
 
         var resolver = new RouteResolver();
@@ -41,11 +41,11 @@ public sealed class RouteResolverProperties
     public void Resolve_CalledTwiceWithSameInputs_ProducesSameResult()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-module", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-module", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security");
+        var rule = MakeRule("SEC-001", category: "security");
 
         var resolver = new RouteResolver();
         var result1 = resolver.Resolve(rule, layout);
@@ -61,10 +61,10 @@ public sealed class RouteResolverProperties
     public void Resolve_ExplicitRouteBeatsNonExplicit_WhenBothMatch()
     {
         var layout = MakeLayout([
-            MakeRoute("explicit-core", domain: "core", anchor: RouteAnchor.Core, order: 10, isExplicit: true),
-            MakeRoute("non-explicit-core", domain: "core", anchor: RouteAnchor.None, order: 5, isExplicit: false),
+            MakeRoute("explicit-core", category: "core", anchor: RouteAnchor.Core, order: 10, isExplicit: true),
+            MakeRoute("non-explicit-core", category: "core", anchor: RouteAnchor.None, order: 5, isExplicit: false),
         ]);
-        var rule = MakeRule("CORE-001", domain: "core");
+        var rule = MakeRule("CORE-001", category: "core");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -77,9 +77,9 @@ public sealed class RouteResolverProperties
     public void Resolve_WithNoMatchingRoute_ReturnsUnresolved()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security");
+        var rule = MakeRule("SEC-001", category: "security");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -94,11 +94,11 @@ public sealed class RouteResolverProperties
     public void Resolve_SpecificDomainBeforeWildcard_SpecificWins()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-specific", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-specific", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security");
+        var rule = MakeRule("SEC-001", category: "security");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -111,28 +111,28 @@ public sealed class RouteResolverProperties
     public void Resolve_MatchedRouteIds_ContainsAllCandidateRoutes()
     {
         var layout = MakeLayout([
-            MakeRoute("core", domain: "core", anchor: RouteAnchor.Core, order: 10),
-            MakeRoute("security-specific", domain: "security", anchor: RouteAnchor.None, order: 20),
-            MakeRoute("catch-all", domain: "*", anchor: RouteAnchor.None, order: 100),
+            MakeRoute("core", category: "core", anchor: RouteAnchor.Core, order: 10),
+            MakeRoute("security-specific", category: "security", anchor: RouteAnchor.None, order: 20),
+            MakeRoute("catch-all", category: "*", anchor: RouteAnchor.None, order: 100),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security");
+        var rule = MakeRule("SEC-001", category: "security");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
         // Both "security-specific" and "catch-all" match a security rule
         Assert.Contains("security-specific", result.MatchedRouteIds);
         Assert.Contains("catch-all", result.MatchedRouteIds);
-        Assert.DoesNotContain("core", result.MatchedRouteIds); // domain=core won't match domain=security
+        Assert.DoesNotContain("core", result.MatchedRouteIds); // category=core won't match category=security
     }
 
     [Fact]
     public void Resolve_ProjectRule_IgnoresMatchingGlobalRouteWhenProjectRouteExists()
     {
         var layout = MakeLayout([
-            MakeRoute("global-catch-all", domain: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Global),
-            MakeRoute("project-catch-all", domain: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Project),
+            MakeRoute("global-catch-all", category: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Global),
+            MakeRoute("project-catch-all", category: "*", anchor: RouteAnchor.None, order: 100, scope: RouteScope.Project),
         ]);
-        var rule = MakeRule("SEC-001", domain: "security") with { SourceScope = RouteScope.Project };
+        var rule = MakeRule("SEC-001", category: "security") with { SourceScope = RouteScope.Project };
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -146,7 +146,7 @@ public sealed class RouteResolverProperties
     public void Resolve_EmptyRoutesList_AlwaysUnresolved()
     {
         var layout = MakeLayout([]);
-        var rule = MakeRule("CORE-001", domain: "core");
+        var rule = MakeRule("CORE-001", category: "core");
 
         var result = new RouteResolver().Resolve(rule, layout);
 
@@ -165,7 +165,7 @@ public sealed class RouteResolverProperties
 
     private static RouteRuleDefinition MakeRoute(
         string id,
-        string domain,
+        string category,
         RouteAnchor anchor,
         int order,
         bool isExplicit = false,
@@ -177,7 +177,7 @@ public sealed class RouteResolverProperties
             Explicit = isExplicit,
             Anchor = anchor,
             Order = order,
-            Match = new RouteMatchExpression { Category = [domain] },
+            Match = new RouteMatchExpression { Category = [category] },
             Destination = new DestinationTemplate
             {
                 Directory = "output/${category}",
@@ -186,6 +186,6 @@ public sealed class RouteResolverProperties
             },
         };
 
-    private static SteeringRule MakeRule(string id, string domain) =>
-        new() { Id = id, Category = domain };
+    private static SteeringRule MakeRule(string id, string category) =>
+        new() { Id = id, Category = category };
 }

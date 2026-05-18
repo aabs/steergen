@@ -220,7 +220,7 @@ public sealed class RunSpeckitCommandTests
             Assert.Contains("## Core", constitution);
             Assert.Contains("- CORE-001", constitution);
             Assert.Contains("All production code must maintain a minimum of 80% line coverage", constitution);
-            Assert.Contains("title:", constitution, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("title:", constitution, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("**Severity**", constitution, StringComparison.OrdinalIgnoreCase);
         }
         finally

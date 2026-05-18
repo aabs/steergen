@@ -99,15 +99,14 @@ Current parsing behavior:
 Parsed rule fields include:
 
 - `Id`
-- `Severity`
+- `Mandatory`
 - `Category`
-- `Domain`
-- `Profile`
 - `AppliesTo`
 - `Tags`
 - `Deprecated`
-- `Supersedes`
 - `PrimaryText`
+
+> **Note:** The parser also accepts `severity`, `domain`, `profile`, and `supersedes` attributes for backward compatibility, but these are silently ignored and not stored in the model.
 
 The parser lives in [src/Steergen.Core/Parsing/SteeringMarkdownParser.cs](/mnt/d/dev/aabs/steergen/src/Steergen.Core/Parsing/SteeringMarkdownParser.cs).
 
@@ -117,13 +116,11 @@ After parsing, `GenerationPipeline` runs the corpus through `SteeringValidator` 
 
 Validation covers:
 
-- missing document IDs
-- missing rule IDs
-- invalid severities
-- missing domains
-- empty rule body text
-- duplicate rule IDs across the corpus
-- invalid `supersedes` references
+- missing document IDs (V001)
+- missing rule IDs (V002)
+- empty rule body text (V005)
+- control characters in primary text (V006)
+- duplicate rule IDs across the corpus (V007)
 
 If validation finds any errors, generation stops before any target output is written.
 
@@ -135,7 +132,6 @@ Key merge responsibilities:
 
 - Track whether a rule came from global or project scope.
 - Attach `InputFileStem` derived from the source filename.
-- Filter by active profile.
 - Build a source index keyed by document ID.
 
 Two files own this stage:
@@ -284,7 +280,7 @@ It recognizes:
 
 It does not recognize arbitrary headings, bullet lists, or prose as steering rules. If a file contains only plain Markdown with no `:::rule` blocks, it will parse as a document with zero rules.
 
-That behavior matters because a target can appear to "run successfully" while generating no files if the corpus contains no parsed rules that survive validation and profile filtering.
+That behavior matters because a target can appear to "run successfully" while generating no files if the corpus contains no parsed rules that survive validation.
 
 ### Metadata propagation
 
@@ -301,10 +297,8 @@ Notable fields added during resolution:
 
 A route can match on:
 
-- domain
-- category
-- severity
-- profile
+- category (primary routing discriminator)
+- mandatory (boolean filter)
 - tagsAny
 - scope
 
@@ -321,6 +315,7 @@ Specificity is numeric and additive across fields.
 - empty field contributes `0`
 - wildcard field contributes `1`
 - concrete field contributes `2`
+- `mandatory` filter (non-null) contributes `1`
 
 This is how Steergen prefers a specific route over a catch-all route without introducing special-case behavior for catch-all routes.
 
@@ -328,12 +323,12 @@ This is how Steergen prefers a specific route over a catch-all route without int
 
 `RouteResolver.ResolveDestination` substitutes a small set of variables into the route's destination template:
 
-- `${domain}`
-- `${category}`
-- `${severity}`
-- `${profile}`
-- `${ruleId}`
-- `${inputFileStem}`
+- `${category}` — rule category value (primary routing variable)
+- `${ruleId}` — rule identifier
+- `${inputFileStem}` — source document file name stem
+- `${domain}` — legacy, always empty string
+- `${severity}` — legacy, always empty string
+- `${profile}` — legacy, always empty string
 
 It then combines:
 
@@ -372,7 +367,7 @@ This design is why the routing engine stays generic: it never needs to understan
 `KiroTargetComponent.GenerateWithPlanAsync` does the following for each planned file:
 
 1. Look up the routed rules by `RuleId`.
-2. Filter deprecated and inactive-profile rules.
+2. Filter deprecated rules.
 3. Derive Kiro inclusion settings.
 4. Build a `KiroDocumentModel`.
 5. Render the `kiro/document` Scriban template.
@@ -387,7 +382,7 @@ Kiro routing is document-shaped: one destination file usually corresponds to one
 
 1. Look up the routed rules by `RuleId`.
 2. Rebase the planned path.
-3. Infer whether the destination should be rendered as a constitution or a domain module.
+3. Infer whether the destination should be rendered as a constitution or a category module.
 4. Build either `SpeckitConstitutionModel` or `SpeckitModuleModel`.
 5. Render the appropriate Scriban template.
 6. Create the parent directory and write the file.
@@ -450,7 +445,7 @@ If you want to change the steering Markdown syntax:
 
 - [src/Steergen.Core/Parsing/SteeringMarkdownParser.cs](/mnt/d/dev/aabs/steergen/src/Steergen.Core/Parsing/SteeringMarkdownParser.cs)
 
-If you want to change merge or profile behavior:
+If you want to change merge behavior:
 
 - [src/Steergen.Core/Merge/SteeringResolver.cs](/mnt/d/dev/aabs/steergen/src/Steergen.Core/Merge/SteeringResolver.cs)
 
