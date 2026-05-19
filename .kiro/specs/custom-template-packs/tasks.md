@@ -100,19 +100,24 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
 
   - [ ] 4.3 Implement `PackDownloader` in `src/Steergen.Core/Packs/PackDownloader.cs`
     - Download GitHub archive tarballs via unauthenticated public URL (`https://github.com/{owner}/{repo}/archive/{ref}.tar.gz`)
+    - WHEN no `ref` is specified, use `HEAD` as the ref value in the archive URL (GitHub resolves `HEAD` to the repository's default branch)
     - Extract to temp directory, validate `pack.yaml` presence, then atomically swap into cache
+    - WHEN a `path` field is specified on the source, extract only the contents of that subdirectory from the archive (supporting multiple packs per repo)
     - Validate no path traversal (`../`) in archive entry paths
     - Reject entries outside expected directory structure
     - Implement `IsImmutablePin` (40-char lowercase hex detection)
     - Implement `GetCachedPath` for cache lookup
     - Preserve existing cache on download failure
-    - _Requirements: 3.2, 3.3, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 14.3, 14.4_
+    - _Requirements: 3.2, 3.3, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 9.5, 14.3, 14.4_
 
   - [ ] 4.4 Write unit tests for `PackDownloader` HTTP interactions
     - Mock `HttpClient` for success/failure scenarios
     - Test atomic replacement behaviour
     - Test immutable pin skip logic
-    - _Requirements: 4.4, 4.6, 4.8_
+    - Test that HTTP error responses produce DL001 diagnostic with HTTP status code and repository URL
+    - Test default-branch resolution: when `ref` is null, archive URL uses `HEAD`
+    - Test subdirectory extraction: when `path` is specified, only that subdirectory's contents are cached
+    - _Requirements: 3.3, 3.5, 4.4, 4.6, 4.8, 9.5_
 
 - [ ] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
@@ -141,9 +146,10 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - _Requirements: 8.2_
 
 - [ ] 7. Rules pack loader and merge
-  - [ ] 7.1 Create `RulesPackConfiguration` and `RulesPackLoadResult` records in `src/Steergen.Core/Packs/`
+  - [ ] 7.1 Create `RulesPackConfiguration`, `RulesPackLoadResult`, and `ScopedPackDocuments` records in `src/Steergen.Core/Packs/`
     - `RulesPackConfiguration` with `Source` (GitHubPackSource) and `ScopeOverride`
     - `RulesPackLoadResult` with `Documents` and `Diagnostics`
+    - `ScopedPackDocuments` with `Scope` (PackScope) and `Documents` (IReadOnlyList<SteeringDocument>) — used by extended `SteeringResolver.Resolve` signature
     - _Requirements: 10.1, 10.6_
 
   - [ ] 7.2 Write property test for rules merge with scope-based precedence (Property 9)
@@ -397,7 +403,8 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     { "id": 7, "tasks": ["11.1", "11.2", "12.1", "12.2", "12.3", "13.1"] },
     { "id": 8, "tasks": ["11.3", "11.4", "12.4", "12.5"] },
     { "id": 9, "tasks": ["14.1", "14.2", "14.3", "14.4"] },
-    { "id": 10, "tasks": ["16.1", "16.2", "16.3", "16.4", "16.5"] }
+    { "id": 10, "tasks": ["16.1", "16.2", "16.3", "16.4", "16.5"] },
+    { "id": 11, "tasks": ["18.1", "18.2", "18.3", "19.1"] }
   ]
 }
 ```
