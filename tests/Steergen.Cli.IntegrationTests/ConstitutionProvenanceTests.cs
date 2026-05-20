@@ -29,7 +29,6 @@ public sealed class ConstitutionProvenanceTests
         var path = Path.Combine(dir, "steergen.config.yaml");
         var config = new SteeringConfiguration
         {
-            GlobalRoot  = Path.Combine(dir, "steering", "global"),
             ProjectRoot = Path.Combine(dir, "steering", "project"),
             TemplatePackVersion = templatePackVersion,
         };

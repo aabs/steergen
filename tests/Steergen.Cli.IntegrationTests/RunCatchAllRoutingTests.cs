@@ -115,7 +115,6 @@ public sealed class RunCatchAllRoutingTests
             var configPath = Path.Combine(globalRoot, "steergen.config.yaml");
             await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
-                GlobalRoot = globalRoot,
                 Targets =
                 [
                     new TargetConfiguration
@@ -128,7 +127,7 @@ public sealed class RunCatchAllRoutingTests
                 ],
             });
 
-            await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
+            await RunCommand.RunAsync(configPath, globalRoot, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             // With this layout, globalRoot is the destination root; stripping it leaves just "other.md"
             var otherMdPath = Path.Combine(outputDir, "other.md");
@@ -234,7 +233,6 @@ public sealed class RunCatchAllRoutingTests
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
             await new Steergen.Core.Configuration.SteergenConfigWriter().WriteAsync(configPath, new Steergen.Core.Model.SteeringConfiguration
             {
-                GlobalRoot = globalRoot,
                 ProjectRoot = projectRoot,
                 RegisteredTargets = ["kiro"],
                 Targets =
@@ -252,7 +250,7 @@ public sealed class RunCatchAllRoutingTests
 
             var exitCode = await RunCommand.RunAsync(
                 configPath: configPath,
-                globalRoot: null,
+                globalRoot: globalRoot,
                 projectRoot: null,
                 outputBase: null,
                 explicitTargets: [],
@@ -292,7 +290,6 @@ public sealed class RunCatchAllRoutingTests
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
             await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
-                GlobalRoot = globalRoot,
                 ProjectRoot = projectRoot,
                 GenerationRoot = workspace,
                 RegisteredTargets = ["kiro"],
@@ -302,7 +299,7 @@ public sealed class RunCatchAllRoutingTests
 
             var exitCode = await RunCommand.RunAsync(
                 configPath: configPath,
-                globalRoot: null,
+                globalRoot: globalRoot,
                 projectRoot: null,
                 outputBase: null,
                 explicitTargets: [],

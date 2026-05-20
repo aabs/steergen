@@ -75,7 +75,7 @@ public static class InspectCommand
                 config = await loader.LoadAsync(configPath, cancellationToken).ConfigureAwait(false);
             }
 
-            globalRoot ??= config?.GlobalRoot;
+            globalRoot ??= null; // globalRoot config field removed; use rules packs instead
             projectRoot ??= config?.ProjectRoot;
             activeProfiles ??= config?.ActiveProfiles ?? [];
 

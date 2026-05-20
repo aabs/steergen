@@ -52,7 +52,7 @@ public sealed class OverlayAndProfileProperties
         var r3 = MakeRule("R003");
 
         var global = new[] { MakeDoc("doc-A", r1, r2, r3) };
-        var result = resolver.Resolve(global, [], []);
+        var result = resolver.Resolve(global, (IEnumerable<SteeringDocument>)Array.Empty<SteeringDocument>(), Array.Empty<string>());
 
         var ruleIds = result.Rules.Select(r => r.Id).ToHashSet();
         Assert.Contains("R001", ruleIds);
@@ -70,7 +70,7 @@ public sealed class OverlayAndProfileProperties
             MakeDoc("doc-A", MakeRule("R004"), MakeRule("R003")),
         };
 
-        var result = resolver.Resolve(global, [], []);
+        var result = resolver.Resolve(global, (IEnumerable<SteeringDocument>)Array.Empty<SteeringDocument>(), Array.Empty<string>());
         var ids = result.Rules.Select(r => r.Id).ToList();
         var sorted = ids.OrderBy(x => x, StringComparer.Ordinal).ToList();
         Assert.Equal(sorted, ids);

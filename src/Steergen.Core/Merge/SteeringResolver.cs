@@ -1,9 +1,25 @@
 using Steergen.Core.Model;
+using Steergen.Core.Packs;
 
 namespace Steergen.Core.Merge;
 
 public sealed class SteeringResolver
 {
+    /// <summary>
+    /// Extended resolve method that accepts rules pack documents with scope metadata.
+    /// Merge precedence: project-local > project-scoped packs > supplemental > global.
+    /// Within the same scope level, declaration order (earlier in list) wins.
+    /// </summary>
+    public ResolvedSteeringModel Resolve(
+        IEnumerable<SteeringDocument> projectDocuments,
+        IReadOnlyList<ScopedPackDocuments> packDocuments,
+        IEnumerable<string> activeProfiles)
+    {
+        throw new NotImplementedException(
+            "Rules merge with scope-based precedence is not yet implemented. " +
+            "This will be implemented in task 7.6.");
+    }
+
     public ResolvedSteeringModel Resolve(
         IEnumerable<SteeringDocument> globalDocuments,
         IEnumerable<SteeringDocument> projectDocuments,

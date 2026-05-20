@@ -2,69 +2,69 @@
 
 ## Overview
 
-This plan implements two pack-based extensibility mechanisms for Steergen: Template Packs (user-provided Scriban templates that override built-in rendering or provide external targets) and Rules Packs (shared governance rule sets from GitHub repositories), while retiring the legacy `globalRoot` configuration. Implementation follows test-first (Red-Green-Refactor) with CsCheck property-based testing as the primary strategy.
+This plan implements two pack-based extensibility mechanisms for Steergen: Template Packs (user-provided Scriban templates that override built-in rendering or provide external targets) and Rules Packs (shared governance rule sets from GitHub repositories), while retiring the legacy `globalRoot` configuration. Implementation follows test-first (Red-Green-Refactor) with CsCheck property-based testing as the primary strategy. Language: C# 14 / .NET 10.
 
 ## Tasks
 
-- [ ] 1. Core data models and pack manifest infrastructure
-  - [ ] 1.1 Create `PackManifest`, `ProvidedTargetDefinition`, `PackScope`, `GitHubPackSource`, and `PackDownloadResult` records in `src/Steergen.Core/Packs/`
+- [x] 1. Core data models and pack manifest infrastructure
+  - [x] 1.1 Create pack data models in `src/Steergen.Core/Packs/`
     - Create `PackManifest.cs` with `Name`, `Version`, `MinSteergenVersion`, `Scope`, `Targets`, `ProvidedTargets`, `RulesRoot` fields
     - Create `ProvidedTargetDefinition.cs` with `TargetId`, `DefaultLayout`, `Description`
     - Create `PackScope.cs` enum (`Global`, `Supplemental`, `Project`)
     - Create `GitHubPackSource.cs` with `Owner`, `Repo`, `Ref`, `Path`
     - Create `PackDownloadResult.cs` with `Success`, `CachePath`, `Diagnostics`
     - Create `PackType.cs` enum (`Template`, `Rules`)
-    - _Requirements: 2.1, 2.2, 2.3, 9.3, 9.4_
+    - _Requirements: 2.1, 2.2, 2.3, 9.3, 9.4, 16.1, 16.2_
 
-  - [ ] 1.2 Write property test for pack manifest validation (Property 2)
+  - [x] 1.2 Write property test for pack manifest validation (Property 2)
     - **Property 2: Pack Manifest Validation**
     - Generate random YAML documents with random field presence/absence; assert valid iff all required fields present and well-formed
     - Test class: `PackManifestProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 2.2, 2.3, 9.3, 9.4**
 
-  - [ ] 1.3 Implement `PackManifestParser` with `Parse` and `Validate` methods in `src/Steergen.Core/Packs/PackManifestParser.cs`
+  - [x] 1.3 Implement `PackManifestParser` with `Parse` and `Validate` methods in `src/Steergen.Core/Packs/PackManifestParser.cs`
     - Parse `pack.yaml` from a given directory using YamlDotNet
     - Return null if `pack.yaml` does not exist
     - Validate required fields: `name` (non-empty), `version` (valid semver), `minSteergenVersion` (valid semver)
     - For rules packs, additionally validate `scope` is one of `global`, `supplemental`, `project`
     - Return diagnostics for missing/invalid fields
-    - _Requirements: 2.1, 2.2, 2.4, 9.3_
+    - _Requirements: 2.1, 2.2, 2.4, 2.5, 9.3_
 
-  - [ ] 1.4 Write property test for version compatibility check (Property 3)
+  - [x] 1.4 Write property test for version compatibility check (Property 3)
     - **Property 3: Version Compatibility Check**
     - Generate random semver pairs; assert compatible iff runningVersion >= minSteergenVersion
     - Test class: `VersionCompatibilityProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 2.4, 2.6, 13.1, 13.2**
 
-  - [ ] 1.5 Write property test for SHA pinning detection (Property 4)
+  - [x] 1.5 Write property test for SHA pinning detection (Property 4)
     - **Property 4: SHA Pinning Detection**
     - Generate random strings including valid/invalid 40-char hex; assert `IsImmutablePin` returns true iff exactly 40 lowercase hex chars
     - Test class: `ShaDetectionProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 3.6, 10.7**
 
-  - [ ] 1.6 Write property test for cache path construction (Property 5)
+  - [x] 1.6 Write property test for cache path construction (Property 5)
     - **Property 5: Cache Path Construction**
     - Generate random (owner, repo, ref) tuples; assert computed path equals `{userProfile}/.steergen/{packTypeDir}/{owner}/{repo}/{ref}/`
     - Test class: `CachePathProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 4.1, 12.1**
 
-- [ ] 2. Checkpoint - Ensure all tests pass
+- [x] 2. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Template resolution engine
-  - [ ] 3.1 Create `ITemplateProvider` interface and `TemplateSource` enum in `src/Steergen.Core/Targets/`
+- [x] 3. Template resolution engine
+  - [x] 3.1 Create `ITemplateProvider` interface and `TemplateSource` enum in `src/Steergen.Core/Targets/`
     - Define `GetTemplate(string targetId, string templateName)` method
     - Define `TemplateSource` enum: `LocalOverride`, `CachedGitHubPack`, `BuiltInEmbedded`, `ProvidedTarget`
     - _Requirements: 1.4, 5.1_
 
-  - [ ] 3.2 Write property test for template override precedence with target scoping (Property 1)
+  - [x] 3.2 Write property test for template override precedence with target scoping (Property 1)
     - **Property 1: Template Override Precedence with Target Scoping**
     - Generate random (targetId, templateName) pairs with random availability across layers and random declared-targets sets
     - Assert resolver returns content from highest-precedence layer; assert target-scoped packs only consulted for declared targets
     - Test class: `TemplateResolverProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 15.1, 15.2, 15.3, 15.4**
 
-  - [ ] 3.3 Implement `TemplateResolver` class in `src/Steergen.Core/Targets/TemplateResolver.cs`
+  - [x] 3.3 Implement `TemplateResolver` class in `src/Steergen.Core/Targets/TemplateResolver.cs`
     - Implement three-level override precedence: local override path > cached GitHub pack > built-in embedded
     - Implement target-scoped filtering via `declaredTargets` set
     - Implement `GetTemplate`, `GetTemplateSource`, `ProvidesForTarget` methods
@@ -73,36 +73,36 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - IF configured `localOverridePath` does not exist on the filesystem, THROW with diagnostic TP001 and exit code 2
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 5.1, 5.2, 5.4, 14.1, 14.2, 14.5, 15.2, 15.3, 15.4, 15.5_
 
-  - [ ] 3.4 Write property test for template resolution determinism (Property 6)
+  - [x] 3.4 Write property test for template resolution determinism (Property 6)
     - **Property 6: Template Resolution Determinism**
     - Generate random resolver states, call `GetTemplate` twice with same args, assert identical results
     - Test class: `TemplateResolverProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 5.1, 5.4**
 
-  - [ ] 3.5 Write property test for file size limit enforcement (Property 12)
+  - [x] 3.5 Write property test for file size limit enforcement (Property 12)
     - **Property 12: File Size Limit Enforcement**
     - Generate random file sizes around the 1 MB boundary; assert rejected if > 1,048,576 bytes, accepted if <=
     - Test class: `FileSizeLimitProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 14.2, 14.7**
 
-- [ ] 4. Pack downloader and security
-  - [ ] 4.1 Implement `GitHubPackSourceParser` in `src/Steergen.Core/Packs/GitHubPackSourceParser.cs`
+- [x] 4. Pack downloader and security
+  - [x] 4.1 Implement `GitHubPackSourceParser` in `src/Steergen.Core/Packs/GitHubPackSourceParser.cs`
     - Parse `github:{owner}/{repo}` format into `GitHubPackSource`
     - Format `GitHubPackSource` back to canonical string
     - Return null for invalid formats
     - _Requirements: 3.1, 10.1_
 
-  - [ ] 4.2 Write property test for path traversal rejection (Property 13)
+  - [x] 4.2 Write property test for path traversal rejection (Property 13)
     - **Property 13: Path Traversal Rejection**
     - Generate random file paths including `../` sequences; assert rejected if contains traversal or resolves outside pack directory
     - Test class: `PathTraversalProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 14.3, 14.4**
 
-  - [ ] 4.3 Implement `PackDownloader` in `src/Steergen.Core/Packs/PackDownloader.cs`
+  - [x] 4.3 Implement `PackDownloader` in `src/Steergen.Core/Packs/PackDownloader.cs`
     - Download GitHub archive tarballs via unauthenticated public URL (`https://github.com/{owner}/{repo}/archive/{ref}.tar.gz`)
-    - WHEN no `ref` is specified, use `HEAD` as the ref value in the archive URL (GitHub resolves `HEAD` to the repository's default branch)
+    - WHEN no `ref` is specified, use `HEAD` as the ref value in the archive URL
     - Extract to temp directory, validate `pack.yaml` presence, then atomically swap into cache
-    - WHEN a `path` field is specified on the source, extract only the contents of that subdirectory from the archive (supporting multiple packs per repo)
+    - WHEN a `path` field is specified on the source, extract only the contents of that subdirectory from the archive
     - Validate no path traversal (`../`) in archive entry paths
     - Reject entries outside expected directory structure
     - Implement `IsImmutablePin` (40-char lowercase hex detection)
@@ -110,7 +110,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Preserve existing cache on download failure
     - _Requirements: 3.2, 3.3, 3.5, 3.6, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 9.5, 14.3, 14.4_
 
-  - [ ] 4.4 Write unit tests for `PackDownloader` HTTP interactions
+  - [x] 4.4 Write unit tests for `PackDownloader` HTTP interactions
     - Mock `HttpClient` for success/failure scenarios
     - Test atomic replacement behaviour
     - Test immutable pin skip logic
@@ -119,58 +119,58 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Test subdirectory extraction: when `path` is specified, only that subdirectory's contents are cached
     - _Requirements: 3.3, 3.5, 4.4, 4.6, 4.8, 9.5_
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Configuration model extension and globalRoot retirement
-  - [ ] 6.1 Extend `SteeringConfiguration` in `src/Steergen.Core/Model/` with `TemplatePack` and `RulesPacks` fields
+- [x] 6. Configuration model extension and globalRoot retirement
+  - [x] 6.1 Extend `SteeringConfiguration` in `src/Steergen.Core/Model/` with `TemplatePack` and `RulesPacks` fields
     - Add `TemplatePackConfig` record with `Source`, `Ref`, `LocalPath`
     - Add `RulesPackEntry` record with `Source`, `Ref`, `Path`, `Scope`
     - Add `RulesPacks` list to `SteeringConfiguration`
     - Remove `GlobalRoot` field from `SteeringConfiguration`
     - _Requirements: 3.1, 8.1, 10.1, 10.2, 10.6_
 
-  - [ ] 6.2 Write property test for configuration round-trip (Property 8)
+  - [x] 6.2 Write property test for configuration round-trip (Property 8)
     - **Property 8: Configuration Round-Trip**
     - Generate random `SteeringConfiguration` with template pack and rules pack entries; serialize to YAML and deserialize back; assert equivalence
     - Test class: `ConfigurationProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 3.1, 10.1, 10.2**
 
-  - [ ] 6.3 Implement `globalRoot` deprecation detection in config loader
+  - [x] 6.3 Implement `globalRoot` deprecation detection in config loader
     - When `globalRoot` is present in `steergen.config.yaml`, emit diagnostic error CFG001 and exit with code 2
     - Remove all code paths that discover and load steering documents from a `globalRoot` directory
     - _Requirements: 8.1, 8.2, 8.3_
 
-  - [ ] 6.4 Write unit test for `globalRoot` deprecation error
+  - [x] 6.4 Write unit test for `globalRoot` deprecation error
     - Verify config with `globalRoot` produces CFG001 diagnostic and exit code 2
     - _Requirements: 8.2_
 
 - [ ] 7. Rules pack loader and merge
-  - [ ] 7.1 Create `RulesPackConfiguration`, `RulesPackLoadResult`, and `ScopedPackDocuments` records in `src/Steergen.Core/Packs/`
+  - [x] 7.1 Create `RulesPackConfiguration`, `RulesPackLoadResult`, and `ScopedPackDocuments` records in `src/Steergen.Core/Packs/`
     - `RulesPackConfiguration` with `Source` (GitHubPackSource) and `ScopeOverride`
     - `RulesPackLoadResult` with `Documents` and `Diagnostics`
     - `ScopedPackDocuments` with `Scope` (PackScope) and `Documents` (IReadOnlyList<SteeringDocument>) — used by extended `SteeringResolver.Resolve` signature
     - _Requirements: 10.1, 10.6_
 
-  - [ ] 7.2 Write property test for rules merge with scope-based precedence (Property 9)
+  - [x] 7.2 Write property test for rules merge with scope-based precedence (Property 9)
     - **Property 9: Rules Merge with Scope-Based Precedence**
     - Generate random rule sets at random scopes with overlapping IDs; assert merge selects highest-precedence source; assert declaration order wins within same scope; assert consumer scope override is respected
     - Test class: `RulesMergeProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 10.3, 10.4, 10.5, 10.6, 11.5, 11.7**
 
-  - [ ] 7.3 Write property test for rule source tagging (Property 10)
+  - [x] 7.3 Write property test for rule source tagging (Property 10)
     - **Property 10: Rule Source Tagging**
     - Generate random rules from random packs; assert each resolved rule carries correct `SourcePackName` and `SourcePackScope`
     - Test class: `RulesMergeProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 11.6**
 
-  - [ ] 7.4 Write property test for rules pack file discovery (Property 11)
+  - [x] 7.4 Write property test for rules pack file discovery (Property 11)
     - **Property 11: Rules Pack File Discovery**
     - Generate random directory trees; assert discovery returns all and only `.md` files recursively in ordinal sort order, excluding symlinks
     - Test class: `FileDiscoveryProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 11.1**
 
-  - [ ] 7.5 Implement `RulesPackLoader` in `src/Steergen.Core/Packs/RulesPackLoader.cs`
+  - [x] 7.5 Implement `RulesPackLoader` in `src/Steergen.Core/Packs/RulesPackLoader.cs`
     - For each configured pack: resolve cache path, parse manifest, validate version compatibility
     - Determine effective scope (consumer override or manifest scope)
     - Enumerate `.md` files recursively under rules root (ordinal sort, no symlink follow)
@@ -312,30 +312,30 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 16. Integration tests
-  - [ ]* 16.1 Write integration tests for template pack CLI commands
+  - [ ] 16.1 Write integration tests for template pack CLI commands
     - Test `steergen template-pack add/remove` modifies config correctly
     - Test `steergen update --templates` downloads and caches
     - Test `steergen run` with template pack produces overridden output
     - Test `steergen validate` with malformed template pack reports errors
     - _Requirements: 7.1, 7.4, 7.5, 6.1_
 
-  - [ ]* 16.2 Write integration tests for rules pack CLI commands
+  - [ ] 16.2 Write integration tests for rules pack CLI commands
     - Test `steergen rules-pack add/remove/list` modifies config correctly
     - Test `steergen update --rules` downloads and caches
     - Test `steergen run` with rules packs merges rules correctly
     - _Requirements: 17.1, 17.5, 17.6, 17.7_
 
-  - [ ]* 16.3 Write integration test for globalRoot deprecation
+  - [ ] 16.3 Write integration test for globalRoot deprecation
     - Test `steergen run` with `globalRoot` in config fails with CFG001 and exit code 2
     - _Requirements: 8.2_
 
-  - [ ]* 16.4 Write integration tests for external target packs
+  - [ ] 16.4 Write integration tests for external target packs
     - Test `steergen target add` with pack-provided target succeeds
     - Test `steergen run` with external target renders via pack templates
     - Test removal of pack providing registered target emits TP010
     - _Requirements: 16.3, 16.5, 16.6, 16.8_
 
-  - [ ]* 16.5 Write security integration tests
+  - [ ] 16.5 Write security integration tests
     - Test archives with path traversal entries are rejected
     - Test template files > 1 MB are rejected
     - Test symlinks in pack directories are not followed
@@ -351,19 +351,19 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Document new CLI commands: `template-pack add/remove`, `rules-pack add/remove/list`
     - Document `steergen update --templates` and `steergen update --rules`
     - Document `steergen inspect --templates` and `steergen inspect --rules`
-    - _Requirements: Constitution VI (Documentation as Product Surface)_
+    - _Requirements: Req 7, 10, 17 (CLI surface documentation)_
 
   - [ ] 18.2 Write migration guide for `globalRoot` removal
     - Document that `globalRoot` is removed and replaced by rules packs
     - Provide step-by-step migration: convert existing global rules directory to a rules pack with `scope: global`
     - Include example `pack.yaml` for a migrated global rules directory
     - Document the CFG001 error and remediation steps
-    - _Requirements: 8.1, 8.2, Constitution VI_
+    - _Requirements: 8.1, 8.2_
 
   - [ ] 18.3 Document error codes and diagnostics
     - Document all new diagnostic codes (TP001–TP011, RP001–RP007, DL001–DL004, CFG001)
     - Include remediation guidance for each error
-    - _Requirements: Constitution VI_
+    - _Requirements: All error-producing requirements_
 
 - [ ] 19. Security analysis
   - [ ] 19.1 Produce explicit misuse and abuse analysis document
@@ -373,18 +373,18 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Analyse denial-of-service via oversized files
     - Analyse supply-chain risks from unauthenticated GitHub downloads (pack substitution, typosquatting)
     - Document mitigations implemented (Scriban sandboxing, size limits, symlink rejection, path validation, atomic replacement)
-    - _Requirements: 14.1–14.8, Constitution I (Security First)_
+    - _Requirements: 14.1–14.8_
 
 ## Notes
 
-- Integration test tasks (16.x) marked with `*` may be deferred for faster MVP; all other tasks are mandatory
 - Property-based tests are NON-NEGOTIABLE per constitution and must be implemented before their corresponding implementation tasks (Red-Green-Refactor)
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
 - Property tests validate universal correctness properties from the design document
 - Unit tests validate specific examples and edge cases where PBT is not practical
-- The project uses .NET 10, C# 14, CsCheck for PBT, xUnit for test framework, and follows test-first (Red-Green-Refactor)
+- The project uses .NET 10, C# 14, CsCheck for PBT, xUnit for test framework, NSubstitute for mocking
 - All property tests go in `tests/Steergen.Core.PropertyTests/Packs/` directory
+- Unit tests go in `tests/Steergen.Core.UnitTests/`
 - Integration tests go in `tests/Steergen.Cli.IntegrationTests/`
 - Minimum 100 iterations per property test
 

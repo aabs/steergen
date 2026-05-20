@@ -30,7 +30,6 @@ public sealed class RunAndTargetCommandsTests
         var writer = new SteergenConfigWriter();
         var config = new SteeringConfiguration
         {
-            GlobalRoot = globalRoot,
             ProjectRoot = projectRoot,
             RegisteredTargets = (registeredTargets ?? []).ToList(),
         };

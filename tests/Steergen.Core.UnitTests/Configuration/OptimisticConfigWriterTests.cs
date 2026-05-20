@@ -16,7 +16,6 @@ public sealed class OptimisticConfigWriterTests
     private static SteeringConfiguration MakeConfig(string? projectRoot = null) =>
         new()
         {
-            GlobalRoot = "/global",
             ProjectRoot = projectRoot ?? "/project",
             GenerationRoot = "/generation",
             ActiveProfiles = ["default"],
@@ -59,7 +58,6 @@ public sealed class OptimisticConfigWriterTests
         await writer.WriteAsync(path, config);
         var loaded = await loader.LoadAsync(path);
 
-        Assert.Equal(config.GlobalRoot, loaded.GlobalRoot);
         Assert.Equal(config.ProjectRoot, loaded.ProjectRoot);
         Assert.Equal(config.GenerationRoot, loaded.GenerationRoot);
         Assert.Equal(config.TemplatePackVersion, loaded.TemplatePackVersion);

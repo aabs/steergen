@@ -21,7 +21,6 @@ public sealed class TargetRegistrationConfigLockTests
         var writer = new SteergenConfigWriter();
         var config = new SteeringConfiguration
         {
-            GlobalRoot = "/global",
             ProjectRoot = "/project",
             RegisteredTargets = [],
         };

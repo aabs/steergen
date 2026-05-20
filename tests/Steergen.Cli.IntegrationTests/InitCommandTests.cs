@@ -66,7 +66,6 @@ public sealed class InitCommandTests
             var loader = new SteergenConfigLoader();
             var config = await loader.LoadAsync(Path.Combine(root, "steergen.config.yaml"));
 
-            Assert.Equal(Path.Combine(root, "steering", "global"), config.GlobalRoot);
             Assert.Equal(Path.Combine(root, "steering", "project"), config.ProjectRoot);
             Assert.Equal(["speckit"], config.RegisteredTargets);
         }

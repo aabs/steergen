@@ -224,7 +224,6 @@ public sealed class ValidateCommandTests
             Path.Combine(dir, "steergen.config.yaml"),
             new SteeringConfiguration
             {
-                GlobalRoot = globalRoot,
                 ProjectRoot = projectRoot,
             });
     }

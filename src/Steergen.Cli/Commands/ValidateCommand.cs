@@ -71,10 +71,19 @@ public static class ValidateCommand
                 }
 
                 var loader = new SteergenConfigLoader();
+
+                // Check for deprecated globalRoot field (CFG001)
+                var deprecationDiag = await loader.CheckForDeprecatedFieldsAsync(configPath, cancellationToken).ConfigureAwait(false);
+                if (deprecationDiag is not null)
+                {
+                    Console.Error.WriteLine($"[error] {deprecationDiag.Code}: {deprecationDiag.Message}");
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
                 config = await loader.LoadAsync(configPath, cancellationToken).ConfigureAwait(false);
             }
 
-            globalRoot ??= config?.GlobalRoot;
+            globalRoot ??= null; // globalRoot config field removed; use rules packs instead
             projectRoot ??= config?.ProjectRoot;
 
             var allDocuments = new List<Core.Model.SteeringDocument>();

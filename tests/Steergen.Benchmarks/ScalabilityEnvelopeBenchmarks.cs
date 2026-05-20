@@ -86,14 +86,14 @@ public class ScalabilityEnvelopeBenchmarks
     [Benchmark]
     public ResolvedSteeringModel ResolveEnvelopeModel()
     {
-        return _resolver.Resolve(_envelopeDocuments, [], ["default"]);
+        return _resolver.Resolve(_envelopeDocuments, Array.Empty<SteeringDocument>(), ["default"]);
     }
 
     /// <summary>Resolve the steering model from 200 beyond-envelope documents (2,000 rules).</summary>
     [Benchmark]
     public ResolvedSteeringModel ResolveBeyondEnvelopeModel()
     {
-        return _resolver.Resolve(_beyondEnvelopeDocuments, [], ["default"]);
+        return _resolver.Resolve(_beyondEnvelopeDocuments, Array.Empty<SteeringDocument>(), ["default"]);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

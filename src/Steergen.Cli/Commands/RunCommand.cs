@@ -118,18 +118,27 @@ public static class RunCommand
                     return Composition.ExitCodeMapper.ConfigurationError;
                 }
                 var loader = new SteergenConfigLoader();
+
+                // Check for deprecated globalRoot field (CFG001)
+                var deprecationDiag = await loader.CheckForDeprecatedFieldsAsync(configPath, cancellationToken);
+                if (deprecationDiag is not null)
+                {
+                    Console.Error.WriteLine($"[error] {deprecationDiag.Code}: {deprecationDiag.Message}");
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
                 config = await loader.LoadAsync(configPath, cancellationToken);
             }
 
             // Resolve roots: CLI args > config file
-            var resolvedGlobal = globalRoot ?? config?.GlobalRoot;
+            var resolvedGlobal = globalRoot; // globalRoot config field removed; use rules packs instead
             var resolvedProject = projectRoot ?? config?.ProjectRoot;
             var resolvedGenerationRoot = outputBase ?? config?.GenerationRoot ?? defaultOutputPath;
             var activeProfiles = config?.ActiveProfiles ?? [];
 
             if (resolvedGlobal is null && resolvedProject is null)
             {
-                Console.Error.WriteLine("[error] Provide --global and/or --project (or a --config with globalRoot/projectRoot set).");
+                Console.Error.WriteLine("[error] Provide --global and/or --project (or a --config with projectRoot set).");
                 return Composition.ExitCodeMapper.ConfigurationError;
             }
 
