@@ -1,6 +1,7 @@
 using Steergen.Core.Configuration;
 using Steergen.Core.Model;
 using Steergen.Core.Merge;
+using Steergen.Core.Packs;
 using Steergen.Core.Validation;
 
 namespace Steergen.Core.Generation;
@@ -54,6 +55,7 @@ public sealed class GenerationPipeline
     /// </param>
     /// <param name="globalRoot">Optional resolved global root path for context variable substitution in layout paths.</param>
     /// <param name="projectRoot">Optional resolved project root path for context variable substitution in layout paths.</param>
+    /// <param name="packDocuments">Optional rules pack documents grouped by scope for merge precedence.</param>
     public async Task<GenerationResult> RunAsync(
         IEnumerable<SteeringDocument> globalDocuments,
         IEnumerable<SteeringDocument> projectDocuments,
@@ -63,7 +65,8 @@ public sealed class GenerationPipeline
         CancellationToken cancellationToken = default,
         string? manifestOutputPath = null,
         string? globalRoot = null,
-        string? projectRoot = null)
+        string? projectRoot = null,
+        IReadOnlyList<ScopedPackDocuments>? packDocuments = null)
     {
         var allDiagnostics = new List<Diagnostic>();
         var globalList = globalDocuments.ToList();
@@ -83,7 +86,9 @@ public sealed class GenerationPipeline
             return new GenerationResult(false, allDiagnostics, 0, failureManifest);
         }
 
-        var model = _resolver.Resolve(globalList, projectList, activeProfiles);
+        var model = packDocuments is { Count: > 0 }
+            ? _resolver.Resolve(projectList, packDocuments, activeProfiles)
+            : _resolver.Resolve(globalList, projectList, activeProfiles);
 
         var configMap = targetConfigs
             .Where(t => t.Id is not null)
@@ -99,10 +104,25 @@ public sealed class GenerationPipeline
 
             try
             {
-                var layout = await _layoutLoader.LoadAsync(
-                    target.TargetId,
-                    config.LayoutOverridePath,
-                    cancellationToken);
+                TargetLayoutDefinition layout;
+
+                // Pack-provided targets use their own layout file from the pack directory
+                // rather than an embedded resource.
+                if (target is Targets.PackTargetComponent packTarget)
+                {
+                    layout = await _layoutLoader.LoadFromFileAsync(
+                        target.TargetId,
+                        packTarget.DefaultLayoutPath,
+                        config.LayoutOverridePath,
+                        cancellationToken);
+                }
+                else
+                {
+                    layout = await _layoutLoader.LoadAsync(
+                        target.TargetId,
+                        config.LayoutOverridePath,
+                        cancellationToken);
+                }
 
                 var provenanceSource = config.LayoutOverridePath is not null
                     ? RouteProvenance.Merged

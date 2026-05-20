@@ -1,6 +1,7 @@
 using Steergen.Cli.Commands;
 using Steergen.Core.Configuration;
 using Steergen.Core.Model;
+using Steergen.Core.Targets;
 using System.CommandLine;
 using Xunit;
 
@@ -11,8 +12,24 @@ namespace Steergen.Cli.IntegrationTests;
 /// Integration tests for the <c>run</c> command with explicit <c>--target</c> scoping,
 /// and for <c>target add</c>/<c>target remove</c> commands.
 /// </summary>
-public sealed class RunAndTargetCommandsTests
+public sealed class RunAndTargetCommandsTests : IDisposable
 {
+    public RunAndTargetCommandsTests()
+    {
+        TargetRegistry.Clear();
+        TargetRegistry.RegisterBuiltins(new StubTemplateProvider());
+    }
+
+    public void Dispose()
+    {
+        TargetRegistry.Clear();
+    }
+
+    private sealed class StubTemplateProvider : ITemplateProvider
+    {
+        public string GetTemplate(string targetId, string templateName) => string.Empty;
+    }
+
     private static readonly string FixturesRoot =
         Path.GetFullPath(Path.Combine(
             AppContext.BaseDirectory,

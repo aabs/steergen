@@ -1,6 +1,7 @@
 using Steergen.Cli.Commands;
 using Steergen.Core.Configuration;
 using Steergen.Core.Model;
+using Steergen.Core.Packs;
 using Xunit;
 
 namespace Steergen.Cli.IntegrationTests;
@@ -30,6 +31,21 @@ public sealed class UpdateCommandTests
         {
             ProjectRoot = Path.Combine(dir, "steering", "project"),
             TemplatePackVersion = templatePackVersion,
+        };
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(path, config);
+        return path;
+    }
+
+    private static async Task<string> WriteConfigWithRulesPacksAsync(
+        string dir,
+        IReadOnlyList<RulesPackEntry> rulesPacks)
+    {
+        var path = Path.Combine(dir, "steergen.config.yaml");
+        var config = new SteeringConfiguration
+        {
+            ProjectRoot = Path.Combine(dir, "steering", "project"),
+            RulesPacks = rulesPacks,
         };
         var writer = new SteergenConfigWriter();
         await writer.WriteAsync(path, config);
@@ -202,6 +218,69 @@ public sealed class UpdateCommandTests
 
             Assert.Equal(0, result);
             Assert.Equal("1.2.0", await ReadTemplatePackVersionAsync(configPath));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── --rules flag flows ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateRules_NoRulesPacksConfigured_ReturnsExitCode0()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            var configPath = await WriteConfigWithRulesPacksAsync(dir, []);
+            var result = await UpdateCommand.RunRulesUpdateAsync(configPath, force: false);
+            Assert.Equal(0, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public async Task UpdateRules_MissingConfigFile_ReturnsExitCode2()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            var configPath = Path.Combine(dir, "does-not-exist.yaml");
+            var result = await UpdateCommand.RunRulesUpdateAsync(configPath, force: false);
+            Assert.Equal(2, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public async Task UpdateRules_InvalidSourceFormat_ReturnsExitCode2()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            var rulesPacks = new List<RulesPackEntry>
+            {
+                new() { Source = "invalid-format" },
+            };
+            var configPath = await WriteConfigWithRulesPacksAsync(dir, rulesPacks);
+            var result = await UpdateCommand.RunRulesUpdateAsync(configPath, force: false);
+            Assert.Equal(2, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    [Fact]
+    public async Task UpdateRules_UnreachableGitHubSource_ReturnsExitCode2()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            // This source points to a non-existent repo, so download will fail
+            var rulesPacks = new List<RulesPackEntry>
+            {
+                new() { Source = "github:nonexistent-owner-xyz/nonexistent-repo-xyz", Ref = "v1.0.0" },
+            };
+            var configPath = await WriteConfigWithRulesPacksAsync(dir, rulesPacks);
+            var result = await UpdateCommand.RunRulesUpdateAsync(configPath, force: false);
+            Assert.Equal(2, result);
         }
         finally { Directory.Delete(dir, recursive: true); }
     }

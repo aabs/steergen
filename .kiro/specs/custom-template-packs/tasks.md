@@ -145,7 +145,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Verify config with `globalRoot` produces CFG001 diagnostic and exit code 2
     - _Requirements: 8.2_
 
-- [ ] 7. Rules pack loader and merge
+- [x] 7. Rules pack loader and merge
   - [x] 7.1 Create `RulesPackConfiguration`, `RulesPackLoadResult`, and `ScopedPackDocuments` records in `src/Steergen.Core/Packs/`
     - `RulesPackConfiguration` with `Source` (GitHubPackSource) and `ScopeOverride`
     - `RulesPackLoadResult` with `Documents` and `Diagnostics`
@@ -191,7 +191,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
 - [x] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. External target packs
+- [x] 9. External target packs
   - [x] 9.1 Implement `PackTargetComponent` in `src/Steergen.Core/Targets/PackTargetComponent.cs`
     - Generic `ITargetComponent` implementation that delegates rendering to pack Scriban templates
     - Load default layout YAML from pack directory via `LayoutOverrideLoader`
@@ -222,55 +222,55 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
 - [x] 10. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. CLI commands for template pack management
-  - [ ] 11.1 Implement `steergen template-pack add` command in `src/Steergen.Cli/Commands/TemplatePackAddCommand.cs`
+- [x] 11. CLI commands for template pack management
+  - [x] 11.1 Implement `steergen template-pack add` command in `src/Steergen.Cli/Commands/TemplatePackAddCommand.cs`
     - Accept `github:{owner}/{repo}` source argument
     - Accept `--ref {ref}` option for tag/branch/SHA
     - Accept `--path {localPath}` option for local override
     - Add template pack source to `steergen.config.yaml` and trigger download
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [ ] 11.2 Implement `steergen template-pack remove` command in `src/Steergen.Cli/Commands/TemplatePackRemoveCommand.cs`
+  - [x] 11.2 Implement `steergen template-pack remove` command in `src/Steergen.Cli/Commands/TemplatePackRemoveCommand.cs`
     - Remove template pack configuration from `steergen.config.yaml`
     - _Requirements: 7.4_
 
-  - [ ] 11.3 Extend `steergen update` command with `--templates` flag in `src/Steergen.Cli/Commands/UpdateCommand.cs`
+  - [x] 11.3 Extend `steergen update` command with `--templates` flag in `src/Steergen.Cli/Commands/UpdateCommand.cs`
     - Re-download configured template pack from GitHub source
     - Display pack name, version, and number of template files on success
     - Report "no template pack configured" and exit 0 if none configured
     - Respect `--force` flag to override immutable pin skip
     - _Requirements: 7.5, 7.7, 7.8_
 
-  - [ ] 11.4 Extend `steergen inspect` command with `--templates` flag in `src/Steergen.Cli/Commands/InspectCommand.cs`
+  - [x] 11.4 Extend `steergen inspect` command with `--templates` flag in `src/Steergen.Cli/Commands/InspectCommand.cs`
     - Display active template resolution chain showing source per template
     - _Requirements: 7.6_
 
-- [ ] 12. CLI commands for rules pack management
-  - [ ] 12.1 Implement `steergen rules-pack add` command in `src/Steergen.Cli/Commands/RulesPackAddCommand.cs`
+- [x] 12. CLI commands for rules pack management
+  - [x] 12.1 Implement `steergen rules-pack add` command in `src/Steergen.Cli/Commands/RulesPackAddCommand.cs`
     - Accept `github:{owner}/{repo}` source argument
     - Accept `--ref {ref}`, `--path {subdir}`, `--scope {scope}` options
     - Append rules pack to `rulesPacks` list in config and trigger download
     - _Requirements: 17.1, 17.2, 17.3, 17.4_
 
-  - [ ] 12.2 Implement `steergen rules-pack remove` command in `src/Steergen.Cli/Commands/RulesPackRemoveCommand.cs`
+  - [x] 12.2 Implement `steergen rules-pack remove` command in `src/Steergen.Cli/Commands/RulesPackRemoveCommand.cs`
     - Remove matching rules pack entry from `steergen.config.yaml` by name
     - _Requirements: 17.5_
 
-  - [ ] 12.3 Implement `steergen rules-pack list` command in `src/Steergen.Cli/Commands/RulesPackListCommand.cs`
+  - [x] 12.3 Implement `steergen rules-pack list` command in `src/Steergen.Cli/Commands/RulesPackListCommand.cs`
     - Display all configured rules packs with source, ref, scope, and cache status
     - _Requirements: 17.6_
 
-  - [ ] 12.4 Extend `steergen update` command with `--rules` flag
+  - [x] 12.4 Extend `steergen update` command with `--rules` flag
     - Re-download all configured rules packs regardless of cache state
     - Respect `--force` flag to override immutable pin skip
     - _Requirements: 17.7_
 
-  - [ ] 12.5 Extend `steergen inspect` command with `--rules` flag
+  - [x] 12.5 Extend `steergen inspect` command with `--rules` flag
     - Display all configured rules packs with name, version, source, scope, and number of rules loaded
     - _Requirements: 17.8, 13.4_
 
-- [ ] 13. Template pack validation command
-  - [ ] 13.1 Extend `steergen validate` to validate template packs
+- [x] 13. Template pack validation command
+  - [x] 13.1 Extend `steergen validate` to validate template packs
     - Validate all template files are parseable Scriban templates
     - Report file path, line number, and error description for syntax errors
     - Validate template file names match known template names for declared target IDs
@@ -283,69 +283,69 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Test class: `TemplateValidationProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 6.1, 6.3**
 
-- [ ] 14. Pipeline integration and wiring
-  - [ ] 14.1 Wire `TemplateResolver` into the generation pipeline replacing direct `EmbeddedTemplateProvider` usage
+- [x] 14. Pipeline integration and wiring
+  - [x] 14.1 Wire `TemplateResolver` into the generation pipeline replacing direct `EmbeddedTemplateProvider` usage
     - Update DI composition in `src/Steergen.Cli/Composition/` to construct `TemplateResolver` from config
     - Ensure default (no-pack) configuration still uses `EmbeddedTemplateProvider` directly via resolver fallback
     - Wire `PackTargetComponent` for registered external targets
     - _Requirements: 1.1, 1.4, 5.2, 5.3, 16.5_
 
-  - [ ] 14.2 Wire `RulesPackLoader` into the generation pipeline
+  - [x] 14.2 Wire `RulesPackLoader` into the generation pipeline
     - Load rules packs during `steergen run` before merge step
     - Feed loaded documents into extended `SteeringResolver.Resolve`
     - Emit RP005 error if configured pack not in cache
     - Emit TP007 error if configured template pack not in cache
     - _Requirements: 5.3, 11.1, 11.5, 12.2, 12.7_
 
-  - [ ] 14.3 Wire `PackDownloader` into CLI commands
+  - [x] 14.3 Wire `PackDownloader` into CLI commands
     - Inject `PackDownloader` via DI for `template-pack add`, `rules-pack add`, `update --templates`, `update --rules`
     - Configure `HttpClient` for GitHub archive downloads
     - Emit diagnostic warnings for branch refs (recommend pinning to SHA/tag)
     - _Requirements: 3.7, 4.4, 10.8, 12.4_
 
-  - [ ] 14.4 Wire `TargetRegistry` extension for `steergen target add` validation
+  - [x] 14.4 Wire `TargetRegistry` extension for `steergen target add` validation
     - When user runs `steergen target add {targetId}`, verify target is available as built-in or from configured pack's `providedTargets`
     - Emit TP010 error if pack providing a registered target is removed
     - _Requirements: 16.6, 16.8_
 
-- [ ] 15. Checkpoint - Ensure all tests pass
+- [x] 15. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Integration tests
-  - [ ] 16.1 Write integration tests for template pack CLI commands
+- [x] 16. Integration tests
+  - [x] 16.1 Write integration tests for template pack CLI commands
     - Test `steergen template-pack add/remove` modifies config correctly
     - Test `steergen update --templates` downloads and caches
     - Test `steergen run` with template pack produces overridden output
     - Test `steergen validate` with malformed template pack reports errors
     - _Requirements: 7.1, 7.4, 7.5, 6.1_
 
-  - [ ] 16.2 Write integration tests for rules pack CLI commands
+  - [x] 16.2 Write integration tests for rules pack CLI commands
     - Test `steergen rules-pack add/remove/list` modifies config correctly
     - Test `steergen update --rules` downloads and caches
     - Test `steergen run` with rules packs merges rules correctly
     - _Requirements: 17.1, 17.5, 17.6, 17.7_
 
-  - [ ] 16.3 Write integration test for globalRoot deprecation
+  - [x] 16.3 Write integration test for globalRoot deprecation
     - Test `steergen run` with `globalRoot` in config fails with CFG001 and exit code 2
     - _Requirements: 8.2_
 
-  - [ ] 16.4 Write integration tests for external target packs
+  - [x] 16.4 Write integration tests for external target packs
     - Test `steergen target add` with pack-provided target succeeds
     - Test `steergen run` with external target renders via pack templates
     - Test removal of pack providing registered target emits TP010
     - _Requirements: 16.3, 16.5, 16.6, 16.8_
 
-  - [ ] 16.5 Write security integration tests
+  - [x] 16.5 Write security integration tests
     - Test archives with path traversal entries are rejected
     - Test template files > 1 MB are rejected
     - Test symlinks in pack directories are not followed
     - _Requirements: 14.2, 14.3, 14.4, 14.5_
 
-- [ ] 17. Final checkpoint - Ensure all tests pass
+- [x] 17. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 18. Documentation and migration guidance
-  - [ ] 18.1 Update README with template pack and rules pack usage documentation
+- [x] 18. Documentation and migration guidance
+  - [x] 18.1 Update README with template pack and rules pack usage documentation
     - Add section on configuring template packs (local and GitHub)
     - Add section on configuring rules packs with scope-based precedence
     - Document new CLI commands: `template-pack add/remove`, `rules-pack add/remove/list`
@@ -353,20 +353,20 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Document `steergen inspect --templates` and `steergen inspect --rules`
     - _Requirements: Req 7, 10, 17 (CLI surface documentation)_
 
-  - [ ] 18.2 Write migration guide for `globalRoot` removal
+  - [x] 18.2 Write migration guide for `globalRoot` removal
     - Document that `globalRoot` is removed and replaced by rules packs
     - Provide step-by-step migration: convert existing global rules directory to a rules pack with `scope: global`
     - Include example `pack.yaml` for a migrated global rules directory
     - Document the CFG001 error and remediation steps
     - _Requirements: 8.1, 8.2_
 
-  - [ ] 18.3 Document error codes and diagnostics
+  - [x] 18.3 Document error codes and diagnostics
     - Document all new diagnostic codes (TP001–TP011, RP001–RP007, DL001–DL004, CFG001)
     - Include remediation guidance for each error
     - _Requirements: All error-producing requirements_
 
-- [ ] 19. Security analysis
-  - [ ] 19.1 Produce explicit misuse and abuse analysis document
+- [x] 19. Security analysis
+  - [x] 19.1 Produce explicit misuse and abuse analysis document
     - Analyse prompt-injection-style payloads in template content and rule documents
     - Analyse path traversal attack vectors in downloaded archives
     - Analyse symlink-based escape attempts in pack directories

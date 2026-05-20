@@ -5,6 +5,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Steergen.Core.PropertyTests" />
+    <InternalsVisibleTo Include="Steergen.Core.UnitTests" />
+    <InternalsVisibleTo Include="Steergen.Cli.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

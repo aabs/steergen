@@ -227,4 +227,150 @@ public sealed class ValidateCommandTests
                 ProjectRoot = projectRoot,
             });
     }
+
+    // ── Template pack validation: valid templates produce exit code 0 ──────
+
+    [Fact]
+    public async Task Validate_ValidTemplatePack_ReturnsExitCode0()
+    {
+        var dir = CreateTempDir();
+        var packDir = Path.Combine(dir, "templates");
+        Directory.CreateDirectory(Path.Combine(packDir, "kiro"));
+        try
+        {
+            // Write a valid Scriban template
+            await File.WriteAllTextAsync(
+                Path.Combine(packDir, "kiro", "document.scriban"),
+                "{{ rules }}");
+
+            // Write config pointing to the local template pack
+            var writer = new SteergenConfigWriter();
+            await writer.WriteAsync(
+                Path.Combine(dir, "steergen.config.yaml"),
+                new SteeringConfiguration
+                {
+                    RegisteredTargets = ["kiro"],
+                    TemplatePack = new TemplatePackConfig { LocalPath = packDir },
+                });
+
+            var result = await ValidateCommand.RunAsync(
+                globalRoot: null,
+                projectRoot: null,
+                quiet: true,
+                configPath: Path.Combine(dir, "steergen.config.yaml"));
+
+            Assert.Equal(0, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── Template pack validation: syntax errors produce exit code 1 ────────
+
+    [Fact]
+    public async Task Validate_TemplatePackWithSyntaxErrors_ReturnsExitCode1()
+    {
+        var dir = CreateTempDir();
+        var packDir = Path.Combine(dir, "templates");
+        Directory.CreateDirectory(Path.Combine(packDir, "kiro"));
+        try
+        {
+            // Write an invalid Scriban template (unclosed if block)
+            await File.WriteAllTextAsync(
+                Path.Combine(packDir, "kiro", "document.scriban"),
+                "{{ if true }}content without end");
+
+            // Write config pointing to the local template pack
+            var writer = new SteergenConfigWriter();
+            await writer.WriteAsync(
+                Path.Combine(dir, "steergen.config.yaml"),
+                new SteeringConfiguration
+                {
+                    RegisteredTargets = ["kiro"],
+                    TemplatePack = new TemplatePackConfig { LocalPath = packDir },
+                });
+
+            var result = await ValidateCommand.RunAsync(
+                globalRoot: null,
+                projectRoot: null,
+                quiet: true,
+                configPath: Path.Combine(dir, "steergen.config.yaml"));
+
+            Assert.Equal(1, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── Template pack validation: unknown template name produces warning ───
+
+    [Fact]
+    public async Task Validate_TemplatePackWithUnknownTemplateName_ProducesWarningNotError()
+    {
+        var dir = CreateTempDir();
+        var packDir = Path.Combine(dir, "templates");
+        Directory.CreateDirectory(Path.Combine(packDir, "kiro"));
+        try
+        {
+            // Write a valid template with an unknown name for the kiro target
+            await File.WriteAllTextAsync(
+                Path.Combine(packDir, "kiro", "unknown-template.scriban"),
+                "plain text content");
+
+            // Write config pointing to the local template pack
+            var writer = new SteergenConfigWriter();
+            await writer.WriteAsync(
+                Path.Combine(dir, "steergen.config.yaml"),
+                new SteeringConfiguration
+                {
+                    RegisteredTargets = ["kiro"],
+                    TemplatePack = new TemplatePackConfig { LocalPath = packDir },
+                });
+
+            // Warnings do not cause exit code 1
+            var result = await ValidateCommand.RunAsync(
+                globalRoot: null,
+                projectRoot: null,
+                quiet: false,
+                configPath: Path.Combine(dir, "steergen.config.yaml"));
+
+            Assert.Equal(0, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    // ── Template pack validation: unregistered target produces warning ─────
+
+    [Fact]
+    public async Task Validate_TemplatePackWithUnregisteredTarget_ProducesWarning()
+    {
+        var dir = CreateTempDir();
+        var packDir = Path.Combine(dir, "templates");
+        Directory.CreateDirectory(Path.Combine(packDir, "unknown-target"));
+        try
+        {
+            // Write a valid template for an unregistered target
+            await File.WriteAllTextAsync(
+                Path.Combine(packDir, "unknown-target", "document.scriban"),
+                "plain text content");
+
+            // Write config with only "kiro" registered (not "unknown-target")
+            var writer = new SteergenConfigWriter();
+            await writer.WriteAsync(
+                Path.Combine(dir, "steergen.config.yaml"),
+                new SteeringConfiguration
+                {
+                    RegisteredTargets = ["kiro"],
+                    TemplatePack = new TemplatePackConfig { LocalPath = packDir },
+                });
+
+            // Warnings do not cause exit code 1
+            var result = await ValidateCommand.RunAsync(
+                globalRoot: null,
+                projectRoot: null,
+                quiet: false,
+                configPath: Path.Combine(dir, "steergen.config.yaml"));
+
+            Assert.Equal(0, result);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
 }
