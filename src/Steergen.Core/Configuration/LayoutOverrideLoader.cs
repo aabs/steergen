@@ -73,6 +73,32 @@ public sealed class LayoutOverrideLoader
         return MapToModel(targetId, dto);
     }
 
+    /// <summary>
+    /// Loads a layout definition from a YAML file on disk. Used for pack-provided targets
+    /// whose default layout is not an embedded resource but a file within the pack directory.
+    /// Optionally deep-merges a user-provided override on top.
+    /// </summary>
+    public async Task<TargetLayoutDefinition> LoadFromFileAsync(
+        string targetId,
+        string layoutFilePath,
+        string? overrideFilePath = null,
+        CancellationToken cancellationToken = default)
+    {
+        var yaml = await File.ReadAllTextAsync(layoutFilePath, cancellationToken)
+            .ConfigureAwait(false);
+        var dto = Deserializer.Deserialize<LayoutYamlDto>(yaml);
+
+        if (overrideFilePath is not null)
+        {
+            var overrideYaml = await File.ReadAllTextAsync(overrideFilePath, cancellationToken)
+                .ConfigureAwait(false);
+            var overrideDto = Deserializer.Deserialize<LayoutYamlDto>(overrideYaml);
+            dto = DeepMerge(dto, overrideDto);
+        }
+
+        return MapToModel(targetId, dto);
+    }
+
     private static string LoadEmbeddedYaml(string targetId)
     {
         var resourceName = GetEmbeddedResourceName(targetId);

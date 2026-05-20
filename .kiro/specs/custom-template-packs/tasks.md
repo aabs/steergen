@@ -180,7 +180,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Return all documents grouped by effective scope
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 12.2, 13.1, 13.2, 13.3, 14.6, 14.7, 14.8_
 
-  - [ ] 7.6 Extend `SteeringResolver.Resolve` to accept `ScopedPackDocuments` and apply merge precedence
+  - [x] 7.6 Extend `SteeringResolver.Resolve` to accept `ScopedPackDocuments` and apply merge precedence
     - Accept rules pack documents with scope metadata alongside project documents
     - Apply merge order: project-local > project-scoped packs > supplemental > global
     - Within same scope, earlier declaration order wins
@@ -188,30 +188,30 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Extend `SteeringRule` with `SourcePackName` and `SourcePackScope` fields
     - _Requirements: 10.3, 10.4, 10.5, 11.5, 11.7_
 
-- [ ] 8. Checkpoint - Ensure all tests pass
+- [x] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. External target packs
-  - [ ] 9.1 Implement `PackTargetComponent` in `src/Steergen.Core/Targets/PackTargetComponent.cs`
+  - [x] 9.1 Implement `PackTargetComponent` in `src/Steergen.Core/Targets/PackTargetComponent.cs`
     - Generic `ITargetComponent` implementation that delegates rendering to pack Scriban templates
     - Load default layout YAML from pack directory via `LayoutOverrideLoader`
     - Expose same render model fields as built-in targets: `rules`, `targetId`, `filePath`, `formatOptions`
     - Use write-plan-driven generation flow identical to built-in targets
     - _Requirements: 16.3, 16.5, 16.7_
 
-  - [ ] 9.2 Write property test for external target registration consistency (Property 14)
+  - [x] 9.2 Write property test for external target registration consistency (Property 14)
     - **Property 14: External Target Registration Consistency**
     - Generate random manifests with `providedTargets` and random layout file presence; assert targets available iff `defaultLayout` exists; assert `IsAvailable` correctness
     - Test class: `TargetRegistryProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 16.1, 16.3, 16.4, 16.6**
 
-  - [ ] 9.3 Write property test for pack-provided target rendering equivalence (Property 15)
+  - [x] 9.3 Write property test for pack-provided target rendering equivalence (Property 15)
     - **Property 15: Pack-Provided Target Rendering Equivalence**
     - Generate random rule sets and write plans; assert `PackTargetComponent` produces deterministic output with correct model fields
     - Test class: `PackTargetComponentProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
     - **Validates: Requirements 16.5, 16.7**
 
-  - [ ] 9.4 Extend `TargetRegistry` with `RegisterPackTargets` and `IsAvailable` in `src/Steergen.Core/Targets/`
+  - [x] 9.4 Extend `TargetRegistry` with `RegisterPackTargets` and `IsAvailable` in `src/Steergen.Core/Targets/`
     - Add `GetAvailableTargets()` returning built-in + pack-provided targets
     - Add `RegisterPackTargets(PackManifest, packBasePath, ITemplateProvider)` to register external targets
     - Add `IsAvailable(string targetId)` check
@@ -219,7 +219,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Validate `defaultLayout` file exists before registering; emit TP009 if missing
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.6, 16.8_
 
-- [ ] 10. Checkpoint - Ensure all tests pass
+- [x] 10. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 11. CLI commands for template pack management
@@ -277,7 +277,7 @@ This plan implements two pack-based extensibility mechanisms for Steergen: Templ
     - Report warning for template files targeting unregistered targets
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [ ] 13.2 Write property test for template pack validation (Property 7)
+  - [x] 13.2 Write property test for template pack validation (Property 7)
     - **Property 7: Template Pack Validation**
     - Generate random Scriban-like strings; assert valid iff Scriban parser succeeds; assert warning for unknown template names
     - Test class: `TemplateValidationProperties` in `tests/Steergen.Core.PropertyTests/Packs/`
