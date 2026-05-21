@@ -107,7 +107,9 @@ public sealed class PackDownloader
                     };
                 }
 
-                // Detect the top-level prefix from the first entry
+                // Detect the top-level GitHub directory prefix (e.g. repo-ref/).
+                // Some archives may start with metadata entries that have no slash;
+                // do not lock in an empty prefix until we see a filesystem entry.
                 if (topLevelPrefix is null)
                 {
                     var firstSlash = entryName.IndexOf('/');
@@ -115,14 +117,12 @@ public sealed class PackDownloader
                     {
                         topLevelPrefix = entryName[..(firstSlash + 1)];
                     }
-                    else
-                    {
-                        topLevelPrefix = string.Empty;
-                    }
                 }
 
                 // Strip the top-level prefix
-                var relativePath = topLevelPrefix.Length > 0 && entryName.StartsWith(topLevelPrefix, StringComparison.Ordinal)
+                var relativePath = topLevelPrefix is not null
+                    && topLevelPrefix.Length > 0
+                    && entryName.StartsWith(topLevelPrefix, StringComparison.Ordinal)
                     ? entryName[topLevelPrefix.Length..]
                     : entryName;
 

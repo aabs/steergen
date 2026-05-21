@@ -387,6 +387,22 @@ public sealed class PackDownloaderTests : IDisposable
         Assert.Contains("pack.yaml", result.Diagnostics[0].Message);
     }
 
+    [Fact]
+    public async Task DownloadAsync_MetadataEntryBeforeTopLevelDirectory_StillFindsPackYaml()
+    {
+        var archive = CreateArchiveWithLeadingMetadataEntry("repo-v1.0.0");
+        var httpClient = CreateHttpClient(HttpStatusCode.OK, archive);
+        var downloader = new PackDownloader(httpClient, _cacheBase);
+
+        var source = new GitHubPackSource { Owner = "acme", Repo = "templates", Ref = "v1.0.0" };
+        var result = await downloader.DownloadAsync(source, PackType.Template, force: false);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.CachePath);
+        Assert.True(File.Exists(Path.Combine(result.CachePath, "pack.yaml")));
+        Assert.False(File.Exists(Path.Combine(result.CachePath, "repo-v1.0.0", "pack.yaml")));
+    }
+
     // ── Additional archive helpers ───────────────────────────────────────────
 
     private static byte[] CreateArchiveWithMultipleSubdirs(
@@ -428,6 +444,30 @@ public sealed class PackDownloaderTests : IDisposable
                 DataStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("# No pack.yaml here"))
             };
             tarWriter.WriteEntry(entry);
+        }
+
+        return memoryStream.ToArray();
+    }
+
+    private static byte[] CreateArchiveWithLeadingMetadataEntry(string topLevelDir)
+    {
+        using var memoryStream = new MemoryStream();
+        using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Fastest, leaveOpen: true))
+        using (var tarWriter = new TarWriter(gzipStream, leaveOpen: true))
+        {
+            // Simulate an entry that appears before the top-level directory prefix.
+            var metadataEntry = new PaxTarEntry(TarEntryType.RegularFile, "pax_global_header")
+            {
+                DataStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("comment=generated-by-test\n"))
+            };
+            tarWriter.WriteEntry(metadataEntry);
+
+            var prefix = topLevelDir.TrimEnd('/') + "/";
+            var packYamlEntry = new PaxTarEntry(TarEntryType.RegularFile, prefix + "pack.yaml")
+            {
+                DataStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("name: test-pack\nversion: 1.0.0\nminSteergenVersion: 1.0.0\n"))
+            };
+            tarWriter.WriteEntry(packYamlEntry);
         }
 
         return memoryStream.ToArray();

@@ -22,6 +22,7 @@ Steergen is a .NET CLI tool that maintains a single set of steering and constitu
 - [Configuration](#configuration)
 - [Template Packs](#template-packs)
 - [Rules Packs](#rules-packs)
+- [Authoring a Rules Pack](docs/authoring-rules-packs.md)
 - [Exit Codes](#exit-codes)
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
@@ -276,6 +277,8 @@ templatePack:
 ## Rules Packs
 
 Rules packs are shared governance rule sets published to GitHub repositories. They let teams share steering documents across projects without copying files. Each pack declares a scope that determines its merge precedence relative to project-local rules.
+
+> To create and publish your own rules pack, see the **[Authoring a Rules Pack](docs/authoring-rules-packs.md)** guide.
 
 ### Adding a rules pack
 
