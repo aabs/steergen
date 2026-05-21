@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>steergen</ToolCommandName>
+    <RuntimeFrameworkVersion>10.0.0</RuntimeFrameworkVersion>
+    <RollForward>LatestPatch</RollForward>
     <PackageId>aabs.steergen</PackageId>
     <Description>CLI for validating and transforming steering specification documents.</Description>
     <PackageTags>cli;dotnet-tool;specification;governance</PackageTags>
