@@ -1,13 +1,16 @@
 using System.CommandLine;
+using System.Reflection;
 using Steergen.Cli.Diagnostics;
 using Steergen.Core.Configuration;
 using Steergen.Core.Generation;
 using Steergen.Core.Model;
+using Steergen.Core.Packs;
 using Steergen.Core.Parsing;
 using Steergen.Core.Targets;
 using Steergen.Core.Targets.Agents;
 using Steergen.Core.Targets.Kiro;
 using Steergen.Core.Targets.Speckit;
+using Steergen.Core.Validation;
 using Steergen.Templates;
 
 namespace Steergen.Cli.Commands;
@@ -118,18 +121,27 @@ public static class RunCommand
                     return Composition.ExitCodeMapper.ConfigurationError;
                 }
                 var loader = new SteergenConfigLoader();
+
+                // Check for deprecated globalRoot field (CFG001)
+                var deprecationDiag = await loader.CheckForDeprecatedFieldsAsync(configPath, cancellationToken);
+                if (deprecationDiag is not null)
+                {
+                    Console.Error.WriteLine($"[error] {deprecationDiag.Code}: {deprecationDiag.Message}");
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
                 config = await loader.LoadAsync(configPath, cancellationToken);
             }
 
             // Resolve roots: CLI args > config file
-            var resolvedGlobal = globalRoot ?? config?.GlobalRoot;
+            var resolvedGlobal = globalRoot; // globalRoot config field removed; use rules packs instead
             var resolvedProject = projectRoot ?? config?.ProjectRoot;
             var resolvedGenerationRoot = outputBase ?? config?.GenerationRoot ?? defaultOutputPath;
             var activeProfiles = config?.ActiveProfiles ?? [];
 
             if (resolvedGlobal is null && resolvedProject is null)
             {
-                Console.Error.WriteLine("[error] Provide --global and/or --project (or a --config with globalRoot/projectRoot set).");
+                Console.Error.WriteLine("[error] Provide --global and/or --project (or a --config with projectRoot set).");
                 return Composition.ExitCodeMapper.ConfigurationError;
             }
 
@@ -138,9 +150,71 @@ public static class RunCommand
                 ? explicitTargets
                 : (IReadOnlyList<string>)(config?.RegisteredTargets ?? []);
 
-            var templateProvider = new EmbeddedTemplateProvider();
+            // Construct the template provider using TemplateResolver with three-level override chain.
+            // When no template pack is configured, localOverridePath and cachedPackPath are null,
+            // so the resolver falls back directly to EmbeddedTemplateProvider.
+            var embeddedProvider = new EmbeddedTemplateProvider();
+            ITemplateProvider templateProvider;
 
-            // Build map of all known built-in targets without using the static registry
+            string? localOverridePath = null;
+            string? cachedPackPath = null;
+            IReadOnlySet<string>? declaredTargets = null;
+            PackManifest? packManifest = null;
+
+            if (config?.TemplatePack is { } templatePackConfig)
+            {
+                // Resolve local override path from config
+                localOverridePath = templatePackConfig.LocalPath;
+                if (localOverridePath is not null && configPath is not null && !Path.IsPathRooted(localOverridePath))
+                {
+                    var configDir = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
+                    localOverridePath = Path.GetFullPath(Path.Combine(configDir, localOverridePath));
+                }
+
+                // Resolve cached GitHub pack path from config
+                if (templatePackConfig.Source is not null)
+                {
+                    var packSource = GitHubPackSourceParser.Parse(
+                        templatePackConfig.Source, templatePackConfig.Ref);
+                    if (packSource is not null)
+                    {
+                        var cacheBase = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            ".steergen");
+                        var downloader = new PackDownloader(new HttpClient(), cacheBase);
+                        var resolvedCachePath = downloader.GetCachedPath(packSource, PackType.Template);
+
+                        if (Directory.Exists(resolvedCachePath))
+                        {
+                            cachedPackPath = resolvedCachePath;
+
+                            // Parse pack manifest to get declared targets
+                            var manifestParser = new PackManifestParser();
+                            packManifest = manifestParser.Parse(resolvedCachePath);
+                            if (packManifest?.Targets is { Count: > 0 } targets)
+                            {
+                                declaredTargets = new HashSet<string>(targets, StringComparer.Ordinal);
+                            }
+                        }
+                        else
+                        {
+                            // TP007: configured GitHub pack not in local cache
+                            Console.Error.WriteLine(
+                                $"[error] TP007: Configured template pack is not in the local cache. " +
+                                $"Run 'steergen update --templates' to download it.");
+                            return Composition.ExitCodeMapper.ConfigurationError;
+                        }
+                    }
+                }
+            }
+
+            templateProvider = new TemplateResolver(
+                localOverridePath,
+                cachedPackPath,
+                embeddedProvider,
+                declaredTargets);
+
+            // Build map of all known built-in targets using the resolved template provider
             var allComponents = new Dictionary<string, ITargetComponent>(StringComparer.Ordinal)
             {
                 [TargetRegistry.KnownTargets.Speckit] = new SpeckitTargetComponent(templateProvider),
@@ -148,6 +222,34 @@ public static class RunCommand
                 [TargetRegistry.KnownTargets.CopilotAgent] = new CopilotAgentTargetComponent(templateProvider),
                 [TargetRegistry.KnownTargets.KiroAgent] = new KiroAgentTargetComponent(templateProvider),
             };
+
+            // Register pack-provided external targets if a template pack manifest declares them
+            if (packManifest?.ProvidedTargets is { Count: > 0 } && cachedPackPath is not null)
+            {
+                var packDiagnostics = TargetRegistry.RegisterPackTargets(
+                    packManifest, cachedPackPath, templateProvider);
+
+                foreach (var diag in packDiagnostics)
+                {
+                    Console.Error.WriteLine($"[error] {diag.Code}: {diag.Message}");
+                }
+
+                // Add registered pack targets to the available components map
+                foreach (var providedTarget in packManifest.ProvidedTargets)
+                {
+                    var layoutPath = Path.Combine(cachedPackPath, providedTarget.DefaultLayout);
+                    if (File.Exists(layoutPath) && !allComponents.ContainsKey(providedTarget.TargetId))
+                    {
+                        allComponents[providedTarget.TargetId] = new PackTargetComponent(
+                            providedTarget.TargetId,
+                            templateProvider,
+                            layoutPath,
+                            packManifest.Name,
+                            providedTarget.Description);
+                    }
+                }
+            }
+
             List<ITargetComponent> selectedComponents;
             List<TargetConfiguration> targetConfigs;
 
@@ -210,6 +312,72 @@ public static class RunCommand
                 return Task.FromResult((g, p));
             });
 
+            // Load rules packs before merge step
+            IReadOnlyList<ScopedPackDocuments>? packDocuments = null;
+            if (config?.RulesPacks is { Count: > 0 } rulesPackEntries)
+            {
+                var cacheBase = GetCacheBaseDirectory();
+                var runningVersion = GetRunningSteergenVersion();
+                var manifestParser = new PackManifestParser();
+                var validator = new SteeringValidator();
+                var rulesPackLoader = new RulesPackLoader(manifestParser, validator);
+
+                // Convert RulesPackEntry config entries to RulesPackConfiguration
+                var packConfigs = new List<RulesPackConfiguration>();
+                foreach (var entry in rulesPackEntries)
+                {
+                    var source = GitHubPackSourceParser.Parse(entry.Source, entry.Ref, entry.Path);
+                    if (source is null)
+                    {
+                        Console.Error.WriteLine(
+                            $"[error] Invalid rules pack source format: '{entry.Source}'");
+                        return Composition.ExitCodeMapper.ConfigurationError;
+                    }
+
+                    packConfigs.Add(new RulesPackConfiguration
+                    {
+                        Source = source,
+                        ScopeOverride = entry.Scope
+                    });
+                }
+
+                var loadResult = rulesPackLoader.Load(packConfigs, cacheBase, runningVersion);
+
+                // Check for fatal errors (RP005 = pack not in cache)
+                var fatalErrors = loadResult.Diagnostics
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .ToList();
+
+                if (fatalErrors.Count > 0)
+                {
+                    foreach (var diag in fatalErrors)
+                    {
+                        Console.Error.WriteLine($"[error] {diag.Code}: {diag.Message}");
+                    }
+                    return Composition.ExitCodeMapper.ConfigurationError;
+                }
+
+                // Emit non-fatal diagnostics (warnings)
+                foreach (var diag in loadResult.Diagnostics.Where(d => d.Severity != DiagnosticSeverity.Error))
+                {
+                    if (!quiet)
+                        Console.Error.WriteLine($"[warning] {diag.Code}: {diag.Message}");
+                }
+
+                // Group loaded documents by scope for the extended resolver
+                if (loadResult.Documents.Count > 0)
+                {
+                    packDocuments = loadResult.Documents
+                        .GroupBy(d => d.Rules.FirstOrDefault()?.SourcePackScope ?? PackScope.Global)
+                        .Select(g => new ScopedPackDocuments
+                        {
+                            Scope = g.Key,
+                            Documents = g.ToList()
+                        })
+                        .ToList();
+                }
+            }
+
             var pipeline = new GenerationPipeline();
             var result = await reporter.MeasureAsync("run-pipeline", () =>
                 pipeline.RunAsync(
@@ -221,7 +389,8 @@ public static class RunCommand
                     cancellationToken,
                     manifestOutputPath: outputBase,
                     globalRoot: resolvedGlobal,
-                    projectRoot: resolvedProject));
+                    projectRoot: resolvedProject,
+                    packDocuments: packDocuments));
 
             reporter.EmitTotal();
 
@@ -255,6 +424,11 @@ public static class RunCommand
         {
             Console.Error.WriteLine($"[conflict] {ex.Message}");
             return Composition.ExitCodeMapper.ConflictError;
+        }
+        catch (TemplatePackException ex)
+        {
+            Console.Error.WriteLine($"[error] {ex.Diagnostic.Code}: {ex.Diagnostic.Message}");
+            return ex.ExitCode;
         }
         catch (TargetGenerationException ex)
         {
@@ -306,5 +480,37 @@ public static class RunCommand
                     $"  [routing:fail] {r.RuleId}: {r.SelectionReason}");
             }
         }
+    }
+
+    private static string GetCacheBaseDirectory()
+    {
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        return Path.Combine(userProfile, ".steergen");
+    }
+
+    private static string GetRunningSteergenVersion()
+    {
+        var assembly = typeof(RunCommand).Assembly;
+        var infoVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        if (infoVersion is not null)
+        {
+            // Strip build metadata (e.g., "+abc123") if present
+            var plusIndex = infoVersion.IndexOf('+');
+            if (plusIndex >= 0)
+                infoVersion = infoVersion[..plusIndex];
+
+            // Strip prerelease suffix (e.g., "-preview1") for semver comparison
+            var dashIndex = infoVersion.IndexOf('-');
+            if (dashIndex >= 0)
+                infoVersion = infoVersion[..dashIndex];
+
+            return infoVersion;
+        }
+
+        var version = assembly.GetName().Version;
+        return version is not null
+            ? $"{version.Major}.{version.Minor}.{version.Build}"
+            : "0.0.0";
     }
 }

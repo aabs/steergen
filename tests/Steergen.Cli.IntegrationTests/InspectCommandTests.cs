@@ -200,7 +200,6 @@ public sealed class InspectCommandTests
             Path.Combine(dir, "steergen.config.yaml"),
             new SteeringConfiguration
             {
-                GlobalRoot = globalRoot,
                 ProjectRoot = projectRoot,
             });
     }

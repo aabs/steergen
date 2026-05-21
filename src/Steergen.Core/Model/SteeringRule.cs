@@ -1,3 +1,5 @@
+using Steergen.Core.Packs;
+
 namespace Steergen.Core.Model;
 
 public record SteeringRule
@@ -16,4 +18,14 @@ public record SteeringRule
     /// Set during model resolution; used for <c>${inputFileStem}</c> route substitution.
     /// </summary>
     public string? InputFileStem { get; init; }
+    /// <summary>
+    /// The name of the rules pack from which this rule was loaded.
+    /// Null for project-local rules.
+    /// </summary>
+    public string? SourcePackName { get; init; }
+    /// <summary>
+    /// The effective scope of the rules pack from which this rule was loaded.
+    /// Null for project-local rules.
+    /// </summary>
+    public PackScope? SourcePackScope { get; init; }
 }

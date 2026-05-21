@@ -76,7 +76,7 @@ public static class PurgeCommand
                 config = await loader.LoadAsync(configPath, cancellationToken);
             }
 
-            var resolvedGlobal = config?.GlobalRoot;
+            var resolvedGlobal = (string?)null; // globalRoot config field removed; use rules packs instead
             var resolvedProject = config?.ProjectRoot;
 
             var targetIds = explicitTargets.Count > 0

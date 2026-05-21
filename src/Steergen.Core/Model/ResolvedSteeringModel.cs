@@ -1,3 +1,5 @@
+using Steergen.Core.Validation;
+
 namespace Steergen.Core.Model;
 
 public record ResolvedSteeringModel
@@ -6,4 +8,5 @@ public record ResolvedSteeringModel
     public IReadOnlyList<SteeringRule> Rules { get; init; } = [];
     public IReadOnlyList<string> ActiveProfiles { get; init; } = [];
     public IReadOnlyDictionary<string, SteeringDocument> SourceIndex { get; init; } = new Dictionary<string, SteeringDocument>();
+    public IReadOnlyList<Diagnostic> Diagnostics { get; init; } = [];
 }

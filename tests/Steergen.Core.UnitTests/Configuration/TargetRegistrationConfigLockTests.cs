@@ -1,5 +1,6 @@
 using Steergen.Core.Configuration;
 using Steergen.Core.Model;
+using Steergen.Core.Targets;
 using Xunit;
 
 namespace Steergen.Core.UnitTests.Configuration;
@@ -7,8 +8,27 @@ namespace Steergen.Core.UnitTests.Configuration;
 /// <summary>
 /// Tests for optimistic-lock conflict scenarios in <see cref="TargetRegistrationService"/>.
 /// </summary>
-public sealed class TargetRegistrationConfigLockTests
+public sealed class TargetRegistrationConfigLockTests : IDisposable
 {
+    private static readonly object RegistryLock = new();
+
+    public TargetRegistrationConfigLockTests()
+    {
+        lock (RegistryLock)
+        {
+            TargetRegistry.Clear();
+            TargetRegistry.RegisterBuiltins(new StubTemplateProvider());
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (RegistryLock)
+        {
+            TargetRegistry.Clear();
+        }
+    }
+
     private static string MakeTempConfigPath()
     {
         var dir = Path.Combine(AppContext.BaseDirectory, "testdata", Guid.NewGuid().ToString());
@@ -21,7 +41,6 @@ public sealed class TargetRegistrationConfigLockTests
         var writer = new SteergenConfigWriter();
         var config = new SteeringConfiguration
         {
-            GlobalRoot = "/global",
             ProjectRoot = "/project",
             RegisteredTargets = [],
         };
@@ -201,5 +220,25 @@ public sealed class TargetRegistrationConfigLockTests
 
         Assert.False(result.Success);
         Assert.NotNull(result.ErrorMessage);
+    }
+
+    // ── Add: unavailable target ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task AddAsync_UnavailableTarget_ReturnsFailure()
+    {
+        var path = MakeTempConfigPath();
+        await WriteInitialConfigAsync(path);
+
+        var svc = new TargetRegistrationService();
+        var result = await svc.AddAsync(path, "nonexistent-target");
+
+        Assert.False(result.Success);
+        Assert.Contains("not available", result.ErrorMessage);
+    }
+
+    private sealed class StubTemplateProvider : ITemplateProvider
+    {
+        public string GetTemplate(string targetId, string templateName) => string.Empty;
     }
 }

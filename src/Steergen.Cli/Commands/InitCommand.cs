@@ -65,7 +65,6 @@ public static class InitCommand
             var registeredTargets = targetIds.Distinct(StringComparer.Ordinal).ToList();
             var config = new SteeringConfiguration
             {
-                GlobalRoot = Path.Combine(normalizedProjectRoot, "steering", "global"),
                 ProjectRoot = Path.Combine(normalizedProjectRoot, "steering", "project"),
                 RegisteredTargets = registeredTargets,
             };

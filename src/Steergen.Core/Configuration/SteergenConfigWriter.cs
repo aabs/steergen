@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Steergen.Core.Model;
+using Steergen.Core.Packs;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -56,7 +57,6 @@ public sealed class SteergenConfigWriter
     {
         return new SteeringConfigurationYamlOut
         {
-            GlobalRoot = config.GlobalRoot,
             ProjectRoot = config.ProjectRoot,
             GenerationRoot = config.GenerationRoot,
             ActiveProfiles = config.ActiveProfiles,
@@ -71,18 +71,36 @@ public sealed class SteergenConfigWriter
             }).ToList(),
             RegisteredTargets = config.RegisteredTargets,
             TemplatePackVersion = config.TemplatePackVersion,
+            TemplatePack = config.TemplatePack is not null
+                ? new TemplatePackConfigYamlOut
+                {
+                    Source = config.TemplatePack.Source,
+                    Ref = config.TemplatePack.Ref,
+                    LocalPath = config.TemplatePack.LocalPath,
+                }
+                : null,
+            RulesPacks = config.RulesPacks.Count > 0
+                ? config.RulesPacks.Select(r => new RulesPackEntryYamlOut
+                {
+                    Source = r.Source,
+                    Ref = r.Ref,
+                    Path = r.Path,
+                    Scope = r.Scope,
+                }).ToList()
+                : null,
         };
     }
 
     private sealed class SteeringConfigurationYamlOut
     {
-        public string? GlobalRoot { get; set; }
         public string? ProjectRoot { get; set; }
         public string? GenerationRoot { get; set; }
         public IReadOnlyList<string>? ActiveProfiles { get; set; }
         public List<TargetConfigurationYamlOut>? Targets { get; set; }
         public IReadOnlyList<string>? RegisteredTargets { get; set; }
         public string? TemplatePackVersion { get; set; }
+        public TemplatePackConfigYamlOut? TemplatePack { get; set; }
+        public List<RulesPackEntryYamlOut>? RulesPacks { get; set; }
     }
 
     private sealed class TargetConfigurationYamlOut
@@ -93,5 +111,20 @@ public sealed class SteergenConfigWriter
         public string? LayoutOverridePath { get; set; }
         public Dictionary<string, string>? FormatOptions { get; set; }
         public List<string>? RequiredMetadata { get; set; }
+    }
+
+    private sealed class TemplatePackConfigYamlOut
+    {
+        public string? Source { get; set; }
+        public string? Ref { get; set; }
+        public string? LocalPath { get; set; }
+    }
+
+    private sealed class RulesPackEntryYamlOut
+    {
+        public string? Source { get; set; }
+        public string? Ref { get; set; }
+        public string? Path { get; set; }
+        public PackScope? Scope { get; set; }
     }
 }

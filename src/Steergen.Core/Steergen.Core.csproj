@@ -5,10 +5,12 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Steergen.Core.PropertyTests" />
+    <InternalsVisibleTo Include="Steergen.Core.UnitTests" />
+    <InternalsVisibleTo Include="Steergen.Cli.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Scriban" Version="7.0.6" />
+    <PackageReference Include="Scriban" Version="7.2.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 

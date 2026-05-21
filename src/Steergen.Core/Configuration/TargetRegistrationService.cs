@@ -1,4 +1,5 @@
 using Steergen.Core.Model;
+using Steergen.Core.Targets;
 
 namespace Steergen.Core.Configuration;
 
@@ -18,6 +19,11 @@ public sealed class TargetRegistrationService
     {
         if (!File.Exists(configPath))
             return TargetRegistrationResult.Fail($"Config file not found: {configPath}");
+
+        // Verify target is available (built-in or from configured pack's providedTargets)
+        if (!TargetRegistry.IsAvailable(targetId))
+            return TargetRegistrationResult.Fail(
+                $"Target '{targetId}' is not available. It must be a built-in target or provided by a configured template pack's 'providedTargets'.");
 
         var (config, hash) = await ReadWithHash(configPath, cancellationToken);
 

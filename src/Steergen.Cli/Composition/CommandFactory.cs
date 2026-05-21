@@ -16,6 +16,8 @@ public static class CommandFactory
         var targetCommand = Commands.TargetCommand.Create();
 
         var purgeCommand = Commands.PurgeCommand.Create();
+        var rulesPackCommand = Commands.RulesPackCommand.Create();
+        var templatePackCommand = Commands.TemplatePackCommand.Create();
 
         rootCommand.Add(runCommand);
         rootCommand.Add(validateCommand);
@@ -24,6 +26,8 @@ public static class CommandFactory
         rootCommand.Add(updateCommand);
         rootCommand.Add(targetCommand);
         rootCommand.Add(purgeCommand);
+        rootCommand.Add(rulesPackCommand);
+        rootCommand.Add(templatePackCommand);
 
         return rootCommand;
     }

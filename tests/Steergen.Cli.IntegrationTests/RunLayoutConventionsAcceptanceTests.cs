@@ -71,7 +71,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
             await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
-                GlobalRoot = workspace,
+
                 Targets =
                 [
                     new TargetConfiguration
@@ -83,7 +83,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, workspace, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
             Assert.True(File.Exists(Path.Combine(outputDir, "override-output.md")),
@@ -112,7 +112,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
             await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
-                GlobalRoot = workspace,
+
                 Targets =
                 [
                     new TargetConfiguration
@@ -124,7 +124,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, workspace, null, outputDir, ["speckit"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
             Assert.True(File.Exists(Path.Combine(outputDir, "override-output.md")),
@@ -153,7 +153,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
             var configPath = Path.Combine(workspace, "steergen.config.yaml");
             await new SteergenConfigWriter().WriteAsync(configPath, new SteeringConfiguration
             {
-                GlobalRoot = workspace,
+
                 Targets =
                 [
                     new TargetConfiguration { Id = "speckit", Enabled = true, OutputPath = outputDir, LayoutOverridePath = speckitOverridePath },
@@ -161,7 +161,7 @@ public sealed class RunLayoutConventionsAcceptanceTests
                 ],
             });
 
-            var exitCode = await RunCommand.RunAsync(configPath, null, null, outputDir, ["speckit", "kiro"], quiet: true, cancellationToken: default);
+            var exitCode = await RunCommand.RunAsync(configPath, workspace, null, outputDir, ["speckit", "kiro"], quiet: true, cancellationToken: default);
 
             Assert.Equal(0, exitCode);
             Assert.True(File.Exists(Path.Combine(outputDir, "override-output.md")),
