@@ -1,11 +1,11 @@
 {
-  "selector": "github.com/acme/security-governance|packs/security",
-  "requestedTag": "v9.9.9-does-not-exist",
-  "phase": "fetch",
-  "error": "remote tag not found",
-  "expected": {
-    "configMutated": false,
-    "cacheRestored": true,
-    "exitCode": "upgrade_fetch_failed"
-  }
+    "selector": "github.com/acme/security-governance|packs/security",
+    "requestedTag": "v9.9.9-does-not-exist",
+    "phase": "fetch",
+    "error": "remote tag not found",
+    "expected": {
+        "configMutated": false,
+        "cacheRestored": true,
+        "exitCode": "upgrade_fetch_failed"
+    }
 }
