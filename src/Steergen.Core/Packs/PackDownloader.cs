@@ -130,25 +130,6 @@ public sealed class PackDownloader
                 if (string.IsNullOrEmpty(relativePath))
                     continue;
 
-                // When source.Path is specified, only extract files under that subdirectory
-                if (source.Path is not null)
-                {
-                    var subDirPrefix = source.Path.TrimEnd('/') + "/";
-                    if (!relativePath.StartsWith(subDirPrefix, StringComparison.Ordinal)
-                        && relativePath != source.Path.TrimEnd('/'))
-                    {
-                        continue; // Skip entries not under the specified subdirectory
-                    }
-
-                    // Strip the subdirectory prefix from the relative path
-                    relativePath = relativePath.StartsWith(subDirPrefix, StringComparison.Ordinal)
-                        ? relativePath[subDirPrefix.Length..]
-                        : string.Empty;
-
-                    if (string.IsNullOrEmpty(relativePath))
-                        continue;
-                }
-
                 // Validate the stripped path is still safe
                 if (!IsPathSafe(relativePath))
                 {
@@ -208,8 +189,9 @@ public sealed class PackDownloader
                 }
             }
 
-            // Validate pack.yaml presence
-            var packYamlPath = Path.Combine(tempDir, "pack.yaml");
+            // Validate pack.yaml presence at configured pack root.
+            var packRootPath = ResolvePackRootPath(tempDir, source.Path);
+            var packYamlPath = Path.Combine(packRootPath, "pack.yaml");
             if (!File.Exists(packYamlPath))
             {
                 DeleteDirectorySafe(tempDir);
@@ -218,7 +200,9 @@ public sealed class PackDownloader
                     Success = false,
                     Diagnostics = [new Diagnostic(
                         "DL002",
-                        $"Downloaded archive does not contain pack.yaml",
+                        source.Path is null
+                            ? "Downloaded archive does not contain pack.yaml"
+                            : $"Downloaded archive does not contain pack.yaml at configured path '{source.Path}'",
                         DiagnosticSeverity.Error)]
                 };
             }
@@ -260,6 +244,21 @@ public sealed class PackDownloader
         {
             // Best-effort cleanup; don't mask the original error
         }
+    }
+
+    private static string ResolvePackRootPath(string cacheRootPath, string? configuredPath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath))
+            return cacheRootPath;
+
+        var normalized = configuredPath
+            .Replace('\\', '/')
+            .Trim('/');
+
+        if (string.IsNullOrEmpty(normalized))
+            return cacheRootPath;
+
+        return Path.Combine(cacheRootPath, normalized.Replace('/', Path.DirectorySeparatorChar));
     }
 
     /// <summary>

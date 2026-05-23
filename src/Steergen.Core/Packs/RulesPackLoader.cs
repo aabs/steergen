@@ -57,8 +57,8 @@ public sealed class RulesPackLoader
     {
         var source = packConfig.Source;
 
-        // Step a: Resolve cache path
-        var cachePath = ResolveCachePath(source, cacheBaseDirectory);
+        // Step a: Resolve pack root path (cache path + optional configured subdirectory)
+        var cachePath = ResolvePackRootPath(source, cacheBaseDirectory);
 
         // Step b: If cache missing → emit error diagnostic, skip pack
         if (!Directory.Exists(cachePath))
@@ -164,18 +164,30 @@ public sealed class RulesPackLoader
     }
 
     /// <summary>
-    /// Resolves the cache path for a rules pack source.
-    /// Format: {cacheBase}/rules/{owner}/{repo}/{ref}/
+    /// Resolves the pack root path for a rules pack source.
+    /// Format: {cacheBase}/rules/{owner}/{repo}/{ref}/(+ optional configured subdirectory)
     /// </summary>
-    private static string ResolveCachePath(GitHubPackSource source, string cacheBaseDirectory)
+    private static string ResolvePackRootPath(GitHubPackSource source, string cacheBaseDirectory)
     {
         var refValue = source.Ref ?? "HEAD";
-        return Path.Combine(
+        var cachePath = Path.Combine(
             cacheBaseDirectory,
             "rules",
             source.Owner,
             source.Repo,
             refValue) + Path.DirectorySeparatorChar;
+
+        if (string.IsNullOrWhiteSpace(source.Path))
+            return cachePath;
+
+        var normalizedSubPath = source.Path
+            .Replace('\\', '/')
+            .Trim('/');
+
+        if (string.IsNullOrEmpty(normalizedSubPath))
+            return cachePath;
+
+        return Path.Combine(cachePath, normalizedSubPath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     /// <summary>

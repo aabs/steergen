@@ -236,14 +236,16 @@ public static class UpdateCommand
                     continue;
                 }
 
+                var packRootPath = ResolveConfiguredPackRoot(downloadResult.CachePath!, entry.Path);
+
                 // Parse manifest to report pack name and version
-                var manifest = manifestParser.Parse(downloadResult.CachePath!);
+                var manifest = manifestParser.Parse(packRootPath);
                 var packName = manifest?.Name ?? entry.Source;
                 var packVersion = manifest?.Version ?? "unknown";
 
                 // Count rules files (.md) in the cached pack directory
-                var rulesFileCount = Directory.Exists(downloadResult.CachePath)
-                    ? Directory.EnumerateFiles(downloadResult.CachePath, "*.md", SearchOption.AllDirectories).Count()
+                var rulesFileCount = Directory.Exists(packRootPath)
+                    ? Directory.EnumerateFiles(packRootPath, "*.md", SearchOption.AllDirectories).Count()
                     : 0;
 
                 Console.Error.WriteLine($"  updated  {packName} v{packVersion} ({rulesFileCount} rules files)");
@@ -261,6 +263,21 @@ public static class UpdateCommand
             Console.Error.WriteLine($"[error] {ex.Message}");
             return Composition.ExitCodeMapper.ConfigurationError;
         }
+    }
+
+    private static string ResolveConfiguredPackRoot(string cachePath, string? configuredPath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath))
+            return cachePath;
+
+        var normalizedSubPath = configuredPath
+            .Replace('\\', '/')
+            .Trim('/');
+
+        if (string.IsNullOrEmpty(normalizedSubPath))
+            return cachePath;
+
+        return Path.Combine(cachePath, normalizedSubPath.Replace('/', Path.DirectorySeparatorChar));
     }
 
 }

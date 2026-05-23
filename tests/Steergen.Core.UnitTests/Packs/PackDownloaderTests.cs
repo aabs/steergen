@@ -264,9 +264,10 @@ public sealed class PackDownloaderTests : IDisposable
     // ── Subdirectory extraction ──────────────────────────────────────────────
 
     [Fact]
-    public async Task DownloadAsync_WithPath_ExtractsOnlySubdirectoryContents()
+    public async Task DownloadAsync_WithPath_ExtractsRepositoryAndValidatesConfiguredPackRoot()
     {
-        // Requirement 9.5: When path is specified, only that subdirectory's contents are cached
+        // Requirement 9.5: When path is specified, cache remains repo/ref and configured
+        // subdirectory is validated as the effective pack root.
         var archive = CreatePackArchive(
             "monorepo-v1.0.0",
             subDirectory: "backend-team",
@@ -302,13 +303,48 @@ public sealed class PackDownloaderTests : IDisposable
         Assert.True(result.Success);
         Assert.NotNull(result.CachePath);
 
-        // Should have pack.yaml from the backend-team subdirectory
-        Assert.True(File.Exists(Path.Combine(result.CachePath, "pack.yaml")));
-        Assert.True(File.Exists(Path.Combine(result.CachePath, "rules", "governance.md")));
+        // Cache path remains repo/ref root and includes full repository content.
+        Assert.True(File.Exists(Path.Combine(result.CachePath, "backend-team", "pack.yaml")));
+        Assert.True(File.Exists(Path.Combine(result.CachePath, "backend-team", "rules", "governance.md")));
+        Assert.True(File.Exists(Path.Combine(result.CachePath, "frontend-team", "pack.yaml")));
+        Assert.True(File.Exists(Path.Combine(result.CachePath, "frontend-team", "rules", "ui.md")));
+    }
 
-        // Should NOT have frontend-team files
-        Assert.False(File.Exists(Path.Combine(result.CachePath, "frontend-team", "pack.yaml")));
-        Assert.False(Directory.Exists(Path.Combine(result.CachePath, "frontend-team")));
+    [Fact]
+    public async Task DownloadAsync_WithDifferentPathsSameRepoRef_DoesNotEraseOtherPackPaths()
+    {
+        var archive = CreateArchiveWithMultipleSubdirs(
+            "monorepo-v1.0.0",
+            subDirs: new Dictionary<string, Dictionary<string, string>>
+            {
+                ["backend-team"] = new()
+                {
+                    ["pack.yaml"] = "name: backend-rules\nversion: 1.0.0\nminSteergenVersion: 1.0.0\nscope: global\n",
+                    ["rules/governance.md"] = "# Backend governance"
+                },
+                ["frontend-team"] = new()
+                {
+                    ["pack.yaml"] = "name: frontend-rules\nversion: 1.0.0\nminSteergenVersion: 1.0.0\nscope: supplemental\n",
+                    ["rules/ui.md"] = "# Frontend rules"
+                }
+            });
+
+        var httpClient = CreateHttpClient(HttpStatusCode.OK, archive);
+        var downloader = new PackDownloader(httpClient, _cacheBase);
+
+        var backendSource = new GitHubPackSource { Owner = "acme", Repo = "monorepo", Ref = "v1.0.0", Path = "backend-team" };
+        var first = await downloader.DownloadAsync(backendSource, PackType.Rules, force: false);
+        Assert.True(first.Success);
+
+        var frontendSource = new GitHubPackSource { Owner = "acme", Repo = "monorepo", Ref = "v1.0.0", Path = "frontend-team" };
+        var second = await downloader.DownloadAsync(frontendSource, PackType.Rules, force: false);
+        Assert.True(second.Success);
+
+        Assert.Equal(first.CachePath, second.CachePath);
+        Assert.True(File.Exists(Path.Combine(second.CachePath!, "backend-team", "pack.yaml")));
+        Assert.True(File.Exists(Path.Combine(second.CachePath!, "backend-team", "rules", "governance.md")));
+        Assert.True(File.Exists(Path.Combine(second.CachePath!, "frontend-team", "pack.yaml")));
+        Assert.True(File.Exists(Path.Combine(second.CachePath!, "frontend-team", "rules", "ui.md")));
     }
 
     // ── Atomic replacement ───────────────────────────────────────────────────
