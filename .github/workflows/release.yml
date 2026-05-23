@@ -3,8 +3,10 @@ name: Release
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
+      - "v*.*.*"
+      - "v*.*.*.*"
+      - "v*.*.*-*"
+      - "v*.*.*.*-*"
 
 permissions:
   contents: read
@@ -61,16 +63,25 @@ jobs:
       - name: Build CLI
         run: dotnet build src/Steergen.Cli/Steergen.Cli.csproj --no-restore -c Release
 
-      - name: Verify tag matches stable or preview convention
+      - name: Verify tag matches semantic version convention
         shell: bash
         run: |
           TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Stable release: $TAG"
-          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-preview[0-9]+$ ]]; then
-            echo "Preview release: $TAG"
+          # Accepts:
+          # - vX.Y.Z
+          # - vX.Y.Z.W (optional 4th numeric revision)
+          # - Optional prerelease: -preview.1, -rc.2, -alpha, etc.
+          # - Optional build metadata: +build.5
+          # Numeric identifiers follow SemVer no-leading-zero rule.
+          if [[ "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?(-((0|[1-9][0-9]*)|([0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))(\.((0|[1-9][0-9]*)|([0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "Semantic version tag accepted: $TAG"
           else
-            echo "ERROR: Tag '$TAG' does not match stable (vX.Y.Z) or preview (vX.Y.Z-previewN) format."
+            echo "ERROR: Tag '$TAG' is not semver-compatible."
+            echo "Supported examples:"
+            echo "  v1.2.3"
+            echo "  v1.2.3.4"
+            echo "  v1.2.3-preview.1"
+            echo "  v1.2.3.4-rc.2+build.5"
             exit 1
           fi
 
