@@ -11,6 +11,15 @@ Each external pack reference must provide values needed to construct a canonical
 Canonical selector:
 - `<source>|<path-or-entry-key>`
 
+Escaping inside selectors:
+- Literal delimiter: `\\|`
+- Literal backslash: `\\\\`
+- Invalid examples (must fail): trailing `\\`, unknown escapes like `\\q`
+
+Examples:
+- `github:acme/security|packs/security`
+- `github:acme/repo\\|mirror|packs/security`
+
 ## Pin Format Requirements
 After successful upgrade, targeted reference must persist:
 - `tag` (resolved tag)
@@ -27,3 +36,4 @@ The command must update only the targeted reference and leave all others unchang
 ## Compatibility Notes
 - Existing references without tuple-form pins require normalization during implementation handling.
 - No new top-level config file is introduced; updates remain in `steergen.config.yaml`.
+- Existing `ref` values remain supported; upgrade writes tuple-form `pin.tag` + `pin.commitSha` for deterministic state.

@@ -65,6 +65,14 @@ public sealed class SteergenConfigLoader
                 {
                     Source = yaml.TemplatePack.Source,
                     Ref = yaml.TemplatePack.Ref,
+                    EntryKey = yaml.TemplatePack.EntryKey,
+                    Pin = yaml.TemplatePack.Pin is null
+                        ? null
+                        : new PackPin
+                        {
+                            Tag = yaml.TemplatePack.Pin.Tag,
+                            CommitSha = yaml.TemplatePack.Pin.CommitSha,
+                        },
                     LocalPath = yaml.TemplatePack.LocalPath,
                 }
                 : null,
@@ -74,6 +82,13 @@ public sealed class SteergenConfigLoader
                     Source = r.Source ?? string.Empty,
                     Ref = r.Ref,
                     Path = r.Path,
+                    Pin = r.Pin is null
+                        ? null
+                        : new PackPin
+                        {
+                            Tag = r.Pin.Tag,
+                            CommitSha = r.Pin.CommitSha,
+                        },
                     Scope = r.Scope,
                 }).ToList(),
         };
@@ -106,6 +121,8 @@ public sealed class SteergenConfigLoader
     {
         public string? Source { get; set; }
         public string? Ref { get; set; }
+        public string? EntryKey { get; set; }
+        public PackPinYaml? Pin { get; set; }
         public string? LocalPath { get; set; }
     }
 
@@ -114,6 +131,13 @@ public sealed class SteergenConfigLoader
         public string? Source { get; set; }
         public string? Ref { get; set; }
         public string? Path { get; set; }
+        public PackPinYaml? Pin { get; set; }
         public PackScope? Scope { get; set; }
+    }
+
+    internal sealed class PackPinYaml
+    {
+        public string? Tag { get; set; }
+        public string? CommitSha { get; set; }
     }
 }

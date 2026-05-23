@@ -14,6 +14,7 @@ public static class RulesPackCommand
         cmd.Add(RulesPackAddCommand.Create());
         cmd.Add(RulesPackListCommand.Create());
         cmd.Add(RulesPackRemoveCommand.Create());
+        cmd.Add(RulesPackUpgradeCommand.Create());
         return cmd;
     }
 }

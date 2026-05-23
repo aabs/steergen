@@ -1,0 +1,15 @@
+{
+  "selector": "github.com/acme/security-governance|packs/security",
+  "requestedTag": "v9.9.9-does-not-exist",
+  "phase": "rollback",
+  "error": "snapshot restore denied",
+  "expected": {
+    "configMutated": false,
+    "cacheRestored": false,
+    "exitCode": "upgrade_rollback_failed",
+    "diagnostics": [
+      "fetch_failed",
+      "rollback_failed"
+    ]
+  }
+}

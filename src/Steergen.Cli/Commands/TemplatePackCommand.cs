@@ -11,6 +11,7 @@ public static class TemplatePackCommand
     public static Command Create()
     {
         var cmd = new Command("template-pack", "Manage the template pack configuration");
+        cmd.Add(TemplatePackUpgradeCommand.Create());
         cmd.Add(TemplatePackRemoveCommand.Create());
         return cmd;
     }

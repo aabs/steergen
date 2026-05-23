@@ -61,6 +61,14 @@ A benchmark regression is defined as a Mean increase > 10% from the previously r
 The target envelope is **100 documents / 1,000 rules in under 5 seconds** end-to-end.  
 `ScalabilityEnvelopeBenchmarks` validates this. The "Beyond Envelope" benchmarks are informational: they confirm degradation is graceful (linear, not exponential) and do not have hard pass/fail thresholds.
 
+## Upgrade performance gate (NFR-003)
+
+The CI workflow also runs integration timing checks for external pack upgrades via `PackUpgradePerformanceTests`.
+
+- Scope: simulated `<=100MB` pack payload upgrade path.
+- Budget: p95 runtime `<=60s` for rules/template upgrade command flows.
+- Reporting: TRX output is uploaded as part of the `performance-gate-results` artifact in CI.
+
 ## Exporting results
 
 BenchmarkDotNet exports results to `BenchmarkDotNet.Artifacts/` by default:

@@ -1,0 +1,9 @@
+{
+  "selector": "github.com/acme/security-governance|packs/security",
+  "tag": "v1.3.0",
+  "commitSha": "11aa22bb33cc44dd55ee66ff77889900aabbccdd",
+  "files": [
+    "constitution.md",
+    "security-governance.md"
+  ]
+}

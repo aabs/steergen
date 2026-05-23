@@ -128,8 +128,10 @@ steergen target remove kiro
 | `steergen purge [options]` | Remove generated files managed by steergen |
 | `steergen update [--templates] [--rules] [--force]` | Re-download configured packs |
 | `steergen template-pack add <source> [--ref <ref>] [--path <localPath>]` | Add a template pack |
+| `steergen template-pack upgrade --selector <source\|entryKey> [--tag <tag>]` | Upgrade the configured template pack reference |
 | `steergen template-pack remove` | Remove the configured template pack |
 | `steergen rules-pack add <source> [--ref <ref>] [--path <subdir>] [--scope <scope>]` | Add a rules pack |
+| `steergen rules-pack upgrade --selector <source\|path> [--tag <tag>]` | Upgrade one configured rules pack reference |
 | `steergen rules-pack remove <name>` | Remove a rules pack by name |
 | `steergen rules-pack list` | List configured rules packs with status |
 
@@ -244,6 +246,14 @@ steergen update --templates --force
 
 If no template pack is configured, the command exits with code 0 and reports that no pack source is configured.
 
+Upgrade a specific template pack reference and persist a deterministic `(tag, commitSha)` tuple:
+
+```bash
+steergen template-pack upgrade --selector "github:acme-corp/steergen-templates|templates/default" --tag v2.1.0
+```
+
+When `--tag` is omitted, the command runs in `latest-refresh` mode, snapshots cache, purges the targeted cache copy, and refetches.
+
 ### Inspecting the template chain
 
 See which templates come from which source:
@@ -330,6 +340,17 @@ SHA-pinned packs are skipped unless `--force` is specified:
 ```bash
 steergen update --rules --force
 ```
+
+Upgrade exactly one configured rules pack reference by canonical selector:
+
+```bash
+steergen rules-pack upgrade --selector "github:acme-corp/team-rules|backend-team" --tag v1.1.0
+```
+
+Selector escaping rules:
+
+- Use `\\|` for a literal `|` inside either selector component.
+- Use `\\\\` for a literal backslash.
 
 ### Inspecting rules packs
 

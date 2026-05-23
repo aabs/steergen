@@ -13,6 +13,7 @@ public sealed class TemplatePackService
     private readonly SteergenConfigLoader _loader = new();
     private readonly SteergenConfigWriter _writer = new();
     private readonly PackManifestParser _manifestParser = new();
+    private readonly PackSelectorResolver _selectorResolver = new();
 
     /// <summary>
     /// Removes the template pack configuration from the config file.
@@ -95,6 +96,40 @@ public sealed class TemplatePackService
         var config = await _loader.LoadAsync(configPath, cancellationToken);
         return (config, hash);
     }
+
+    public async Task<TemplatePackUpgradeMutationResult> UpdatePinBySelectorAsync(
+        string configPath,
+        CanonicalPackSelector selector,
+        string tag,
+        string commitSha,
+        CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(configPath))
+            return TemplatePackUpgradeMutationResult.Fail($"Config file not found: {configPath}");
+
+        var (config, hash) = await ReadWithHash(configPath, cancellationToken);
+        if (!_selectorResolver.TryResolveTemplate(config, selector, out var error))
+            return TemplatePackUpgradeMutationResult.Fail(error);
+
+        var existing = config.TemplatePack!;
+        var updatedTemplate = existing with
+        {
+            Ref = tag,
+            Pin = new PackPin
+            {
+                Tag = tag,
+                CommitSha = commitSha,
+            },
+        };
+
+        var updated = config with
+        {
+            TemplatePack = updatedTemplate,
+        };
+
+        await _writer.WriteAsync(configPath, updated, hash, cancellationToken);
+        return TemplatePackUpgradeMutationResult.Updated(existing.Source ?? string.Empty);
+    }
 }
 
 /// <summary>
@@ -113,5 +148,18 @@ public sealed record TemplatePackResult
         new() { Success = true, WasNotConfigured = true };
 
     public static TemplatePackResult Fail(string error) =>
+        new() { Success = false, ErrorMessage = error };
+}
+
+public sealed record TemplatePackUpgradeMutationResult
+{
+    public bool Success { get; init; }
+    public string? Source { get; init; }
+    public string? ErrorMessage { get; init; }
+
+    public static TemplatePackUpgradeMutationResult Updated(string source) =>
+        new() { Success = true, Source = source };
+
+    public static TemplatePackUpgradeMutationResult Fail(string error) =>
         new() { Success = false, ErrorMessage = error };
 }

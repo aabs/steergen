@@ -31,6 +31,16 @@ public sealed record TemplatePackConfig
     public string? Ref { get; init; }
 
     /// <summary>
+    /// Canonical selector entry key used for deterministic template pack targeting.
+    /// </summary>
+    public string? EntryKey { get; init; }
+
+    /// <summary>
+    /// Immutable resolved pin tuple for upgrade flows.
+    /// </summary>
+    public PackPin? Pin { get; init; }
+
+    /// <summary>
     /// Alternative: local filesystem path to a template pack directory.
     /// </summary>
     public string? LocalPath { get; init; }
@@ -52,6 +62,11 @@ public sealed record RulesPackEntry
     public string? Ref { get; init; }
 
     /// <summary>
+    /// Immutable resolved pin tuple for upgrade flows.
+    /// </summary>
+    public PackPin? Pin { get; init; }
+
+    /// <summary>
     /// Subdirectory within the repository when multiple rule sets are published in one repo.
     /// </summary>
     public string? Path { get; init; }
@@ -60,6 +75,12 @@ public sealed record RulesPackEntry
     /// Consumer scope override. When set, overrides the scope declared in the pack manifest.
     /// </summary>
     public PackScope? Scope { get; init; }
+}
+
+public sealed record PackPin
+{
+    public string? Tag { get; init; }
+    public string? CommitSha { get; init; }
 }
 
 public record TargetConfiguration

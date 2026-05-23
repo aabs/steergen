@@ -242,6 +242,16 @@ steergen rules-pack add github:your-org/my-rules-pack --ref v1.0.0 --scope globa
 - **Commit SHAs** (40-character hex) — Strongest guarantee of immutability. Steergen skips re-download for SHA-pinned packs.
 - **Branches** (e.g., `main`) — Works but Steergen emits a warning recommending pinning. Content can change without notice.
 
+### Consumer upgrade workflow
+
+Consumers can upgrade a specific configured rules pack reference using canonical selectors:
+
+```bash
+steergen rules-pack upgrade --selector "github:your-org/my-rules-pack|backend-team" --tag v1.1.0
+```
+
+If `--tag` is omitted, Steergen performs a full targeted cache refresh (`latest-refresh`) and still re-pins to a deterministic `(tag, commitSha)` tuple.
+
 ---
 
 ## 8. Versioning and compatibility

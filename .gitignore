@@ -418,3 +418,9 @@ FodyWeavers.xsd
 *.msm
 *.msp
 steergen.sln
+
+# Cross-platform editor/system noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/

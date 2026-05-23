@@ -1,0 +1,9 @@
+{
+  "source": "github.com/acme/templates",
+  "selector": "github.com/acme/templates|templates/default",
+  "requestedTag": "v2.0.0",
+  "resolved": {
+    "tag": "v2.0.0",
+    "commitSha": "deafbeefdeafbeefdeafbeefdeafbeefdeafbeef"
+  }
+}

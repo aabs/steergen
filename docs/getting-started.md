@@ -18,6 +18,7 @@ This guide walks you through everything from installation to team workflows. You
 8. [Adding steergen validation to your CI/CD pipeline](#8-adding-steergen-validation-to-your-cicd-pipeline)
 9. [Writing project steering documents](#9-writing-project-steering-documents)
 10. [Tips for teams](#10-tips-for-teams)
+11. [Upgrading external packs safely](#11-upgrading-external-packs-safely)
 
 ---
 
@@ -670,3 +671,28 @@ Once steergen is set up, you can add a short note to your project README directi
 > Project rules live in `steering/project/` in this repository. Global rules are maintained in our shared policy repository referenced by `globalRoot`. After editing project rules, run `steergen run` and commit generated output changes.
 
 For multi-project organisations, you can call out both roots explicitly in contributor docs.
+
+---
+
+## 11. Upgrading external packs safely
+
+Use selector-targeted upgrade commands to refresh exactly one configured external reference at a time.
+
+Rules pack upgrade:
+
+```bash
+steergen rules-pack upgrade --selector "github:acme-corp/governance-packs|backend-team" --tag v1.1.0
+```
+
+Template pack upgrade:
+
+```bash
+steergen template-pack upgrade --selector "github:acme-corp/steergen-templates|templates/default" --tag v2.1.0
+```
+
+Selector escaping:
+
+- Use `\\|` for a literal `|` in selector components.
+- Use `\\\\` for a literal backslash.
+
+When `--tag` is omitted, Steergen runs in `latest-refresh` mode. It snapshots targeted cache state before purge/refetch and restores the snapshot if fetch fails, keeping config pins unchanged.

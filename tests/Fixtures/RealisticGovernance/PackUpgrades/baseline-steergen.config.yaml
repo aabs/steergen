@@ -1,0 +1,23 @@
+version: 1
+rulesPacks:
+  - source: github.com/acme/security-governance
+    path: packs/security
+    pin:
+      tag: v1.3.0
+      commitSha: 11aa22bb33cc44dd55ee66ff77889900aabbccdd
+  - source: github.com/acme/security-governance
+    path: packs/platform
+    pin:
+      tag: v2.0.1
+      commitSha: 0123456789abcdef0123456789abcdef01234567
+templatePacks:
+  - source: github.com/acme/templates
+    entryKey: templates/default
+    pin:
+      tag: v4.1.0
+      commitSha: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  - source: github.com/acme/templates
+    entryKey: templates/strict
+    pin:
+      tag: v4.0.3
+      commitSha: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb

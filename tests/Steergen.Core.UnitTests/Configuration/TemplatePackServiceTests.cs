@@ -128,4 +128,75 @@ public sealed class TemplatePackServiceTests
         var result = await svc.RemoveAsync(path);
         Assert.True(result.Success);
     }
+
+    [Fact]
+    public async Task UpdatePinBySelectorAsync_UpdatesTemplatePinTuple()
+    {
+        var path = MakeTempConfigPath();
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(path, new SteeringConfiguration
+        {
+            ProjectRoot = "./steering",
+            TemplatePack = new TemplatePackConfig
+            {
+                Source = "github:acme/templates",
+                EntryKey = "templates/default",
+                Ref = "v1.0.0",
+                Pin = new PackPin
+                {
+                    Tag = "v1.0.0",
+                    CommitSha = "1111111111111111111111111111111111111111",
+                },
+            },
+        });
+
+        var resolver = new PackSelectorResolver();
+        resolver.TryParse("github:acme/templates|templates/default", out var selector, out _);
+
+        var svc = new TemplatePackService();
+        var result = await svc.UpdatePinBySelectorAsync(
+            path,
+            selector,
+            "v1.1.0",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
+        Assert.True(result.Success);
+
+        var loader = new SteergenConfigLoader();
+        var loaded = await loader.LoadAsync(path);
+        Assert.NotNull(loaded.TemplatePack);
+        Assert.Equal("v1.1.0", loaded.TemplatePack!.Ref);
+        Assert.Equal("v1.1.0", loaded.TemplatePack!.Pin!.Tag);
+        Assert.Equal("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", loaded.TemplatePack!.Pin!.CommitSha);
+    }
+
+    [Fact]
+    public async Task UpdatePinBySelectorAsync_WhenSelectorDoesNotMatch_ReturnsFailure()
+    {
+        var path = MakeTempConfigPath();
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(path, new SteeringConfiguration
+        {
+            ProjectRoot = "./steering",
+            TemplatePack = new TemplatePackConfig
+            {
+                Source = "github:acme/templates",
+                EntryKey = "templates/default",
+                Ref = "v1.0.0",
+            },
+        });
+
+        var resolver = new PackSelectorResolver();
+        resolver.TryParse("github:acme/templates|templates/other", out var selector, out _);
+
+        var svc = new TemplatePackService();
+        var result = await svc.UpdatePinBySelectorAsync(
+            path,
+            selector,
+            "v1.1.0",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
+        Assert.False(result.Success);
+        Assert.Contains("does not match", result.ErrorMessage!, StringComparison.OrdinalIgnoreCase);
+    }
 }

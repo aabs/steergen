@@ -11,6 +11,10 @@ Use `steergen inspect` (or existing config inspection workflow) to identify the 
 Expected selector format:
 - `<source>|<path-or-entry-key>`
 
+Escaping:
+- Literal delimiter: `\\|`
+- Literal backslash: `\\\\`
+
 ## 2. Upgrade a rules pack to latest (forced full refresh)
 ```bash
 steergen rules-pack upgrade --selector "owner/repo|packs/security"
@@ -21,6 +25,7 @@ Expected behavior:
 - Takes snapshot of targeted cache.
 - Purges targeted cache and refetches latest version.
 - Updates config pin to resolved `(tag, commitSha)`.
+- Emits deterministic output fields including mode, selector, final tuple, and rollback status.
 
 ## 3. Upgrade a rules pack to explicit tag
 ```bash
