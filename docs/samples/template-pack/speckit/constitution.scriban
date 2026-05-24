@@ -1,5 +1,0 @@
-# Constitution
-
-{{ for rule in rules }}
-- {{ rule.id }}: {{ rule.primaryText }}
-{{ end }}

@@ -1,0 +1,29 @@
+version: "1.0"
+
+roots:
+  globalRoot: "${globalRoot}"
+  projectRoot: "${projectRoot}"
+  targetRoot: "${generationRoot}/.claude/skills"
+
+routes:
+  - id: category-skill
+    scope: both
+    explicit: true
+    anchor: core
+    order: 10
+    match:
+      category: "*"
+    destination:
+      directory: "${targetRoot}/${category}-guidance"
+      fileName: "SKILL"
+      extension: ".md"
+
+fallback:
+  mode: other-at-core-anchor
+  fileBaseName: SKILL
+
+purge:
+  roots:
+    - "${targetRoot}"
+  globs:
+    - "**/*.md"

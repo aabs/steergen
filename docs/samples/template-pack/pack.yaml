@@ -1,5 +1,7 @@
 name: sample-template-pack
 version: 1.0.0
 minSteergenVersion: 0.1.0
-targets:
-  - speckit
+providedTargets:
+  - targetId: claude-skills
+    defaultLayout: claude-skills/default-layout.yaml
+    description: Generate Claude Code skill files grouped by rule category.

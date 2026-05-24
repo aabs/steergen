@@ -704,7 +704,7 @@ When `--tag` is omitted, Steergen runs in `latest-refresh` mode. It snapshots ta
 
 The repository includes ready-to-use, fully valid sample packs under `docs/samples/`:
 
-- `docs/samples/template-pack/` — a valid template pack with `pack.yaml` and Scriban templates.
+- `docs/samples/template-pack/` — a valid template pack that provides a `claude-skills` target and renders category-based Claude Code skills.
 - `docs/samples/rules-pack/` — a valid rules pack with `pack.yaml` and steering markdown documents.
 
 You can validate the samples directly with:

@@ -1,5 +1,5 @@
 projectRoot: docs/samples/rules-pack/rules
 registeredTargets:
-  - speckit
+  - claude-skills
 templatePack:
-  localPath: docs/samples/template-pack
+  localPath: template-pack
