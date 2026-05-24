@@ -1,0 +1,5 @@
+name: sample-template-pack
+version: 1.0.0
+minSteergenVersion: 0.1.0
+targets:
+  - speckit

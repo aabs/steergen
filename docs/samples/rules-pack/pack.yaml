@@ -1,0 +1,5 @@
+name: sample-rules-pack
+version: 1.0.0
+minSteergenVersion: 0.1.0
+scope: global
+rulesRoot: rules

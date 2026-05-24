@@ -8,6 +8,7 @@
     <LangVersion>14.0</LangVersion>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
+    <DefaultItemExcludes>$(DefaultItemExcludes);docs/samples/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Release builds enable full optimizer for SC-006 performance envelope compliance -->

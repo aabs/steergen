@@ -1,0 +1,5 @@
+projectRoot: docs/samples/rules-pack/rules
+registeredTargets:
+  - speckit
+templatePack:
+  localPath: docs/samples/template-pack

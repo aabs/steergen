@@ -19,6 +19,7 @@ This guide walks you through everything from installation to team workflows. You
 9. [Writing project steering documents](#9-writing-project-steering-documents)
 10. [Tips for teams](#10-tips-for-teams)
 11. [Upgrading external packs safely](#11-upgrading-external-packs-safely)
+12. [Sample packs](#12-sample-packs)
 
 ---
 
@@ -696,3 +697,20 @@ Selector escaping:
 - Use `\\\\` for a literal backslash.
 
 When `--tag` is omitted, Steergen runs in `latest-refresh` mode. It snapshots targeted cache state before purge/refetch and restores the snapshot if fetch fails, keeping config pins unchanged.
+
+---
+
+## 12. Sample packs
+
+The repository includes ready-to-use, fully valid sample packs under `docs/samples/`:
+
+- `docs/samples/template-pack/` — a valid template pack with `pack.yaml` and Scriban templates.
+- `docs/samples/rules-pack/` — a valid rules pack with `pack.yaml` and steering markdown documents.
+
+You can validate the samples directly with:
+
+```bash
+steergen validate --config docs/samples/sample-validation.config.yaml
+```
+
+This is useful when you want a known-good starting point for authoring your own packs.

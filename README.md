@@ -23,6 +23,7 @@ Steergen is a .NET CLI tool that maintains a single set of steering and constitu
 - [Template Packs](#template-packs)
 - [Rules Packs](#rules-packs)
 - [Authoring a Rules Pack](docs/authoring-rules-packs.md)
+- [Sample Packs](docs/getting-started.md#12-sample-packs)
 - [Exit Codes](#exit-codes)
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
