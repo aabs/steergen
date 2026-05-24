@@ -1,8 +1,6 @@
 version: "1.0"
 
 roots:
-  globalRoot: "${globalRoot}"
-  projectRoot: "${projectRoot}"
   targetRoot: "${generationRoot}/.claude/skills"
 
 routes:
