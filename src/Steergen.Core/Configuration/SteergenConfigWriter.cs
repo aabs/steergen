@@ -76,6 +76,14 @@ public sealed class SteergenConfigWriter
                 {
                     Source = config.TemplatePack.Source,
                     Ref = config.TemplatePack.Ref,
+                    EntryKey = config.TemplatePack.EntryKey,
+                    Pin = config.TemplatePack.Pin is null
+                        ? null
+                        : new PackPinYamlOut
+                        {
+                            Tag = config.TemplatePack.Pin.Tag,
+                            CommitSha = config.TemplatePack.Pin.CommitSha,
+                        },
                     LocalPath = config.TemplatePack.LocalPath,
                 }
                 : null,
@@ -85,6 +93,13 @@ public sealed class SteergenConfigWriter
                     Source = r.Source,
                     Ref = r.Ref,
                     Path = r.Path,
+                    Pin = r.Pin is null
+                        ? null
+                        : new PackPinYamlOut
+                        {
+                            Tag = r.Pin.Tag,
+                            CommitSha = r.Pin.CommitSha,
+                        },
                     Scope = r.Scope,
                 }).ToList()
                 : null,
@@ -117,6 +132,8 @@ public sealed class SteergenConfigWriter
     {
         public string? Source { get; set; }
         public string? Ref { get; set; }
+        public string? EntryKey { get; set; }
+        public PackPinYamlOut? Pin { get; set; }
         public string? LocalPath { get; set; }
     }
 
@@ -125,6 +142,13 @@ public sealed class SteergenConfigWriter
         public string? Source { get; set; }
         public string? Ref { get; set; }
         public string? Path { get; set; }
+        public PackPinYamlOut? Pin { get; set; }
         public PackScope? Scope { get; set; }
+    }
+
+    private sealed class PackPinYamlOut
+    {
+        public string? Tag { get; set; }
+        public string? CommitSha { get; set; }
     }
 }

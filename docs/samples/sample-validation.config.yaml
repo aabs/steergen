@@ -1,0 +1,5 @@
+projectRoot: docs/samples/rules-pack/rules
+registeredTargets:
+  - claude-skills
+templatePack:
+  localPath: template-pack

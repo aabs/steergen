@@ -1,5 +1,8 @@
 using Steergen.Core.Model;
+using Steergen.Core.Configuration;
+using Steergen.Core.Packs;
 using Steergen.Core.Parsing;
+using Steergen.Core.Updates;
 using Steergen.Core.Validation;
 using Xunit;
 
@@ -85,5 +88,72 @@ public sealed class MaliciousInputValidationTests
         Assert.Null(ex);
         Assert.Single(doc.Rules);
         Assert.Contains("IGNORE ALL PREVIOUS", doc.Rules[0].PrimaryText);
+    }
+
+    [Theory]
+    [InlineData("github:acme/security")]
+    [InlineData("github:acme/security|")]
+    [InlineData("|packs/security")]
+    [InlineData("github:acme/security|packs/security\\")]
+    [InlineData("github:acme/security\\q|packs/security")]
+    public void SelectorParser_RejectsMalformedInputs(string selector)
+    {
+        var resolver = new PackSelectorResolver();
+
+        var ok = resolver.TryParse(selector, out _, out _);
+
+        Assert.False(ok);
+    }
+
+    [Fact]
+    public async Task UpgradeService_DoesNotApplyRemoteMetadataToConfig()
+    {
+        var testDir = Path.Combine(Path.GetTempPath(), $"malicious-metadata-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDir);
+
+        var configPath = Path.Combine(testDir, "steergen.config.yaml");
+        var writer = new SteergenConfigWriter();
+        await writer.WriteAsync(configPath, new SteeringConfiguration
+        {
+            RulesPacks =
+            [
+                new RulesPackEntry
+                {
+                    Source = "github:acme/security",
+                    Path = "packs/security",
+                    Ref = "v1.0.0",
+                },
+            ],
+        });
+
+        try
+        {
+            var cachePath = Path.Combine(testDir, "cache");
+            var service = new ExternalPackUpgradeService(
+                downloadAsync: (_, _, _, _) =>
+                {
+                    Directory.CreateDirectory(cachePath);
+                    File.WriteAllText(Path.Combine(cachePath, "pack.yaml"), "name: !!python/object/apply:os.system ['rm -rf /']");
+                    return Task.FromResult(new PackDownloadResult { Success = true, CachePath = cachePath });
+                },
+                getCachePath: (_, _) => cachePath);
+
+            var result = await service.UpgradeAsync(
+                configPath,
+                new ExternalPackUpgradeRequest(UpgradePackKind.Rules, "github:acme/security|packs/security", "v2.0.0"));
+
+            Assert.True(result.Success);
+
+            var loader = new SteergenConfigLoader();
+            var loaded = await loader.LoadAsync(configPath);
+            Assert.Equal("v2.0.0", loaded.RulesPacks[0].Ref);
+            Assert.Equal("v2.0.0", loaded.RulesPacks[0].Pin!.Tag);
+            Assert.False(string.IsNullOrWhiteSpace(loaded.RulesPacks[0].Pin!.CommitSha));
+        }
+        finally
+        {
+            if (Directory.Exists(testDir))
+                Directory.Delete(testDir, recursive: true);
+        }
     }
 }

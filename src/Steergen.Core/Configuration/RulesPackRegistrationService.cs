@@ -11,6 +11,7 @@ public sealed class RulesPackRegistrationService
 {
     private readonly SteergenConfigLoader _loader = new();
     private readonly SteergenConfigWriter _writer = new();
+    private readonly PackSelectorResolver _selectorResolver = new();
 
     public async Task<RulesPackRegistrationResult> AddAsync(
         string configPath,
@@ -66,6 +67,43 @@ public sealed class RulesPackRegistrationService
         return RulesPackRegistrationResult.Removed(source);
     }
 
+    public async Task<RulesPackUpgradeMutationResult> UpdatePinBySelectorAsync(
+        string configPath,
+        CanonicalPackSelector selector,
+        string tag,
+        string commitSha,
+        CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(configPath))
+            return RulesPackUpgradeMutationResult.Fail($"Config file not found: {configPath}");
+
+        var (config, hash) = await ReadWithHash(configPath, cancellationToken);
+        if (!_selectorResolver.TryResolveRules(config, selector, out var index, out var error))
+            return RulesPackUpgradeMutationResult.Fail(error);
+
+        var existing = config.RulesPacks[index];
+        var updatedEntry = existing with
+        {
+            Ref = tag,
+            Pin = new PackPin
+            {
+                Tag = tag,
+                CommitSha = commitSha,
+            },
+        };
+
+        var updatedRulesPacks = config.RulesPacks.ToList();
+        updatedRulesPacks[index] = updatedEntry;
+
+        var updated = config with
+        {
+            RulesPacks = updatedRulesPacks,
+        };
+
+        await _writer.WriteAsync(configPath, updated, hash, cancellationToken);
+        return RulesPackUpgradeMutationResult.Updated(updatedEntry.Source);
+    }
+
     private async Task<(SteeringConfiguration Config, string Hash)> ReadWithHash(
         string configPath,
         CancellationToken cancellationToken)
@@ -75,6 +113,19 @@ public sealed class RulesPackRegistrationService
         var config = await _loader.LoadAsync(configPath, cancellationToken);
         return (config, hash);
     }
+}
+
+public sealed record RulesPackUpgradeMutationResult
+{
+    public bool Success { get; init; }
+    public string? Source { get; init; }
+    public string? ErrorMessage { get; init; }
+
+    public static RulesPackUpgradeMutationResult Updated(string source) =>
+        new() { Success = true, Source = source };
+
+    public static RulesPackUpgradeMutationResult Fail(string error) =>
+        new() { Success = false, ErrorMessage = error };
 }
 
 public sealed record RulesPackRegistrationResult

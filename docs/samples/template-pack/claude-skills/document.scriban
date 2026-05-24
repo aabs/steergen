@@ -1,0 +1,23 @@
+{{ path_parts = file_path | string.split "/" }}
+{{ skill_name = path_parts[path_parts.size - 2] }}
+{{ skill_topic = skill_name | string.replace "-guidance" "" }}
+---
+name: {{ skill_name }}
+description: Applies {{ skill_topic }} guidance rules for this repository. Use when working on {{ skill_topic }} concerns.
+disable-model-invocation: false
+---
+
+# {{ skill_topic | string.capitalize }} Guidance
+
+Use these rules when making changes that affect {{ skill_topic }} behavior.
+
+## Rules
+
+{{ for rule in rules }}
+{{ rule_text = rule.primary_text }}
+{{ if rule_text == "" }}{{ rule_text = rule.explanatory_text }}{{ end }}
+{{ if rule_text == "" }}{{ rule_text = rule.id }}{{ end }}
+### {{ rule.id }}
+{{ if rule.mandatory }}Required{{ else }}Recommended{{ end }}: {{ rule_text }}
+
+{{ end }}

@@ -30,4 +30,26 @@ public sealed class CommandFactoryRegressionTests
 
         Assert.Equal(0, exitCode);
     }
+
+    [Fact]
+    public async Task RulesPackUpgrade_Help_InvokesSuccessfully()
+    {
+        var root = CommandFactory.CreateRootCommand();
+        var parseResult = root.Parse(["rules-pack", "upgrade", "--help"]);
+
+        var exitCode = await parseResult.InvokeAsync(new InvocationConfiguration());
+
+        Assert.Equal(0, exitCode);
+    }
+
+    [Fact]
+    public async Task TemplatePackAdd_Help_InvokesSuccessfully()
+    {
+        var root = CommandFactory.CreateRootCommand();
+        var parseResult = root.Parse(["template-pack", "add", "--help"]);
+
+        var exitCode = await parseResult.InvokeAsync(new InvocationConfiguration());
+
+        Assert.Equal(0, exitCode);
+    }
 }
